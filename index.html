@@ -271,6 +271,48 @@ td.r,th.r{text-align:right}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
 .chips button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:99px;padding:7px 13px;font-weight:700;font-size:.8rem}
 .chips button[aria-pressed="true"]{background:var(--yellow);border-color:var(--yellow);color:var(--yellow-ink)}
+/* ---------- Movimientos (tabla inteligente) ---------- */
+#s-movs .mv-range{display:flex;gap:12px 16px;align-items:flex-end;flex-wrap:wrap}
+#s-movs .mv-dates{display:grid;grid-template-columns:repeat(2,minmax(0,170px));gap:10px;min-width:0}
+#s-movs .mv-rf{display:flex;flex-direction:column;gap:5px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+#s-movs .mv-rf input{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:.95rem;font-weight:500;color:var(--fg);width:100%}
+#s-movs .mv-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#s-movs .mv-tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+#s-movs .mv-tile small{color:var(--muted);font-weight:600;font-size:.76rem}
+#s-movs .mv-tile b{font-size:1.2rem;font-weight:800}
+#s-movs .mv-tile svg{width:100%;height:34px;display:block}
+#s-movs .mv-medios{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#s-movs .mv-medio{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+#s-movs .mv-medio .mi{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--soft)}
+#s-movs .mv-medio .mi svg{width:18px;height:18px}
+#s-movs .mv-medio small{display:block;color:var(--muted);font-weight:600;font-size:.74rem}
+#s-movs .mv-medio b{font-weight:800}
+#s-movs .mv-medio em{font-style:normal;color:var(--muted);font-size:.74rem;font-weight:600;margin-left:4px}
+#s-movs .mv-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#s-movs .mv-tools .search{flex:1;min-width:200px}
+#s-movs .chips span{color:var(--muted);font-weight:600}
+#s-movs .chips button[aria-pressed="true"] span{color:var(--yellow-ink);opacity:.7}
+#s-movs .mv-wrap{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+#s-movs table{min-width:860px}
+#s-movs tr.clk{cursor:pointer} #s-movs tr.clk:hover td{background:var(--soft)} #s-movs tr.on td{background:var(--yellow-soft)}
+#s-movs .tp{display:inline-flex;border-radius:99px;padding:2px 9px;font-size:.72rem;font-weight:700}
+#s-movs .tp.venta{background:var(--good-soft);color:var(--good)} #s-movs .tp.compra{background:var(--blue-soft);color:var(--blue)}
+#s-movs .mtag{display:inline-flex;align-items:center;gap:5px}
+#s-movs .mtag svg{width:14px;height:14px;flex:none}
+#s-movs .mbar{display:inline-block;width:42px;height:6px;border-radius:3px;background:var(--soft);vertical-align:middle;margin-left:6px;overflow:hidden}
+#s-movs .mbar i{display:block;height:100%;background:var(--good)}
+#s-movs .mv-detail{position:sticky;top:90px} #s-movs .mv-detail .chips{flex-wrap:wrap;overflow:visible;gap:6px} #s-movs .mv-detail .tp{white-space:nowrap;align-items:center}
+#s-movs .mv-lines{display:flex;flex-direction:column;gap:6px;font-size:.84rem;max-height:340px;overflow:auto}
+#s-movs .mv-lines div{display:flex;justify-content:space-between;gap:10px}
+#s-movs .mv-sum{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:8px;font-size:.88rem}
+#s-movs .mv-sum div{display:flex;justify-content:space-between;gap:10px}
+#s-movs .mv-more{border:1px dashed var(--line);background:none;border-radius:10px;padding:10px;font-weight:700;color:var(--muted);width:100%}
+@media (min-width:760px){ #s-movs .mv-tiles{grid-template-columns:repeat(4,minmax(0,1fr))} }
+#s-movs .hr{display:none} #s-movs .hr2{display:block;color:var(--muted);font-size:.78rem}
+@media (min-width:1280px){ #s-movs .mv-wrap{grid-template-columns:minmax(0,1fr) 300px} }
+@media (min-width:1280px) and (max-width:1599px){ #s-movs table{min-width:0} #s-movs td,#s-movs th{padding:12px 10px} #s-movs td:nth-child(2){white-space:normal} #s-movs .un,#s-movs .mbar{display:none} }
+@media (max-width:759px){ #s-movs table{min-width:0} #s-movs td,#s-movs th{white-space:normal;padding:10px 8px} #s-movs td:first-child{font-size:.76rem;color:var(--muted);width:70px} #s-movs td.r{white-space:nowrap} #s-movs td:first-child{white-space:nowrap} #s-movs th:nth-child(3),#s-movs td:nth-child(3),#s-movs th:nth-child(4),#s-movs td:nth-child(4),#s-movs th:nth-child(5),#s-movs td:nth-child(5),#s-movs th:nth-child(7),#s-movs td:nth-child(7){display:none} }
+@media (max-width:520px){ #s-movs .mv-dates{grid-template-columns:1fr 1fr;width:100%} #s-movs .mv-medio{flex-direction:column;align-items:flex-start;gap:6px} }
 /* ---------- Panel gerencial (administrador) ---------- */
 #s-panel .pg-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #s-panel .pg-head .select{width:auto;font-weight:600}
@@ -484,27 +526,28 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
     <main class="screen" id="s-movs" hidden>
       <div class="seg big" id="movseg"><button type="button" data-ms="tx" aria-pressed="true">Transacciones</button><button type="button" data-ms="cierres" aria-pressed="false">Cierres de caja</button></div>
       <div id="tx-box" class="col">
-        <div class="row filters">
-          <button class="btn line" type="button" data-a="filtrar"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtrar<span id="f-count"></span></button>
-          <select class="select" id="periodo" style="width:auto">
-            <option value="diario">Diario</option><option value="semanal">Semanal</option><option value="mensual" selected>Mensual</option><option value="todo">Todo</option>
-          </select>
-          <input class="select" id="fecha" type="month" style="width:auto">
-          <label class="search" for="q3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input id="q3" type="search" placeholder="Buscar concepto..." autocomplete="off"></label>
-        </div>
-        <div class="kpis" id="mov-kpis"></div>
-        <div class="panel">
-          <div class="tabs-line" role="tablist" id="movtab">
-            <button role="tab" data-k="venta" aria-selected="true">Ingresos</button>
-            <button role="tab" data-k="compra" aria-selected="false">Egresos</button>
-            <button role="tab" data-k="cobrar" aria-selected="false">Por cobrar</button>
-            <button role="tab" data-k="pagar" aria-selected="false">Por pagar</button>
+        <div class="mv-range">
+          <div class="mv-dates">
+            <label class="mv-rf" for="mv-desde">Desde<input type="date" id="mv-desde"></label>
+            <label class="mv-rf" for="mv-hasta">Hasta<input type="date" id="mv-hasta"></label>
           </div>
-          <div class="tablebox"><table>
-            <thead><tr><th>Concepto</th><th class="r">Valor</th><th class="r" id="th-gan">Ganancia</th><th>Medio de pago</th><th>Fecha y hora</th><th>Responsable</th><th>Estado</th></tr></thead>
+          <div class="chips" id="mv-rap"></div>
+        </div>
+        <div class="mv-tiles" id="mv-tiles"></div>
+        <div class="mv-medios" id="mv-medios"></div>
+        <div class="mv-tools">
+          <label class="search" for="q3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="q3" type="search" placeholder="Buscar producto o responsable" autocomplete="off"></label>
+          <div class="chips" id="mv-tipo"></div>
+          <div class="chips" id="mv-medio"></div>
+          <div class="chips" id="mv-user"></div>
+        </div>
+        <div class="mv-wrap">
+          <div class="panel" style="min-width:0"><div class="tablebox"><table>
+            <thead><tr><th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Responsable</th><th>Medio de pago</th><th class="r">Valor</th><th class="r">Ganancia</th></tr></thead>
             <tbody id="movs"></tbody>
-          </table></div>
+          </table></div></div>
+          <aside class="card mv-detail" id="mv-detail"></aside>
         </div>
       </div>
       <div id="cierres-box" class="card soonbox" hidden>
@@ -687,11 +730,13 @@ function genHistory(s) {
   const PESO = [3, 2.5, 1.5, 1.2, 1, 0.8, 1.8, 0.8, 0.6, 0.5, 3, 2.5, 2, 1.5, 0.8, 0.5, 0.6, 1, 2, 1, 2, 1.5, 1.5, 2, 1];
   const tot = {}; s.products.forEach(p => { const c = SEED[p.id - 1][6]; tot[c] = (tot[c] || 0) + PESO[p.id - 1]; });
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-  const d = new Date(hoy.getFullYear() - 1, 0, 1), vendido = {}, out = [];
+  const d = new Date(hoy.getFullYear() - 1, 0, 1), vendido = {}, sobra = {}, out = [];
   for (; d < hoy; d.setDate(d.getDate() + 1)) {
     const m = d.getMonth(), wd = d.getDay(), dd = d.getDate();
-    if (wd === 1) Object.entries(vendido).forEach(([pid, u]) => { const p = s.products.find(x => x.id === +pid), cj = Math.ceil(u / p.porCaja);
-      out.push({ k: "compra", t: +d + 10 * 36e5, pid: p.id, und: cj * p.porCaja, total: cj * p.costoCaja, user: "admin", medio: "Transferencia", ejemplo: true }); delete vendido[pid]; });
+    // Cada lunes se compran las cajas que hagan falta para reponer lo vendido, usando lo que sobró de la semana anterior.
+    if (wd === 1) Object.entries(vendido).forEach(([pid, u]) => { const p = s.products.find(x => x.id === +pid), falta = u - (sobra[pid] || 0), cj = Math.max(0, Math.ceil(falta / p.porCaja));
+      sobra[pid] = cj * p.porCaja - falta; delete vendido[pid];
+      if (cj) out.push({ k: "compra", t: +d + 10 * 36e5, pid: p.id, und: cj * p.porCaja, total: cj * p.costoCaja, user: "admin", medio: "Transferencia", ejemplo: true, gen: 1 }); });
     const dia = 1400000 * SEASON[m] * WEEK[wd] * ([1, 15, 16, 30, 31].includes(dd) ? 1.25 : 1) * (d.getFullYear() < hoy.getFullYear() ? 0.92 : 1) * (0.85 + rnd() * 0.3);
     let total = 0, costo = 0; const lines = [];
     s.products.forEach(p => { const c = SEED[p.id - 1][6], pu = precio(p, "unidad", s);
@@ -709,7 +754,12 @@ SEED.forEach(([nombre, tam, porCaja, costoCaja], i) => {
   S.products.push({ id: i + 1, nombre, tam, porCaja, costoCaja, stock: porCaja * 2 });
   if (!S.real) S.movs.push({ k: "compra", t: Date.now(), pid: i + 1, und: porCaja * 2, total: costoCaja * 2, user: "admin", medio: "Transferencia", ejemplo: true });
 });
-if (!S.hist && !S.real && S.movs.every(m => m.ejemplo)) { genHistory(S); S.hist = 1; }
+// La versión 1 del historial compraba de más; se rehace con las compras corregidas.
+if (S.hist === 1 && !S.real && S.movs.every(m => m.ejemplo)) {
+  S.movs = S.movs.filter(m => !(m.dia || (m.k === "compra" && new Date(m.t).getDay() === 1 && new Date(m.t).getHours() === 10 && new Date(m.t).getMinutes() === 0)));
+  S.hist = 0;
+}
+if (!S.hist && !S.real && S.movs.every(m => m.ejemplo)) { genHistory(S); S.hist = 2; }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { console.warn("No se pudo guardar", e); } };
 save();
 
@@ -1081,48 +1131,95 @@ function renderComprar() {
 }
 
 /* ---------- Movimientos (inicio del administrador) ---------- */
-let fUser = "Todos", fMedio = "Todos";
-function enPeriodo(t) {
-  const d = new Date(t), n = new Date(), per = $("periodo").value;
-  if (per === "diario") return d.toDateString() === n.toDateString();
-  if (per === "semanal") return n - d < 7 * 864e5;
-  if (per === "mensual") { const [y, m] = ($("fecha").value || "").split("-").map(Number); return d.getFullYear() === y && d.getMonth() + 1 === m; }
-  return true;
+let fUser = "Todos", fMedio = "Todos", fTipo = "todo", mvSel = null, mvMax = 100;
+const MICON = {
+  Efectivo: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+  Transferencia: '<path d="M7 7h12l-3-3M17 17H5l3 3"/>',
+  Tarjeta: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+};
+const MCOL = { Efectivo: "var(--good)", Transferencia: "var(--blue)", Tarjeta: "var(--warn)" };
+const msvg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${MICON[k]}</svg>`;
+const mtag = k => `<span class="mtag"><span style="color:${MCOL[k]};display:flex">${msvg(k)}</span>${k}</span>`;
+const medioDe = m => m.medio || "Efectivo";
+// Periodo de Movimientos: Desde y Hasta, los dos días incluidos.
+const isoD = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const dHoy = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+const masD = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const MV_RAP = {
+  "Hoy": () => [dHoy(), dHoy()],
+  "Ayer": () => [masD(dHoy(), -1), masD(dHoy(), -1)],
+  "Últimos 7 días": () => [masD(dHoy(), -6), dHoy()],
+  "Este mes": () => [new Date(dHoy().getFullYear(), dHoy().getMonth(), 1), dHoy()],
+  "Mes pasado": () => [new Date(dHoy().getFullYear(), dHoy().getMonth() - 1, 1), new Date(dHoy().getFullYear(), dHoy().getMonth(), 0)],
+  "Este año": () => [new Date(dHoy().getFullYear(), 0, 1), dHoy()],
+};
+let mvD0, mvD1; [mvD0, mvD1] = MV_RAP["Últimos 7 días"]();
+const mvRango = () => mvD0 <= mvD1 ? [mvD0, mvD1] : [mvD1, mvD0];
+function spark(vals, color) {
+  const W = 160, H = 34, max = Math.max(1, ...vals), step = W / Math.max(1, vals.length - 1);
+  const pts = vals.map((v, i) => `${(i * step).toFixed(1)},${(H - 3 - v / max * (H - 8)).toFixed(1)}`).join(" "), last = pts.split(" ").pop().split(",");
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,${H} ${pts} ${W},${H}" fill="${color}" opacity=".12"/><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${last[0]}" cy="${last[1]}" r="3" fill="${color}"/></svg>`;
 }
 function concepto(mv) {
-  if (mv.k === "compra") return { p: P(mv.pid), txt: `Compra de ${mv.und} ${P(mv.pid).nombre}` };
+  if (mv.k === "compra") { const p = P(mv.pid), cj = mv.und / p.porCaja; return { p, txt: Number.isInteger(cj) ? `${cj} ${cj === 1 ? "caja" : "cajas"} ${p.nombre}` : `${mv.und} und. ${p.nombre}` }; }
   const p = P(mv.lines[0].pid), n = mv.lines.length;
   if (mv.dia) return { p, txt: `Ventas del día · ${mv.lines.reduce((a, l) => a + l.und, 0)} unidades` };
-  return { p, txt: n > 1 ? `${p.nombre} y ${n - 1} más` : `${mv.lines[0].cant} ${mv.lines[0].tipo === "caja" ? "caja" : "und."} ${p.nombre}` };
+  return { p, txt: n > 1 ? `${p.nombre} y ${n - 1} más` : `${mv.lines[0].cant} ${mv.lines[0].tipo === "caja" ? (mv.lines[0].cant === 1 ? "caja" : "cajas") : "und."} ${p.nombre}` };
+}
+function mvDetalle(m) {
+  if (!m) return `<p class="hint">Toca un movimiento para ver el detalle.</p>`;
+  const c = concepto(m), d = new Date(m.t);
+  const head = `<div class="concept">${avatar(c.p)}<span class="t"><b>${c.txt}</b><small>${d.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" })} · ${d.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}</small></span></div>
+    <div class="chips"><span class="tp ${m.k}">${m.k === "venta" ? "Venta" : "Compra"}</span><span class="tp" style="background:var(--soft)">${mtag(medioDe(m))}</span><span class="tp" style="background:var(--soft)">${U(m.user).nombre}</span>${m.ejemplo ? '<span class="tp" style="background:var(--warn-soft);color:var(--warn)">Ejemplo</span>' : ""}</div>`;
+  if (m.k === "compra") { const p = P(m.pid);
+    return head + `<div class="mv-sum"><div><span>Unidades que entraron</span><b class="num">${m.und}</b></div><div><span>Costo por unidad</span><b class="num">${money(m.total / m.und)}</b></div><div><span>Total pagado</span><b class="num">${money(m.total)}</b></div></div>`; }
+  return head + `<div class="mv-lines">${m.lines.map(l => `<div><span>${l.tipo === "caja" ? `${l.cant} ${l.cant === 1 ? "caja" : "cajas"}` : `${l.cant} und.`} · ${P(l.pid).nombre}</span><span class="num">${money(l.total)}</span></div>`).join("")}</div>
+    <div class="mv-sum"><div><b>Total</b><b class="num">${money(m.total)}</b></div><div style="color:var(--good)"><span>Ganancia</span><b class="num">+${money(m.ganancia)}</b></div><div><span>Margen</span><span class="num">${(m.ganancia / (m.total || 1) * 100).toFixed(1).replace(".", ",")}%</span></div></div>`;
 }
 function renderMovs() {
-  $("fecha").hidden = $("periodo").value !== "mensual";
-  const q = $("q3").value.trim().toLowerCase();
-  const all = S.movs.filter(m => enPeriodo(m.t) && (fUser === "Todos" || U(m.user).nombre === fUser) && (fMedio === "Todos" || (m.medio || "Efectivo") === fMedio));
-  const ventas = all.filter(m => m.k === "venta"), compras = all.filter(m => m.k === "compra");
-  const vt = ventas.reduce((a, v) => a + v.total, 0), ct = compras.reduce((a, c) => a + c.total, 0);
-  const gan = ventas.reduce((a, v) => a + v.ganancia, 0);
-  $("mov-kpis").innerHTML = kpi("n", "up", "Balance", money(vt - ct)) + kpi("g", "cash", "Ventas totales", money(vt)) + kpi("r", "cash", "Gastos totales", money(ct));
-  $("f-count").textContent = (fUser !== "Todos") + (fMedio !== "Todos") || "";
-  document.querySelectorAll("#movtab button").forEach(b => b.setAttribute("aria-selected", b.dataset.k === movKind));
-  $("th-gan").hidden = movKind !== "venta";
-  if (movKind === "cobrar" || movKind === "pagar") {
-    $("movs").innerHTML = `<tr><td colspan="7" class="hint" style="padding:22px 14px">${movKind === "cobrar" ? "Aquí verás lo que te deben tus clientes (fiados). Lo construimos en la parte de Clientes." : "Aquí verás lo que les debes a tus proveedores. Lo construimos en la parte de Proveedores."}</td></tr>`;
-    return;
-  }
-  const rows = all.filter(m => m.k === movKind).map(m => ({ m, c: concepto(m) })).filter(r => r.c.txt.toLowerCase().includes(q)).reverse();
-  $("movs").innerHTML = rows.map(({ m, c }) => `<tr><td><div class="concept">${avatar(c.p, true)}<span class="t"><b>${c.txt}</b>${m.ejemplo ? '<small class="ex">ejemplo</small>' : ""}</span></div></td>
-    <td class="r"><b>${money(m.total)}</b></td>${movKind === "venta" ? `<td class="r" style="color:var(--good);font-weight:700">+${money(m.ganancia)}</td>` : ""}
-    <td>${m.medio || "Efectivo"}</td><td>${fechaHora(m.t)}</td><td>${U(m.user).nombre}</td><td><span class="pill">Pagado</span></td></tr>`).join("")
-    || `<tr><td colspan="7" class="hint" style="padding:22px 14px">No hay ${movKind === "venta" ? "ventas" : "egresos"} en este periodo.</td></tr>`;
-  if (movKind === "venta" && rows.length) $("movs").insertAdjacentHTML("beforeend", `<tr><td><b>Total del periodo</b></td><td class="r"><b>${money(vt)}</b></td><td class="r" style="color:var(--good);font-weight:800">+${money(gan)}</td><td colspan="4"></td></tr>`);
+  const [d0, d1] = mvRango(), fin = +masD(d1, 1), q = $("q3").value.trim().toLowerCase();
+  $("mv-desde").value = isoD(mvD0); $("mv-hasta").value = isoD(mvD1); $("mv-desde").max = $("mv-hasta").max = isoD(dHoy());
+  const rap = Object.keys(MV_RAP).find(k => { const [a, b] = MV_RAP[k](); return isoD(a) === isoD(d0) && isoD(b) === isoD(d1); });
+  $("mv-rap").innerHTML = Object.keys(MV_RAP).map(k => `<button type="button" data-mvr="${k}" aria-pressed="${k === rap}">${k}</button>`).join("");
+  const all = S.movs.filter(m => m.t >= +d0 && m.t < fin), ventas = all.filter(m => m.k === "venta"), compras = all.filter(m => m.k === "compra");
+  const nd = Math.round((d1 - d0) / 864e5) + 1, dia = f => { const o = Array(nd).fill(0); all.forEach(m => { const i = Math.floor((m.t - d0) / 864e5); if (i >= 0 && i < nd) o[i] += f(m); }); return o; };
+  const sum = (l, f) => l.reduce((a, m) => a + f(m), 0);
+  $("mv-tiles").innerHTML = [
+    ["Ventas", money(sum(ventas, m => m.total)), dia(m => m.k === "venta" ? m.total : 0), "var(--good)"],
+    ["Compras de mercancía", money(sum(compras, m => m.total)), dia(m => m.k === "compra" ? m.total : 0), "var(--bad)"],
+    ["Ganancia de las ventas", money(sum(ventas, m => m.ganancia)), dia(m => m.k === "venta" ? m.ganancia : 0), "var(--blue)"],
+    ["Ventas hechas (clientes atendidos)", String(ventas.length), dia(m => m.k === "venta" ? 1 : 0), "var(--warn)"],
+  ].map(([l, v, sp, c]) => `<div class="mv-tile"><small>${l}</small><b class="num">${v}</b>${spark(sp, c)}</div>`).join("");
+  const vt = sum(ventas, m => m.total) || 1;
+  $("mv-medios").innerHTML = MEDIOS.map(k => { const x = ventas.filter(m => medioDe(m) === k), t = sum(x, m => m.total);
+    return `<div class="mv-medio"><span class="mi" style="color:${MCOL[k]}">${msvg(k)}</span><span><small>${k} · ${x.length} ${x.length === 1 ? "venta" : "ventas"}</small><b class="num">${money(t)}</b><em>${Math.round(t / vt * 100)}%</em></span></div>`; }).join("");
+  const cnt = f => all.filter(f).length;
+  $("mv-tipo").innerHTML = [["todo", "Todo"], ["venta", "Ventas"], ["compra", "Compras"]].map(([v, l]) => `<button type="button" data-mvt="${v}" aria-pressed="${v === fTipo}">${l} <span>${cnt(m => v === "todo" || m.k === v)}</span></button>`).join("");
+  $("mv-medio").innerHTML = ["Todos", ...MEDIOS].map(v => `<button type="button" data-mvm="${v}" aria-pressed="${v === fMedio}">${v === "Todos" ? "Todos los medios" : v}</button>`).join("");
+  $("mv-user").innerHTML = ["Todos", ...USERS.map(u => u.nombre)].map(v => `<button type="button" data-mvu="${v}" aria-pressed="${v === fUser}">${v === "Todos" ? "Todos" : v}</button>`).join("");
+  const rows = all.filter(m => (fTipo === "todo" || m.k === fTipo) && (fMedio === "Todos" || medioDe(m) === fMedio) && (fUser === "Todos" || U(m.user).nombre === fUser))
+    .map(m => ({ m, c: concepto(m) })).filter(r => !q || `${r.c.txt} ${U(r.m.user).nombre} ${r.m.lines ? r.m.lines.map(l => P(l.pid).nombre).join(" ") : ""}`.toLowerCase().includes(q)).reverse();
+  if (!rows.some(r => r.m === mvSel)) mvSel = rows.length ? rows[0].m : null;
+  $("movs").innerHTML = rows.slice(0, mvMax).map(({ m, c }, i) => `<tr class="clk${m === mvSel ? " on" : ""}" data-mv="${i}"><td>${new Date(m.t).toLocaleDateString("es-CO", { day: "2-digit", month: "short" })}<span class="hr"> · </span><span class="hr2">${new Date(m.t).toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}</span></td>
+    <td><div class="concept">${avatar(c.p, true)}<span class="t"><b>${c.txt}</b>${m.ejemplo ? '<small class="ex">ejemplo</small>' : ""}</span></div></td><td><span class="tp ${m.k}">${m.k === "venta" ? "Venta" : "Compra"}</span></td>
+    <td><div class="concept" title="${U(m.user).nombre}"><span class="av-u">${U(m.user).ini}</span><span class="un">${U(m.user).nombre}</span></div></td><td>${mtag(medioDe(m))}</td>
+    <td class="r"><b style="color:${m.k === "venta" ? "var(--good)" : "var(--fg)"}">${m.k === "venta" ? "+" : "−"}${money(m.total)}</b></td>
+    <td class="r">${m.k === "venta" ? `${money(m.ganancia)}<span class="mbar"><i style="width:${Math.min(100, m.ganancia / (m.total || 1) * 500).toFixed(0)}%"></i></span>` : "—"}</td></tr>`).join("")
+    + (rows.length > mvMax ? `<tr><td colspan="7"><button type="button" class="mv-more" data-a="mv-more">Mostrando ${mvMax} de ${rows.length}. Ver 100 más</button></td></tr>` : "")
+    || `<tr><td colspan="7" class="hint" style="padding:22px 14px">No hay movimientos con ese filtro en estas fechas.</td></tr>`;
+  renderMovs.rows = rows;
+  $("mv-detail").innerHTML = mvDetalle(mvSel);
 }
-function filterSheet() {
-  openSheet(`<div class="cart-h"><h2>Filtrar movimientos</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
-    <div class="field">Responsable${segHtml("fuser", ["Todos", ...USERS.map(u => u.nombre)], fUser, "fu")}</div>
-    <div class="field">Medio de pago${segHtml("fmedio", ["Todos", ...MEDIOS], fMedio, "fm")}</div>
-    <button class="btn ink wide" data-a="close">Ver resultados</button>`, "filter");
-}
+$("mv-rap").addEventListener("click", e => { const b = e.target.closest("[data-mvr]"); if (b) { [mvD0, mvD1] = MV_RAP[b.dataset.mvr](); mvMax = 100; renderMovs(); } });
+["mv-desde", "mv-hasta"].forEach(id => $(id).addEventListener("change", () => { if (!$("mv-desde").value || !$("mv-hasta").value) return;
+  const f = v => { const [y, m, d] = v.split("-").map(Number); return new Date(y, m - 1, d); }; mvD0 = f($("mv-desde").value); mvD1 = f($("mv-hasta").value); mvMax = 100; renderMovs(); }));
+$("tx-box").addEventListener("click", e => {
+  const t = e.target.closest("[data-mvt]"); if (t) { fTipo = t.dataset.mvt; return renderMovs(); }
+  const m = e.target.closest("[data-mvm]"); if (m) { fMedio = m.dataset.mvm; return renderMovs(); }
+  const u = e.target.closest("[data-mvu]"); if (u) { fUser = u.dataset.mvu; return renderMovs(); }
+  if (e.target.closest('[data-a="mv-more"]')) { mvMax += 100; return renderMovs(); }
+  const r = e.target.closest("[data-mv]"); if (r) { mvSel = renderMovs.rows[+r.dataset.mv].m; renderMovs(); if (innerWidth < 1280) $("mv-detail").scrollIntoView({ behavior: "smooth", block: "start" }); }
+});
 
 /* ---------- Ajustes ---------- */
 const RESET_BASE = `<h2>Empezar de cero</h2><p class="hint">Borra las ventas y compras de ejemplo y deja el inventario en cero, para usar la app con tus datos reales.</p><button class="btn line" type="button" data-a="reset-ask">Empezar de cero</button>`;
@@ -1237,7 +1334,6 @@ document.addEventListener("click", e => {
   const a = b.dataset.a, i = +b.dataset.i;
   if (a === "salir") logout();
   if (a === "close") closeSheet();
-  if (a === "filtrar") filterSheet();
   if (a === "opencart") openSheet(cartHtml(true), "cart");
   if (a === "more") openSheet(`<div class="cart-h"><h2>Más opciones</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div><div class="morelist">${navItems().slice(4).map(navBtn).join("")}</div>`, "more");
   if (a === "plus") { cart[i].cant++; renderVender(); }
@@ -1266,9 +1362,6 @@ $("q").addEventListener("input", renderVender);
 $("q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); const f = matches()[0]; if (f) { addToCart(f.id); $("q").select(); } } });
 $("q2").addEventListener("input", renderComprar);
 $("q3").addEventListener("input", renderMovs);
-$("periodo").addEventListener("change", renderMovs);
-$("fecha").addEventListener("change", renderMovs);
-{ const n = new Date(); $("fecha").value = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`; }
 $("s-pct").addEventListener("change", e => { const v = +e.target.value; if (v >= 0) { S.pct = v; save(); renderAjustes(); toast(`Ahora vendes con ${v}% sobre el costo.`); } });
 document.addEventListener("keydown", e => {
   if (!me) return;
