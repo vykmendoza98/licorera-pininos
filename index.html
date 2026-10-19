@@ -268,6 +268,9 @@ td.r,th.r{text-align:right}
 @media (prefers-reduced-motion:no-preference){
   .sheet{animation:rise .22s ease-out}@keyframes rise{from{transform:translateY(40px);opacity:.4}}
 }
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.chips button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:99px;padding:7px 13px;font-weight:700;font-size:.8rem}
+.chips button[aria-pressed="true"]{background:var(--yellow);border-color:var(--yellow);color:var(--yellow-ink)}
 /* ---------- Panel gerencial (administrador) ---------- */
 #s-panel .pg-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #s-panel .pg-head .select{width:auto;font-weight:600}
@@ -322,6 +325,7 @@ td.r,th.r{text-align:right}
 #s-panel .proj div{background:var(--soft);border-radius:12px;padding:12px;min-width:0}
 #s-panel .proj small{display:block;color:var(--muted);font-weight:600;font-size:.75rem}
 #s-panel .proj b{font-size:1.05rem;font-weight:800}
+#s-panel .proj .delta{display:block;margin-top:2px}
 .gastos-f{display:grid;grid-template-columns:1fr;gap:10px}
 @media (min-width:700px){
   #s-panel .pg-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -385,6 +389,7 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
     <main class="screen" id="s-panel" hidden>
       <div class="pg-head"><p class="hint" id="pg-sub"></p><select class="select" id="pg-mes" aria-label="Mes"></select></div>
       <div class="pg-kpis" id="a-kpis"></div>
+      <div class="card"><div class="card-h"><h2>Lo que va del año</h2><span class="hint" id="ytd-h"></span></div><div class="proj" id="ytd"></div></div>
       <div class="pg-grid two">
         <div class="card">
           <div class="card-h"><h2>Ventas, gastos y ganancia</h2><span class="hint">Pasa el cursor o toca un mes para ver el detalle</span></div>
@@ -445,6 +450,7 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
               <input id="q" type="search" placeholder="Buscar producto" autocomplete="off"></label>
             <div class="seg" id="modo"><button type="button" data-m="unidad" aria-pressed="true">Por unidad</button><button type="button" data-m="caja" aria-pressed="false">Por caja</button></div>
           </div>
+          <div class="chips" id="cats"></div>
           <div class="grid" id="grid"></div>
           <p class="hint">Toca un producto para agregarlo. En el computador: <kbd>F2</kbd> buscar, <kbd>Enter</kbd> agregar el primero, <kbd>F12</kbd> cobrar.</p>
         </div>
@@ -595,22 +601,38 @@ const GROUPS = [["", ["inicio", "movs", "vender", "comprar"]], ["Análisis", ["i
 const SELLER = ["inicio", "vender", "comprar", "inventario"];
 const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 
-// 10 cervezas de ejemplo. Costos de compra aproximados en pesos colombianos.
-// [nombre, presentación, unidades por caja, costo de la caja, iniciales, color]
+// Productos de ejemplo. Costos de compra aproximados en pesos colombianos.
+// [nombre, presentación, unidades por caja, costo de la caja, iniciales, color, categoría]
 const SEED = [
-  ["Águila Negra", "Botella 330 ml", 30, 81000, "AN", "#1d1d1d"],
-  ["Águila Light", "Botella 330 ml", 30, 84000, "AL", "#3d7fc1"],
-  ["Club Colombia", "Botella 330 ml", 30, 105000, "CC", "#a8322d"],
-  ["Costeñita", "Botella 330 ml", 30, 72000, "Co", "#2a6fb0"],
-  ["Andina", "Lata 330 ml", 30, 69000, "An", "#c0392b"],
-  ["Andina Light", "Lata 330 ml", 30, 72000, "AL", "#5a9e4b"],
-  ["Poker", "Botella 330 ml", 30, 78000, "Po", "#b5121b"],
-  ["Águila Litro", "Botella 1 L", 12, 66000, "Ág", "#c99a06"],
-  ["Águila Light Litro", "Botella 1 L", 12, 69000, "AL", "#3d7fc1"],
-  ["Club Colombia Litro", "Botella 1 L", 12, 84000, "CC", "#a8322d"],
+  ["Águila Negra", "Botella 330 ml", 30, 81000, "AN", "#1d1d1d", "Cerveza"],
+  ["Águila Light", "Botella 330 ml", 30, 84000, "AL", "#3d7fc1", "Cerveza"],
+  ["Club Colombia", "Botella 330 ml", 30, 105000, "CC", "#a8322d", "Cerveza"],
+  ["Costeñita", "Botella 330 ml", 30, 72000, "Co", "#2a6fb0", "Cerveza"],
+  ["Andina", "Lata 330 ml", 30, 69000, "An", "#c0392b", "Cerveza"],
+  ["Andina Light", "Lata 330 ml", 30, 72000, "AL", "#5a9e4b", "Cerveza"],
+  ["Poker", "Botella 330 ml", 30, 78000, "Po", "#b5121b", "Cerveza"],
+  ["Águila Litro", "Botella 1 L", 12, 66000, "Ág", "#c99a06", "Cerveza"],
+  ["Águila Light Litro", "Botella 1 L", 12, 69000, "AL", "#3d7fc1", "Cerveza"],
+  ["Club Colombia Litro", "Botella 1 L", 12, 84000, "CC", "#a8322d", "Cerveza"],
+  ["Aguardiente Antioqueño", "Botella 750 ml", 12, 432000, "AA", "#1f7a3a", "Licores"],
+  ["Aguardiente Antioqueño media", "Media 375 ml", 24, 456000, "Am", "#2e8b4a", "Licores"],
+  ["Ron Medellín Añejo", "Botella 750 ml", 12, 504000, "RM", "#8a4b12", "Licores"],
+  ["Ron Viejo de Caldas", "Botella 750 ml", 12, 480000, "RV", "#a0522d", "Licores"],
+  ["Whisky Buchanan's 12 años", "Botella 750 ml", 12, 1680000, "Bu", "#2b2b2b", "Licores"],
+  ["Whisky Old Parr 12 años", "Botella 750 ml", 12, 1620000, "OP", "#6b4423", "Licores"],
+  ["Vodka Absolut", "Botella 750 ml", 12, 900000, "Ab", "#2d5fa8", "Licores"],
+  ["Vodka Smirnoff", "Botella 700 ml", 12, 504000, "Sm", "#b22234", "Licores"],
+  ["Cigarrillos Marlboro", "Cajetilla x20", 10, 110000, "Ma", "#c8102e", "Cigarrillos"],
+  ["Cigarrillos Lucky Strike", "Cajetilla x20", 10, 95000, "LS", "#7a1f2b", "Cigarrillos"],
+  ["Agua Cristal", "Botella 600 ml", 24, 28800, "AC", "#2a9fd6", "Agua y bebidas"],
+  ["Agua Brisa", "Botella 600 ml", 24, 30000, "Br", "#1e7fc0", "Agua y bebidas"],
+  ["Gatorade", "Botella 500 ml", 12, 39600, "Ga", "#e86f00", "Agua y bebidas"],
+  ["Coca-Cola", "Botella 400 ml", 24, 48000, "Co", "#e41e2b", "Agua y bebidas"],
+  ["Pony Malta", "Botella 330 ml", 24, 43200, "PM", "#6d3b1f", "Agua y bebidas"],
 ];
+const CATS = ["Todos", "Cerveza", "Licores", "Cigarrillos", "Agua y bebidas"];
 
-let me = null, cart = [], modo = "unidad", view = "inicio", pick = "admin", medio = "Efectivo", movKind = "venta";
+let cat = "Todos", me = null, cart = [], modo = "unidad", view = "inicio", pick = "admin", medio = "Efectivo", movKind = "venta";
 const isAdmin = () => me && me.rol === "admin";
 
 let S;
@@ -620,7 +642,7 @@ const look = p => SEED[p.id - 1];
 const costoUnd = p => p.costoCaja / p.porCaja;
 const precio = (p, tipo, s = S) => (tipo === "caja" ? p.costoCaja : p.costoCaja / p.porCaja) * (1 + s.pct / 100);
 const unidades = (p, it) => it.tipo === "caja" ? it.cant * p.porCaja : it.cant;
-const avatar = (p, sm) => `<span class="av${sm ? " sm" : ""}${p.porCaja === 12 ? " l" : ""}" style="background:${look(p)[5]}">${look(p)[4]}</span>`;
+const avatar = (p, sm) => `<span class="av${sm ? " sm" : ""}${look(p)[1].includes("1 L") ? " l" : ""}" style="background:${look(p)[5]}">${look(p)[4]}</span>`;
 
 function sellItems(s, items, t, user, med, ejemplo) {
   let total = 0, costo = 0;
@@ -647,7 +669,40 @@ function seed() {
 }
 try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
 if (!S || !S.products) S = seed();
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+// Ventas ficticias desde el 1 de enero del año pasado hasta ayer, para probar el panel. Se borran con "Empezar de cero".
+function genHistory(s) {
+  let n = 11; const rnd = () => (n = n * 16807 % 2147483647) / 2147483647;
+  const SEASON = [1.12, 0.84, 0.9, 0.96, 0.95, 1.12, 1.05, 0.94, 1.16, 1.04, 0.98, 1.48], WEEK = [1.15, 0.6, 0.65, 0.75, 0.9, 1.45, 1.75];
+  const SHARE = { "Cerveza": 0.55, "Licores": 0.3, "Cigarrillos": 0.07, "Agua y bebidas": 0.08 };
+  const PESO = [3, 2.5, 1.5, 1.2, 1, 0.8, 1.8, 0.8, 0.6, 0.5, 3, 2.5, 2, 1.5, 0.8, 0.5, 0.6, 1, 2, 1, 2, 1.5, 1.5, 2, 1];
+  const tot = {}; s.products.forEach(p => { const c = SEED[p.id - 1][6]; tot[c] = (tot[c] || 0) + PESO[p.id - 1]; });
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const d = new Date(hoy.getFullYear() - 1, 0, 1), vendido = {}, out = [];
+  for (; d < hoy; d.setDate(d.getDate() + 1)) {
+    const m = d.getMonth(), wd = d.getDay(), dd = d.getDate();
+    if (wd === 1) Object.entries(vendido).forEach(([pid, u]) => { const p = s.products.find(x => x.id === +pid), cj = Math.ceil(u / p.porCaja);
+      out.push({ k: "compra", t: +d + 10 * 36e5, pid: p.id, und: cj * p.porCaja, total: cj * p.costoCaja, user: "admin", medio: "Transferencia", ejemplo: true }); delete vendido[pid]; });
+    const dia = 1400000 * SEASON[m] * WEEK[wd] * ([1, 15, 16, 30, 31].includes(dd) ? 1.25 : 1) * (d.getFullYear() < hoy.getFullYear() ? 0.92 : 1) * (0.85 + rnd() * 0.3);
+    let total = 0, costo = 0; const lines = [];
+    s.products.forEach(p => { const c = SEED[p.id - 1][6], pu = precio(p, "unidad", s);
+      const u = Math.floor(dia * SHARE[c] * PESO[p.id - 1] / tot[c] / pu * (0.7 + rnd() * 0.6) + rnd());
+      if (!u) return; const t = Math.round(u * pu);
+      lines.push({ pid: p.id, cant: u, tipo: "unidad", und: u, total: t }); total += t; costo += u * p.costoCaja / p.porCaja; vendido[p.id] = (vendido[p.id] || 0) + u; });
+    const r = rnd();
+    out.push({ k: "venta", dia: 1, t: +d + (13 + rnd() * 8) * 36e5, lines, total, ganancia: Math.round(total - costo), user: dd % 2 ? "v1" : "v2", medio: r < 0.6 ? "Efectivo" : r < 0.9 ? "Transferencia" : "Tarjeta", ejemplo: true });
+  }
+  s.movs = out.concat(s.movs).sort((a, b) => a.t - b.t);
+}
+// Agrega los productos nuevos a una app que ya estaba instalada, sin tocar lo que ya tenía.
+SEED.forEach(([nombre, tam, porCaja, costoCaja], i) => {
+  if (S.products.some(p => p.id === i + 1)) return;
+  S.products.push({ id: i + 1, nombre, tam, porCaja, costoCaja, stock: porCaja * 2 });
+  if (!S.real) S.movs.push({ k: "compra", t: Date.now(), pid: i + 1, und: porCaja * 2, total: costoCaja * 2, user: "admin", medio: "Transferencia", ejemplo: true });
+});
+if (!S.hist && !S.real && S.movs.every(m => m.ejemplo)) { genHistory(S); S.hist = 1; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { console.warn("No se pudo guardar", e); } };
+save();
 
 /* ---------- Panel gerencial (administrador) ---------- */
 const GASTOS_BASE = { "Arriendo": 1500000, "Sueldos (2 vendedores)": 2900000, "Servicios (luz, agua, internet)": 420000, "Hielo, bolsas y aseo": 260000 };
@@ -672,7 +727,7 @@ const renderPanel = (() => {
   function build() {
     hoy = new Date();
     const first = S.movs.length ? new Date(Math.min(...S.movs.map(m => m.t))) : hoy;
-    const k0 = Math.min(11, Math.max(0, (hoy.getFullYear() - first.getFullYear()) * 12 + hoy.getMonth() - first.getMonth()));
+    const k0 = Math.min(35, Math.max(0, (hoy.getFullYear() - first.getFullYear()) * 12 + hoy.getMonth() - first.getMonth()));
     const fijo = Object.values(S.gastos).reduce((a, b) => a + (+b || 0), 0);
     meses = [];
     for (let k = k0; k >= 0; k--) {
@@ -818,6 +873,11 @@ const renderPanel = (() => {
     const gs = Object.entries(S.gastos).map(([k, v]) => [k, +v || 0]).sort((a, b) => b[1] - a[1]), gm = Math.max(1, gs[0] ? gs[0][1] : 1);
     $("a-gastos").innerHTML = `<p class="hint">Gastos fijos de cada mes (los cambias en Ajustes)</p>` + gs.map(([k, v]) => `<div class="hbar"><span>${k}</span><span class="track"><span class="fill" style="width:${(v / gm * 100).toFixed(0)}%"></span></span><b class="num">${short(v)}</b></div>`).join("");
     $("a-tips").innerHTML = tipsHtml(recomendaciones(M));
+    const Y = hoy.getFullYear(), corte = new Date(Y - 1, hoy.getMonth(), hoy.getDate() + 1);
+    const vsum = f => S.movs.reduce((a, mv) => mv.k === "venta" && f(new Date(mv.t)) ? a + mv.total : a, 0);
+    const ytd = vsum(d => d.getFullYear() === Y), prevYtd = vsum(d => d.getFullYear() === Y - 1 && d < corte), prevAll = vsum(d => d.getFullYear() === Y - 1);
+    $("ytd-h").textContent = `Del 1 de enero al ${hoy.getDate()} de ${MESES[hoy.getMonth()]}`;
+    $("ytd").innerHTML = `<div><small>Ventas ${Y}</small><b class="num">${short(ytd)}</b>${delta(ytd, prevYtd).replace("vs mes anterior", `vs ${Y - 1}`)}</div><div><small>Mismo periodo de ${Y - 1}</small><b class="num">${short(prevYtd)}</b></div><div><small>Todo ${Y - 1}</small><b class="num">${short(prevAll)}</b></div>`;
     $("a-heat").innerHTML = MES3.map((n, k) => { const v = SEASON[k]; const bg = v >= 1.3 ? "#ffc533" : v >= 1.08 ? "var(--heat-mid,#ffe39a)" : v >= 0.95 ? "var(--soft)" : "var(--blue-soft)"; const fc = v >= 1.3 ? "#2a2105" : v >= 1.08 ? "var(--heat-mid-fg,#2a2105)" : "var(--fg)"; return `<div class="cell" style="background:${bg};color:${fc}${k === hoy.getMonth() ? ";box-shadow:inset 0 0 0 2px var(--fg)" : ""}"><span>${n}</span><b class="num">${Math.round(v * 100)}</b></div>`; }).join("");
     const days = [1, 2, 3, 4, 5, 6, 0], dmax = Math.max(1, ...M.porDia);
     $("a-days").innerHTML = (M.ventas ? "" : `<p class="hint">Aún no hay ventas en ${MESES[M.m]}.</p>`) + `<div style="display:flex;flex-direction:column;gap:6px">` + days.map(d => `<div class="hbar"><span>${DIA3[d]}</span><span class="track"><span class="fill" style="width:${(M.porDia[d] / dmax * 100).toFixed(0)}%"></span></span><b class="num">${short(M.porDia[d])}</b></div>`).join("") + `</div>`;
@@ -856,6 +916,7 @@ const segHtml = (id, opts, cur, attr) => `<div class="seg" id="${id}">${opts.map
 function renderUsers() {
   $("users").innerHTML = USERS.map(u => `<button type="button" class="user" data-u="${u.id}" aria-pressed="${u.id === pick}"><span class="ini">${u.ini}</span>${u.nombre}</button>`).join("");
 }
+$("cats").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (b) { cat = b.dataset.cat; renderVender(); } });
 $("users").addEventListener("click", e => { const b = e.target.closest("[data-u]"); if (!b) return; pick = b.dataset.u; renderUsers(); $("err").hidden = true; $("clave").focus(); });
 $("f-login").addEventListener("submit", e => {
   e.preventDefault();
@@ -935,9 +996,10 @@ function cartHtml(inSheet) {
     <div class="sum num">${isAdmin() ? `<div><span>Te costó</span><span>${money(t.costo)}</span></div><div class="g"><span>Ganancia</span><span>${money(t.gan)}</span></div>` : ""}<div class="tot"><span>Total</span><span>${money(t.total)}</span></div></div>
     <button class="btn wide" data-a="cobrar">Cobrar ${money(t.total)} <kbd>F12</kbd></button><button class="btn line wide" data-a="vaciar">Vaciar venta</button>`;
 }
-const matches = () => { const q = $("q").value.trim().toLowerCase(); return S.products.filter(p => p.nombre.toLowerCase().includes(q)); };
+const matches = () => { const q = $("q").value.trim().toLowerCase(); return S.products.filter(p => p.nombre.toLowerCase().includes(q) && (q || cat === "Todos" || look(p)[6] === cat)); };
 function addToCart(pid) { const c = cart.find(x => x.pid === pid && x.tipo === modo); c ? c.cant++ : cart.push({ pid, tipo: modo, cant: 1 }); renderVender(); }
 function renderVender() {
+  $("cats").innerHTML = CATS.map(c => `<button type="button" data-cat="${c}" aria-pressed="${c === cat}">${c === "Cerveza" ? "Cervezas" : c}</button>`).join("");
   $("grid").innerHTML = matches().map(p => {
     const inCart = cart.filter(c => c.pid === p.id && c.tipo === modo).reduce((a, c) => a + c.cant, 0);
     return `<button class="tile" data-pid="${p.id}">${inCart ? `<span class="badge">${inCart}</span>` : ""}${avatar(p)}
@@ -983,6 +1045,7 @@ function enPeriodo(t) {
 function concepto(mv) {
   if (mv.k === "compra") return { p: P(mv.pid), txt: `Compra de ${mv.und} ${P(mv.pid).nombre}` };
   const p = P(mv.lines[0].pid), n = mv.lines.length;
+  if (mv.dia) return { p, txt: `Ventas del día · ${mv.lines.reduce((a, l) => a + l.und, 0)} unidades` };
   return { p, txt: n > 1 ? `${p.nombre} y ${n - 1} más` : `${mv.lines[0].cant} ${mv.lines[0].tipo === "caja" ? "caja" : "und."} ${p.nombre}` };
 }
 function renderMovs() {
@@ -1148,7 +1211,7 @@ document.addEventListener("click", e => {
   if (a === "reset-no") $("reset-box").innerHTML = RESET_BASE;
   if (a === "reset-yes") {
     S.products.forEach(p => { p.stock = 0; p.costoCaja = SEED[p.id - 1][3]; });
-    S.movs = []; cart = []; save(); $("reset-box").innerHTML = RESET_BASE; renderAjustes();
+    S.movs = []; S.real = true; cart = []; save(); $("reset-box").innerHTML = RESET_BASE; renderAjustes();
     toast("Listo. Registra tus compras en Compras.");
   }
 });
