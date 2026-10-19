@@ -11,6 +11,7 @@
 <title>Licorera Pininos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 /* Layout: programa de punto de venta claro. Computador: menú blanco a la izquierda, encabezado con acciones, tarjetas de balance y tablas. Celular: pestañas abajo y hoja para cobrar. */
 [hidden]{display:none!important}
@@ -267,6 +268,74 @@ td.r,th.r{text-align:right}
 @media (prefers-reduced-motion:no-preference){
   .sheet{animation:rise .22s ease-out}@keyframes rise{from{transform:translateY(40px);opacity:.4}}
 }
+/* ---------- Panel gerencial (administrador) ---------- */
+#s-panel .pg-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#s-panel .pg-head .select{width:auto;font-weight:600}
+#s-panel .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+#s-panel .pg-grid{display:grid;gap:12px;grid-template-columns:1fr}
+#s-panel .pg-kpis{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+#s-panel .pg-kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+#s-panel .pg-kpi small{color:var(--muted);font-weight:600;font-size:.76rem}
+#s-panel .pg-kpi b{font-size:1.2rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#s-panel .pg-kpi.hero{background:var(--yellow-soft);border-color:var(--yellow)}
+#s-panel .delta{font-size:.74rem;font-weight:700}
+#s-panel .up{color:var(--good)} #s-panel .dn{color:var(--bad)}
+#s-panel .chartbox{position:relative;height:300px}
+#s-panel .toggles{display:flex;gap:6px;flex-wrap:wrap}
+#s-panel .toggles button{border:1px solid var(--line);background:var(--soft);color:var(--fg);border-radius:99px;padding:5px 11px;font-size:.78rem;font-weight:700;display:flex;align-items:center;gap:6px}
+#s-panel .toggles button i{width:9px;height:9px;border-radius:50%}
+#s-panel .toggles button[aria-pressed="false"]{opacity:.4}
+#s-panel .techkpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#s-panel .techkpis div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+#s-panel .techkpis small{display:block;color:var(--muted);font-size:.72rem;font-weight:600}
+#s-panel .techkpis b{font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums}
+#s-panel .extabs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#s-panel .extabs button{border:2px solid var(--line);background:var(--card);color:var(--fg);border-radius:14px;padding:12px 14px;text-align:left;display:flex;flex-direction:column;gap:2px}
+#s-panel .extabs button span{color:var(--muted);font-size:.8rem}
+#s-panel .extabs button[aria-selected="true"]{border-color:var(--yellow);background:var(--yellow-soft)}
+#s-panel .formula{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+#s-panel .formula .blk{flex:1;min-width:140px;background:var(--soft);border-radius:12px;padding:12px}
+#s-panel .formula .blk small{display:block;color:var(--muted);font-weight:600;font-size:.76rem}
+#s-panel .formula .blk b{font-size:1.15rem;font-weight:800}
+#s-panel .formula .op{display:grid;place-items:center;font-size:1.4rem;font-weight:800;color:var(--muted)}
+#s-panel .formula .blk.res{background:var(--yellow-soft);box-shadow:inset 0 0 0 2px var(--yellow)}
+#s-panel .splitbar{display:flex;height:34px;border-radius:10px;overflow:hidden;font-size:.72rem;font-weight:700;background:var(--soft)}
+#s-panel .splitbar span{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;padding:0 6px}
+#s-panel .exlist{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+#s-panel .exgrid{display:grid;grid-template-columns:1fr;gap:14px}
+#s-panel .pg-tip{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:12px;background:var(--soft);font-size:.88rem}
+#s-panel .pg-tip .ic{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:.8rem}
+#s-panel .pg-tip.season .ic{background:var(--yellow-soft);color:var(--warn)}
+#s-panel .pg-tip.money .ic{background:var(--good-soft);color:var(--good)}
+#s-panel .pg-tip.alert .ic{background:var(--bad-soft);color:var(--bad)}
+#s-panel .pg-tip.info .ic{background:var(--blue-soft);color:var(--blue)}
+#s-panel .pg-tip b{display:block;margin-bottom:2px}
+#s-panel .pg-tips{display:flex;flex-direction:column;gap:8px}
+#s-panel .hbar{display:grid;grid-template-columns:minmax(0,130px) 1fr auto;gap:10px;align-items:center;font-size:.84rem}
+#s-panel .hbar .track{display:block;height:10px;background:var(--soft);border-radius:5px;overflow:hidden}
+#s-panel .hbar .fill{display:block;height:100%;border-radius:5px;background:var(--yellow)}
+#s-panel .hbar span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+#s-panel .heat{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+#s-panel .cell{min-width:0;border-radius:8px;padding:8px 4px;text-align:center;display:flex;flex-direction:column;gap:2px;font-size:.78rem}
+#s-panel .cell b{font-size:.9rem}
+#s-panel .proj{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#s-panel .proj div{background:var(--soft);border-radius:12px;padding:12px;min-width:0}
+#s-panel .proj small{display:block;color:var(--muted);font-weight:600;font-size:.75rem}
+#s-panel .proj b{font-size:1.05rem;font-weight:800}
+.gastos-f{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:700px){
+  #s-panel .pg-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #s-panel .pg-grid.half{grid-template-columns:1fr 1fr}
+  #s-panel .heat{grid-template-columns:repeat(12,1fr)}
+  .gastos-f{grid-template-columns:1fr 1fr}
+}
+@media (min-width:1150px){
+  #s-panel .pg-grid.two{grid-template-columns:3fr 2fr}
+  #s-panel .exgrid{grid-template-columns:3fr 2fr}
+}
+@media (min-width:1400px){ #s-panel .pg-kpis{grid-template-columns:repeat(6,minmax(0,1fr))} }
+body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9edf2; --heat-mid:#5a4712; --heat-mid-fg:#ffe39a; }
+:root{ --blue:#2f6db5; --blue-soft:#e6eefa; }
 </style>
 
 <!-- ENTRADA -->
@@ -311,6 +380,43 @@ td.r,th.r{text-align:right}
       </div>
       <button class="chip" type="button" data-a="salir" title="Cerrar sesión"><span class="av-u" id="chip-ini"></span><span id="chip-n"></span> · Salir</button>
     </header>
+
+    <!-- PANEL GERENCIAL (inicio del administrador) -->
+    <main class="screen" id="s-panel" hidden>
+      <div class="pg-head"><p class="hint" id="pg-sub"></p><select class="select" id="pg-mes" aria-label="Mes"></select></div>
+      <div class="pg-kpis" id="a-kpis"></div>
+      <div class="pg-grid two">
+        <div class="card">
+          <div class="card-h"><h2>Ventas, gastos y ganancia</h2><span class="hint">Pasa el cursor o toca un mes para ver el detalle</span></div>
+          <div class="techkpis" id="a-tk"></div>
+          <div class="toggles" id="a-tg"></div>
+          <div class="chartbox"><canvas id="a-canvas" aria-label="Ventas, gastos y ganancia por mes" role="img"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h2>Proyección de gastos</h2><span class="hint">Compras de mercancía + gastos del local</span></div>
+          <div class="proj" id="a-proj"></div>
+          <div id="a-gastos" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+      <div class="card" id="explain">
+        <div class="card-h"><h2>Entiende tus utilidades</h2><span class="hint" id="ex-mes"></span></div>
+        <div class="extabs" role="tablist">
+          <button type="button" role="tab" data-ex="bruta" aria-selected="true"><b>Utilidad bruta</b><span>Lo que te deja la mercancía</span></button>
+          <button type="button" role="tab" data-ex="neta" aria-selected="false"><b>Utilidad neta</b><span>Lo que de verdad te queda</span></button>
+        </div>
+        <div id="ex-body"></div>
+      </div>
+      <div class="pg-grid half">
+        <div class="card"><h2>Recomendaciones</h2><div class="pg-tips" id="a-tips"></div></div>
+        <div class="card">
+          <h2>Temporadas: cómo vende cada mes</h2>
+          <p class="hint">Temporadas típicas de una licorera en Colombia. 100 = un mes normal; por encima, temporada alta.</p>
+          <div class="heat" id="a-heat"></div>
+          <h2 style="margin-top:6px">¿Qué días vendes más?</h2>
+          <div id="a-days"></div>
+        </div>
+      </div>
+    </main>
 
     <!-- INICIO -->
     <main class="screen" id="s-inicio">
@@ -401,6 +507,11 @@ td.r,th.r{text-align:right}
           <p class="hint" id="pct-help"></p>
         </div>
         <div class="card" id="reset-box"></div>
+        <div class="card">
+          <h2>Gastos fijos del mes</h2>
+          <p class="hint">El panel gerencial los usa para calcular tu utilidad neta. Vienen con valores de ejemplo: cámbialos por los tuyos.</p>
+          <div class="gastos-f" id="gastos-f"></div>
+        </div>
       </div>
     </main>
     <!-- INVENTARIO -->
@@ -480,7 +591,7 @@ const SOON = {
   proveedores: ["Proveedores", "Aquí vas a guardar a quién le compras cada producto y lo que le debes.", ["Lista de proveedores y sus productos", "Comparar precios entre proveedores", "Cuentas por pagar con fecha de vencimiento"]],
   gastos: ["Gastos del negocio", "Aquí vas a registrar arriendo, servicios, sueldos y otros gastos para ver tu ganancia real.", ["Registrar gastos fijos y del día", "Ganancia neta del mes: ventas menos costos menos gastos", "Cierre de caja al final del día"]],
 };
-const GROUPS = [["", ["inicio", "vender", "comprar"]], ["Análisis", ["inventario", "estadisticas"]], ["Gestiona tus contactos", ["clientes", "proveedores"]], ["Tu negocio", ["gastos", "empleados", "ajustes"]]];
+const GROUPS = [["", ["inicio", "movs", "vender", "comprar"]], ["Análisis", ["inventario", "estadisticas"]], ["Gestiona tus contactos", ["clientes", "proveedores"]], ["Tu negocio", ["gastos", "empleados", "ajustes"]]];
 const SELLER = ["inicio", "vender", "comprar", "inventario"];
 const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 
@@ -538,6 +649,198 @@ try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
 if (!S || !S.products) S = seed();
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
+/* ---------- Panel gerencial (administrador) ---------- */
+const GASTOS_BASE = { "Arriendo": 1500000, "Sueldos (2 vendedores)": 2900000, "Servicios (luz, agua, internet)": 420000, "Hielo, bolsas y aseo": 260000 };
+if (!S.gastos) { S.gastos = { ...GASTOS_BASE }; save(); }
+const renderPanel = (() => {
+  const short = n => { const a = Math.abs(n), s = n < 0 ? "−" : ""; return a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1).replace(".", ",")} M` : `${s}$${Math.round(a / 1e3)} mil`; };
+  const pct = n => isFinite(n) ? (n * 100).toFixed(1).replace(".", ",") + "%" : "0%";
+  const div = (a, b) => b ? a / b : 0;
+  const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  const MES3 = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const DIA3 = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const cap = s => s[0].toUpperCase() + s.slice(1);
+  // Temporadas típicas de una licorera en Colombia (1 = mes normal): enero y diciembre altos, primas de junio, Amor y Amistad, Halloween.
+  const SEASON = [1.12, 0.84, 0.9, 0.96, 0.95, 1.12, 1.05, 0.94, 1.16, 1.04, 0.98, 1.48];
+  const EVENT = { 0: "regreso de vacaciones y Reyes", 5: "primas de junio, Día del Padre y vacaciones", 6: "vacaciones de mitad de año", 8: "Amor y Amistad", 9: "Halloween", 11: "primas, novenas y fin de año" };
+  let meses = [], hoy = new Date(), exTab = "bruta", selKey = null;
+  const shown = { ventas: true, gastos: true, ganancia: true };
+  let chart = null;
+
+  // Arma los meses con tus ventas y compras reales, desde el primer mes con movimientos.
+  function build() {
+    hoy = new Date();
+    const first = S.movs.length ? new Date(Math.min(...S.movs.map(m => m.t))) : hoy;
+    const k0 = Math.min(11, Math.max(0, (hoy.getFullYear() - first.getFullYear()) * 12 + hoy.getMonth() - first.getMonth()));
+    const fijo = Object.values(S.gastos).reduce((a, b) => a + (+b || 0), 0);
+    meses = [];
+    for (let k = k0; k >= 0; k--) {
+      const d0 = new Date(hoy.getFullYear(), hoy.getMonth() - k, 1), y = d0.getFullYear(), m = d0.getMonth();
+      const total = new Date(y, m + 1, 0).getDate(), dias = k === 0 ? hoy.getDate() : total;
+      const M = { y, m, ventas: 0, costo: 0, compras: 0, porDia: [0, 0, 0, 0, 0, 0, 0], diasVenta: new Set(), dias, total, parcial: k === 0, gastos: {} };
+      S.movs.forEach(mv => { const d = new Date(mv.t); if (d.getFullYear() !== y || d.getMonth() !== m) return;
+        if (mv.k === "venta") { M.ventas += mv.total; M.costo += mv.total - mv.ganancia; M.porDia[d.getDay()] += mv.total; M.diasVenta.add(d.getDate()); }
+        else if (mv.k === "compra") M.compras += mv.total; });
+      // En el mes en curso se cuentan los gastos fijos hasta hoy, para comparar con lo vendido hasta hoy.
+      Object.entries(S.gastos).forEach(([n, v]) => M.gastos[n] = (+v || 0) * dias / total);
+      M.fijo = fijo;
+      meses.push(M);
+    }
+  }
+  const gastoTotal = M => Object.values(M.gastos).reduce((a, b) => a + b, 0);
+  const utilBruta = M => M.ventas - M.costo;
+  const utilNeta = M => utilBruta(M) - gastoTotal(M);
+  const margen = () => S.pct / (100 + S.pct);
+
+  function proyectar(offset) {
+    // Ritmo de venta sin temporada: meses completos con ventas, o el mes en curso llevado a 30 días.
+    const comp = meses.filter(M => !M.parcial && M.ventas > 0).slice(-3);
+    const C = meses[meses.length - 1];
+    const base = comp.length ? comp.reduce((a, M) => a + M.ventas / SEASON[M.m], 0) / comp.length : div(C.ventas, C.dias) * C.total / SEASON[C.m];
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() + offset, 1), m = d.getMonth();
+    const ventas = base * SEASON[m], costo = ventas * (1 - margen()), gastos = C.fijo;
+    return { m, y: d.getFullYear(), ventas, costo, compras: costo, gastos, neta: ventas - costo - gastos };
+  }
+
+  function recomendaciones(M) {
+    const out = [];
+    for (let k = 1; k <= 4; k++) {
+      const mm = (M.m + k) % 12;
+      if (SEASON[mm] >= 1.08) { out.push(["season", "↑", `Temporada alta en ${MESES[mm]}${EVENT[mm] ? ` (${EVENT[mm]})` : ""}`, `En esa época una licorera suele vender ${Math.round((SEASON[mm] - 1) * 100)}% más que en un mes normal. ${k === 1 ? "Compra inventario extra desde ya" : `Separa dinero desde ahora y haz el pedido grande en la segunda quincena de ${MESES[(mm + 11) % 12]}`}, y negocia precio por volumen con el proveedor.`]); break; }
+    }
+    const nm = (M.m + 1) % 12;
+    if (SEASON[nm] <= 0.9) out.push(["info", "↓", `${cap(MESES[nm])} suele ser flojo`, `Se vende cerca de ${Math.round((1 - SEASON[nm]) * 100)}% menos de lo normal. No sobrecargues inventario y aprovecha para combos (6 cervezas + hielo).`]);
+    const low = S.products.filter(p => p.stock < p.porCaja);
+    if (low.length) out.push(["alert", "!", low.length === 1 ? `Se te está acabando ${low[0].nombre}` : `${low.length} productos por acabarse`, `${low.slice(0, 3).map(p => `${p.nombre} (${Math.max(p.stock, 0)} und.)`).join(", ")}${low.length > 3 ? " y otros" : ""}. Pide al menos 1 caja de cada uno.`]);
+    const nn = div(utilNeta(M), M.ventas), g = gastoTotal(M);
+    if (M.ventas > 0 && nn < 0.02) out.push(["alert", "!", nn < 0 ? `En ${MESES[M.m]} vas en pérdida` : "Tu margen es muy bajo", `Con ${S.pct}% sobre el costo te queda ${pct(margen())} bruto, ${nn < -1 ? "y los gastos del local son más grandes que todo lo que vendiste" : `y después de gastos ${pct(nn)}`}. Subir a 15% en los productos de detal te dejaría más plata por cada venta.`]);
+    if (g > 0) { const peso = Object.entries(M.gastos).sort((a, b) => b[1] - a[1])[0];
+      out.push(["money", "$", `Tu gasto más grande: ${peso[0].toLowerCase()}`, `Se lleva ${pct(peso[1] / g)} de los gastos del local. Para cubrir todos tus gastos fijos necesitas vender al menos ${short(div(M.fijo, margen()))} al mes con el precio de ahora.`]); }
+    if (M.diasVenta.size >= 7) { const best = M.porDia.indexOf(Math.max(...M.porDia)), worst = M.porDia.indexOf(Math.min(...M.porDia));
+      out.push(["info", "⌚", `Tu mejor día es el ${DIAS[best]}`, `Y el más flojo, el ${DIAS[worst]}. Ten las neveras llenas el día antes del ${DIAS[best]} y refuerza personal ese día.`]); }
+    out.push(["season", "★", "Quincenas", "Los días 15, 16, 30 y 1 la gente tiene más plata. Revisa el inventario un día antes."]);
+    return out;
+  }
+  const tipsHtml = arr => arr.map(([c, i, t, d]) => `<div class="pg-tip ${c}"><span class="ic">${i}</span><span><b>${t}</b>${d}</span></div>`).join("");
+
+  const SERIES = [
+    { key: "ventas", label: "Ventas", dark: "#5b8def", light: "#3f7be0", fn: M => M.ventas, axis: "y", type: "bar" },
+    { key: "gastos", label: "Gastos", dark: "#ff6b5e", light: "#f0574a", fn: M => M.costo + gastoTotal(M), axis: "y", type: "bar" },
+    { key: "ganancia", label: "Ganancia", dark: "#2ee59d", light: "#12a36b", fn: utilNeta, axis: "y2", type: "line" },
+  ];
+  function buildChart(selIdx) {
+    const box = $("a-canvas");
+    if (!box) return;
+    if (!window.Chart) { box.parentNode.innerHTML = '<p class="hint">No se pudo cargar la gráfica. Revisa tu conexión a internet.</p>'; return; }
+    if (chart) chart.destroy();
+    const dark = document.body.classList.contains("dark");
+    const T = dark ? { tick: "#8d96a3", grid: "#232831", axis: "#2a2f37", point: "#171b20", tipBg: "#1f242c", tipLine: "#333a45", tipTitle: "#fff", tipBody: "#dfe4ea" }
+                   : { tick: "#6b7079", grid: "#eef0f3", axis: "#e6e8ec", point: "#ffffff", tipBg: "#ffffff", tipLine: "#e6e8ec", tipTitle: "#17191c", tipBody: "#3b4048" };
+    const col = s => dark ? s.dark : s.light, gan = col(SERIES[2]);
+    const tick = { color: T.tick, font: { family: "Plus Jakarta Sans", size: 11 } };
+    chart = new Chart(box, {
+      data: { labels: meses.map(M => MES3[M.m] + (M.parcial ? "*" : "")), datasets: SERIES.map(s => ({
+        type: s.type, label: s.label, yAxisID: s.axis, data: meses.map(s.fn), hidden: !shown[s.key],
+        borderColor: col(s), borderWidth: s.type === "line" ? 3 : 0, tension: 0.38, pointRadius: meses.map((_, i) => i === selIdx ? 6 : 3),
+        pointBackgroundColor: col(s), pointBorderColor: T.point, pointBorderWidth: 2, pointHoverRadius: 7,
+        backgroundColor: s.type === "line" ? col(s) : meses.map((_, i) => col(s) + (i === selIdx ? "cc" : "40")),
+        fill: false, borderRadius: 6, barPercentage: 0.7, maxBarThickness: 46, order: s.type === "bar" ? 3 : 1 })) },
+      options: {
+        responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+        animation: matchMedia("(prefers-reduced-motion: reduce)").matches ? false : { duration: 600 },
+        plugins: { legend: { display: false },
+          tooltip: { backgroundColor: T.tipBg, borderColor: T.tipLine, borderWidth: 1, titleColor: T.tipTitle, bodyColor: T.tipBody, padding: 12, boxPadding: 4,
+            titleFont: { family: "Plus Jakarta Sans", weight: "800" }, bodyFont: { family: "Plus Jakarta Sans" },
+            callbacks: { title: it => { const M = meses[it[0].dataIndex]; return `${cap(MESES[M.m])} ${M.y}`; },
+              label: c => ` ${c.dataset.label}: ${money(c.raw)}`,
+              afterBody: it => { const M = meses[it[0].dataIndex]; return ["", "Gastos = mercancía vendida + local", `De cada $1.000 vendidos ganas ${money(div(utilNeta(M), M.ventas) * 1000)}`]; } } } },
+        scales: {
+          x: { grid: { display: false }, ticks: tick, border: { color: T.axis } },
+          y: { position: "left", beginAtZero: true, grid: { color: T.grid }, border: { display: false }, ticks: { ...tick, callback: v => short(v).replace("$", "") }, title: { display: true, text: "Ventas y gastos", color: T.tick, font: { size: 11 } } },
+          y2: { display: shown.ganancia, position: "right", grid: { display: false }, border: { display: false }, ticks: { ...tick, color: gan, callback: v => short(v).replace("$", "") }, title: { display: true, text: "Ganancia", color: gan, font: { size: 11 } } },
+        },
+        onClick: (e, els) => { if (els.length) { $("pg-mes").value = els[0].index; draw(); } },
+      },
+    });
+    $("a-tg").innerHTML = SERIES.map(s => `<button type="button" data-s="${s.key}" aria-pressed="${shown[s.key]}"><i style="background:${col(s)}"></i>${s.label}</button>`).join("");
+  }
+
+  function renderExplain(M) {
+    document.querySelectorAll("#explain [data-ex]").forEach(b => b.setAttribute("aria-selected", b.dataset.ex === exTab));
+    $("ex-mes").textContent = `Con tus números de ${MESES[M.m]} ${M.y}`;
+    const v = M.ventas, c = M.costo, b = utilBruta(M), g = gastoTotal(M), n = utilNeta(M);
+    const w = x => (v ? Math.max(0, x / v * 100) : 0).toFixed(2) + "%";
+    const blk = (l, x, res) => `<div class="blk${res ? " res" : ""}"><small>${l}</small><b class="num">${money(x)}</b></div>`;
+    const p = S.products[0], cu = costoUnd(p), pv = precio(p, "unidad");
+    const sinVentas = v ? "" : `<p class="hint">Aún no hay ventas en ${MESES[M.m]}. Cuando registres ventas, estos números se llenan solos.</p>`;
+    if (exTab === "bruta") {
+      $("ex-body").innerHTML = `<div class="exgrid"><div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0"><b>La utilidad bruta es lo que te deja la mercancía</b>, antes de pagar arriendo, sueldos y servicios. Te dice si estás vendiendo con buen precio.</p>
+        <div class="formula">${blk("Lo que vendiste", v)}<span class="op">−</span>${blk("Lo que te costó esa mercancía", c)}<span class="op">=</span>${blk("Utilidad bruta", b, true)}</div>
+        <div class="splitbar"><span style="width:${w(c)};background:var(--split,#d9dde3);color:var(--split-fg,#3b4048)">Costo de la mercancía ${pct(div(c, v))}</span><span style="width:${w(b)};background:var(--yellow);color:var(--yellow-ink)">${pct(div(b, v))}</span></div>
+        <p class="hint">Barra completa = todo lo que vendiste en ${MESES[M.m]}. La parte amarilla es tu utilidad bruta.</p>${sinVentas}</div>
+        <div class="pg-tip money"><span class="ic">$</span><span><b>En tu licorera</b>Una ${p.nombre} te cuesta ${money(cu)} y la vendes a ${money(pv)}: <b style="display:inline">${money(pv - cu)} de utilidad bruta</b> por unidad. De cada $1.000 que vendes, ${money(margen() * 1000)} son utilidad bruta.
+        <ul class="exlist" style="margin-top:8px"><li>Sube si compras más barato (volumen, otro proveedor).</li><li>Sube si aumentas el precio de venta.</li><li>Sube si vendes más de lo que deja más margen.</li></ul></span></div></div>`;
+    } else {
+      $("ex-body").innerHTML = `<div class="exgrid"><div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0"><b>La utilidad neta es lo que de verdad te queda en el bolsillo</b> después de pagar todo: la mercancía, el arriendo, los sueldos, los servicios y el hielo. Es tu ganancia real.</p>
+        <div class="formula">${blk("Utilidad bruta", b)}<span class="op">−</span>${blk(M.parcial ? `Gastos del local hasta el día ${M.dias}` : "Gastos del local", g)}<span class="op">=</span>${blk("Utilidad neta", n, true)}</div>
+        <div class="splitbar"><span style="width:${w(c)};background:var(--split,#d9dde3);color:var(--split-fg,#3b4048)">Mercancía ${pct(div(c, v))}</span><span style="width:${w(Math.min(g, b))};background:#ff8a80;color:#3a0d09">Local</span><span style="width:${w(Math.max(n, 0))};background:#16834f;color:#fff"></span></div>
+        <p class="hint">Barra completa = todo lo que vendiste. Gris: mercancía. Rojo: gastos del local. Verde: lo que te queda${n >= 0 ? ` (${pct(div(n, v))})` : ": nada este mes"}.</p>${sinVentas}</div>
+        <div class="pg-tip ${n >= 0 ? "money" : "alert"}"><span class="ic">${n >= 0 ? "$" : "!"}</span><span><b>En tu licorera</b>${v ? `De cada $1.000 que vendes te quedan <b style="display:inline">${money(n / v * 1000)}</b> limpios. ${n < v * 0.03 ? (n < 0 ? "Los gastos del local son más grandes que lo que te deja la mercancía." : "Es muy poco: un mes flojo te pone en pérdida.") : "Vas bien."}` : "Todavía no hay ventas este mes."}
+        <ul class="exlist" style="margin-top:8px"><li>Sube si mejoras la utilidad bruta (precios y compras).</li><li>Sube si bajas gastos del local o vendes más con el mismo personal.</li><li>Para no perder, necesitas vender al menos ${short(div(M.fijo, margen()))} al mes.</li></ul></span></div></div>`;
+    }
+  }
+
+  function delta(a, b) { if (!b) return `<span class="delta" style="color:var(--muted)">Sin mes anterior para comparar</span>`; const d = (a - b) / Math.abs(b); return `<span class="delta ${d >= 0 ? "up" : "dn"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d * 100).toFixed(0)}% vs mes anterior</span>`; }
+
+  function draw() {
+    const i = +$("pg-mes").value, M = meses[i], P = meses[i - 1];
+    selKey = `${M.y}-${M.m}`;
+    const s = (P && M.parcial) ? M.dias / P.total : 1;
+    $("pg-sub").textContent = M.parcial ? `${cap(MESES[M.m])} hasta el día ${M.dias}. Los gastos fijos se cuentan hasta hoy.` : `${cap(MESES[M.m])} ${M.y} completo.`;
+    const avg = div(M.ventas, M.parcial ? M.dias : M.total);
+    $("a-kpis").innerHTML = [
+      ["Ventas", money(M.ventas), delta(M.ventas, P && P.ventas * s)],
+      ["Compras de mercancía", money(M.compras), delta(M.compras, P && P.compras * s)],
+      ["Gastos del local", money(gastoTotal(M)), `<span class="delta" style="color:var(--muted)">Gastos fijos de Ajustes</span>`],
+      ["Utilidad bruta", money(utilBruta(M)), `<span class="delta">Margen ${pct(div(utilBruta(M), M.ventas))}</span>`],
+      ["Utilidad neta", money(utilNeta(M)), `<span class="delta ${utilNeta(M) >= 0 ? "up" : "dn"}">${div(utilNeta(M), M.ventas) < -1 ? "Gastos mayores que lo vendido" : `Margen neto ${pct(div(utilNeta(M), M.ventas))}`}</span>`, true],
+      ["Venta promedio por día", money(avg), delta(avg, P && div(P.ventas, P.total))],
+    ].map(([l, v, d, h]) => `<div class="pg-kpi${h ? " hero" : ""}"><small>${l}</small><b class="num">${v}</b>${d}</div>`).join("");
+    $("a-tk").innerHTML = `<div><small>Ventas de ${MESES[M.m]}</small><b style="color:var(--blue)">${short(M.ventas)}</b></div><div><small>Gastos</small><b style="color:var(--bad)">${short(M.costo + gastoTotal(M))}</b></div><div><small>Ganancia</small><b style="color:${utilNeta(M) >= 0 ? "var(--good)" : "var(--bad)"}">${short(utilNeta(M))}</b></div>`;
+    buildChart(i);
+    renderExplain(M);
+    const C = meses[meses.length - 1];
+    const pr = [{ label: `Cierre de ${MESES[C.m]}`, gastos: C.fijo, compras: div(C.compras, C.dias) * C.total }, { ...proyectar(1), label: MESES[(hoy.getMonth() + 1) % 12] }, { ...proyectar(2), label: MESES[(hoy.getMonth() + 2) % 12] }];
+    $("a-proj").innerHTML = pr.map(p => `<div><small>${cap(p.label)}</small><b class="num">${short(p.gastos + p.compras)}</b><small>${short(p.compras)} mercancía · ${short(p.gastos)} local</small></div>`).join("");
+    const gs = Object.entries(S.gastos).map(([k, v]) => [k, +v || 0]).sort((a, b) => b[1] - a[1]), gm = Math.max(1, gs[0] ? gs[0][1] : 1);
+    $("a-gastos").innerHTML = `<p class="hint">Gastos fijos de cada mes (los cambias en Ajustes)</p>` + gs.map(([k, v]) => `<div class="hbar"><span>${k}</span><span class="track"><span class="fill" style="width:${(v / gm * 100).toFixed(0)}%"></span></span><b class="num">${short(v)}</b></div>`).join("");
+    $("a-tips").innerHTML = tipsHtml(recomendaciones(M));
+    $("a-heat").innerHTML = MES3.map((n, k) => { const v = SEASON[k]; const bg = v >= 1.3 ? "#ffc533" : v >= 1.08 ? "var(--heat-mid,#ffe39a)" : v >= 0.95 ? "var(--soft)" : "var(--blue-soft)"; const fc = v >= 1.3 ? "#2a2105" : v >= 1.08 ? "var(--heat-mid-fg,#2a2105)" : "var(--fg)"; return `<div class="cell" style="background:${bg};color:${fc}${k === hoy.getMonth() ? ";box-shadow:inset 0 0 0 2px var(--fg)" : ""}"><span>${n}</span><b class="num">${Math.round(v * 100)}</b></div>`; }).join("");
+    const days = [1, 2, 3, 4, 5, 6, 0], dmax = Math.max(1, ...M.porDia);
+    $("a-days").innerHTML = (M.ventas ? "" : `<p class="hint">Aún no hay ventas en ${MESES[M.m]}.</p>`) + `<div style="display:flex;flex-direction:column;gap:6px">` + days.map(d => `<div class="hbar"><span>${DIA3[d]}</span><span class="track"><span class="fill" style="width:${(M.porDia[d] / dmax * 100).toFixed(0)}%"></span></span><b class="num">${short(M.porDia[d])}</b></div>`).join("") + `</div>`;
+  }
+
+  $("pg-mes").addEventListener("change", draw);
+  $("a-tg").addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (!b) return; shown[b.dataset.s] = !shown[b.dataset.s]; draw(); });
+  $("explain").addEventListener("click", e => { const b = e.target.closest("[data-ex]"); if (b) { exTab = b.dataset.ex; renderExplain(meses[+$("pg-mes").value]); } });
+
+  return function renderPanel() {
+    build();
+    $("pg-mes").innerHTML = meses.map((M, i) => `<option value="${i}">${cap(MESES[M.m])} ${M.y}${M.parcial ? " (en curso)" : ""}</option>`).join("");
+    const keep = meses.findIndex(M => `${M.y}-${M.m}` === selKey);
+    $("pg-mes").value = keep >= 0 ? keep : meses.length - 1;
+    draw();
+  };
+})();
+
+function renderGastosF() {
+  $("gastos-f").innerHTML = Object.entries(S.gastos).map(([k, v]) => `<label class="field">${k}<input type="number" min="0" step="1000" inputmode="numeric" data-gasto="${k}" value="${Math.round(+v || 0)}"></label>`).join("");
+}
+$("gastos-f").addEventListener("change", e => { const i = e.target.closest("[data-gasto]"); if (!i) return; const v = +i.value; if (v >= 0) { S.gastos[i.dataset.gasto] = v; save(); toast(`${i.dataset.gasto}: ${money(v)} al mes.`); } });
+
 function toast(msg) {
   const el = $("toast"); el.textContent = msg; el.hidden = false;
   clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 2400);
@@ -584,11 +887,11 @@ function go(v) {
   if (!navItems().includes(v)) v = "inicio";
   view = v;
   closeSheet();
-  const screen = SOON[v] ? "pronto" : (v === "inicio" && isAdmin()) ? "movs" : v;
+  const screen = SOON[v] ? "pronto" : (v === "inicio" && isAdmin()) ? "panel" : v;
   document.querySelectorAll("main.screen").forEach(el => el.hidden = el.id !== "s-" + screen);
   document.querySelectorAll("nav [data-go]").forEach(b => b.dataset.go === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
   const more = $("tab-more"); if (more) more.toggleAttribute("aria-current", !document.querySelector(`#tabs [data-go="${v}"]`));
-  $("title").textContent = (v === "inicio" && isAdmin()) ? "Movimientos" : TITLES[v];
+  $("title").textContent = (v === "inicio" && isAdmin()) ? "Panel gerencial" : TITLES[v];
   $("cfg-link").hidden = !isAdmin();
   window.scrollTo(0, 0); renderAll();
   if (v === "vender" && matchMedia("(min-width:900px)").matches) $("q").focus();
@@ -715,6 +1018,7 @@ function filterSheet() {
 const RESET_BASE = `<h2>Empezar de cero</h2><p class="hint">Borra las ventas y compras de ejemplo y deja el inventario en cero, para usar la app con tus datos reales.</p><button class="btn line" type="button" data-a="reset-ask">Empezar de cero</button>`;
 function renderAjustes() {
   $("s-pct").value = S.pct;
+  renderGastosF();
   $("pct-help").textContent = `Si una cerveza te cuesta $2.000, la vendes a ${money(2000 * (1 + S.pct / 100))}. Tu margen sobre lo que cobras es ${(S.pct / (100 + S.pct) * 100).toFixed(1)}%.`;
   if (!$("reset-box").innerHTML) $("reset-box").innerHTML = RESET_BASE;
 }
@@ -769,7 +1073,7 @@ function renderPronto() {
 function renderAll() {
   if (!me) return;
   if (SOON[view]) return renderPronto();
-  if (view === "inicio" && isAdmin()) return renderMovs();
+  if (view === "inicio" && isAdmin()) return renderPanel();
   ({ inicio: renderInicio, vender: renderVender, comprar: renderComprar, movs: renderMovs, ajustes: renderAjustes, inventario: renderInventario, estadisticas: renderStats, empleados: renderEmpleados })[view]();
 }
 
@@ -873,6 +1177,7 @@ function setTheme(dark) {
   document.body.classList.toggle("dark", dark);
   try { localStorage.setItem("pininos-tema", dark ? "noche" : "dia"); } catch (e) {}
   document.querySelectorAll(".themebtn").forEach(b => b.innerHTML = dark ? `${SUN}<span>Modo diurno</span>` : `${MOON}<span>Modo nocturno</span>`);
+  if (me && view === "inicio" && isAdmin()) renderPanel();
 }
 document.addEventListener("click", e => { if (e.target.closest(".themebtn")) setTheme(!document.body.classList.contains("dark")); });
 { let t = null; try { t = localStorage.getItem("pininos-tema"); } catch (e) {} setTheme(t === "noche"); }
