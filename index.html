@@ -313,6 +313,111 @@ td.r,th.r{text-align:right}
 @media (min-width:1280px) and (max-width:1599px){ #s-movs table{min-width:0} #s-movs td,#s-movs th{padding:12px 10px} #s-movs td:nth-child(2){white-space:normal} #s-movs .un,#s-movs .mbar{display:none} }
 @media (max-width:759px){ #s-movs table{min-width:0} #s-movs td,#s-movs th{white-space:normal;padding:10px 8px} #s-movs td:first-child{font-size:.76rem;color:var(--muted);width:70px} #s-movs td.r{white-space:nowrap} #s-movs td:first-child{white-space:nowrap} #s-movs th:nth-child(3),#s-movs td:nth-child(3),#s-movs th:nth-child(4),#s-movs td:nth-child(4),#s-movs th:nth-child(5),#s-movs td:nth-child(5),#s-movs th:nth-child(7),#s-movs td:nth-child(7){display:none} }
 @media (max-width:520px){ #s-movs .mv-dates{grid-template-columns:1fr 1fr;width:100%} #s-movs .mv-medio{flex-direction:column;align-items:flex-start;gap:6px} }
+/* Cierres de caja: calendario por días con tres turnos, estimado y proyección */
+#cierres-box{display:flex;flex-direction:column;gap:14px}
+#cierres-box .ci-filt{display:flex;gap:10px 16px;flex-wrap:wrap}
+#cierres-box .ci-fg{display:flex;gap:8px;align-items:center;min-width:0;max-width:100%}
+#cierres-box .ci-fl{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;flex:none}
+#cierres-box .chips span{color:var(--muted);font-weight:600}
+#cierres-box .chips button[aria-pressed="true"] span{color:var(--yellow-ink);opacity:.7}
+#cierres-box .ci-sum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#cierres-box .ci-sum div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+#cierres-box .ci-sum small{display:block;color:var(--muted);font-weight:600;font-size:.76rem}
+#cierres-box .ci-sum b{font-size:1.15rem;font-weight:800}
+#cierres-box .ci-sum em{display:block;font-style:normal;color:var(--muted);font-size:.74rem;font-weight:600}
+#cierres-box .ci-wrap{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+#cierres-box .ci-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+#cierres-box .ci-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.76rem;color:var(--muted)}
+#cierres-box .ci-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+#cierres-box .ci-legend u{display:inline-block;width:2px;height:10px;background:var(--fg);margin-right:5px;vertical-align:-1px}
+#cierres-box .ci-month h3{margin:0 0 8px;font-size:.9rem;font-weight:800;text-transform:capitalize}
+#cierres-box .ci-months{display:flex;flex-direction:column;gap:18px}
+#cierres-box .ci-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+#cierres-box .ci-wd{font-size:.68rem;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase}
+#cierres-box .ci-cell{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 6px 7px;min-height:62px;display:flex;flex-direction:column;justify-content:space-between;gap:2px;text-align:left;min-width:0;color:var(--fg)}
+#cierres-box .ci-cell .n{font-weight:800;font-size:.78rem}
+#cierres-box .ci-cell .s{font-size:.66rem;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cierres-box .ci-cell .foot{display:flex;justify-content:space-between;align-items:center;gap:4px}
+#cierres-box .ci-cell .p{font-size:.64rem;font-weight:800;white-space:nowrap}
+#cierres-box .ci-cell .dots{display:flex;gap:3px}
+#cierres-box .ci-cell .dots i{width:8px;height:8px;border-radius:50%}
+#cierres-box .ci-cell.off{background:none;border-style:dashed;opacity:.45}
+#cierres-box .ci-cell.blank{visibility:hidden}
+#cierres-box .ci-cell.on{border-color:var(--yellow);background:var(--yellow-soft);box-shadow:0 0 0 1px var(--yellow)}
+#cierres-box .ci-cell.hoy .n{color:var(--blue)}
+#cierres-box .ci-trows{display:flex;flex-direction:column;gap:8px}
+#cierres-box .ci-trow{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:12px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px 10px;align-items:center;text-align:left;min-width:0;width:100%}
+#cierres-box .ci-trow.on{border-color:var(--yellow);background:var(--yellow-soft);box-shadow:0 0 0 1px var(--yellow)}
+#cierres-box .ci-trow.pend{border-style:dashed;opacity:.85}
+#cierres-box .ci-trow .t b{display:block;font-weight:800;font-size:.88rem}
+#cierres-box .ci-trow .t small{display:block;color:var(--muted);font-size:.74rem}
+#cierres-box .ci-trow .v{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+#cierres-box .ci-trow .v b{font-weight:800}
+#cierres-box .ci-trow .ci-meta{grid-column:1/-1}
+#cierres-box .ci-meta{position:relative;display:block;height:8px;border-radius:4px;background:var(--soft)}
+#cierres-box .ci-meta i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+#cierres-box .ci-meta u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--fg);border-radius:1px}
+#cierres-box .ci-vs{font-size:.74rem;font-weight:700;white-space:nowrap}
+#cierres-box .ci-tic{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--yellow-soft);color:var(--warn)}
+#cierres-box .ci-tic.tarde{background:var(--warn-soft);color:var(--warn)}
+#cierres-box .ci-tic.noche{background:var(--blue-soft);color:var(--blue)}
+#cierres-box .ci-tic svg{width:18px;height:18px}
+#cierres-box .ci-pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:2px 9px;font-size:.72rem;font-weight:700;white-space:nowrap}
+#cierres-box .ci-pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+#cierres-box .st-cuadro{background:var(--good-soft);color:var(--good)} #cierres-box .st-falto{background:var(--bad-soft);color:var(--bad)}
+#cierres-box .st-sobro{background:var(--warn-soft);color:var(--warn)} #cierres-box .st-abierta,#cierres-box .st-pendiente{background:var(--blue-soft);color:var(--blue)}
+#cierres-box .st-sincerrar,#cierres-box .st-sinventas{background:var(--soft);color:var(--muted)}
+#cierres-box .ci-steps{display:flex;flex-direction:column}
+#cierres-box .ci-step{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:2px 10px;padding-bottom:12px;position:relative}
+#cierres-box .ci-step:not(:last-child)::after{content:"";position:absolute;left:5px;top:16px;bottom:0;width:2px;background:var(--line)}
+#cierres-box .ci-step > i{width:12px;height:12px;border-radius:50%;margin-top:4px;background:var(--line)}
+#cierres-box .ci-step b{font-weight:800}
+#cierres-box .ci-step small{grid-column:2/-1;color:var(--muted);font-size:.76rem}
+#cierres-box .ci-step.now > i{background:var(--yellow);box-shadow:0 0 0 3px var(--yellow-soft)}
+#cierres-box .ci-proyhead{border-radius:12px;padding:12px 14px;background:var(--yellow-soft);border:1px solid var(--yellow);display:flex;justify-content:space-between;align-items:center;gap:10px}
+#cierres-box .ci-proyhead small{display:block;color:var(--muted);font-size:.76rem;font-weight:600}
+#cierres-box .ci-proyhead b{font-size:1.3rem;font-weight:800;white-space:nowrap}
+#cierres-box .ci-rec{display:flex;flex-direction:column;gap:14px}
+#cierres-box .ci-rhead{display:flex;gap:12px;align-items:center}
+#cierres-box .ci-rhead .t{flex:1;min-width:0}
+#cierres-box .ci-rhead b{display:block;font-weight:800}
+#cierres-box .ci-rhead small{color:var(--muted);font-size:.78rem}
+#cierres-box .ci-ver{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#cierres-box .ci-ver > span{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+#cierres-box .ci-ver button{border:1px dashed var(--line);background:none;border-radius:99px;padding:4px 10px;font-weight:700;font-size:.74rem;color:var(--muted)}
+#cierres-box .ci-ver button[aria-pressed="true"]{border-style:solid;border-color:var(--yellow);background:var(--yellow-soft);color:var(--fg)}
+#cierres-box .ci-sec{display:flex;flex-direction:column;gap:7px;border-top:1px dashed var(--line);padding-top:12px}
+#cierres-box .ci-sec h3{margin:0;font-size:.74rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.ci-rl{display:flex;justify-content:space-between;gap:10px;font-size:.86rem}
+.ci-rl.tot{font-weight:800;font-size:.95rem}
+.ci-rl .m{color:var(--muted)}
+.ci-dif{border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:800}
+.ci-dif .num{white-space:nowrap}
+.ci-dif small{display:block;font-weight:600;font-size:.76rem;opacity:.85}
+.ci-dif.st-cuadro{background:var(--good-soft);color:var(--good)} .ci-dif.st-falto{background:var(--bad-soft);color:var(--bad)}
+.ci-dif.st-sobro{background:var(--warn-soft);color:var(--warn)} .ci-dif.st-abierta{background:var(--blue-soft);color:var(--blue)} .ci-dif.st-sincerrar{background:var(--soft);color:var(--muted)}
+#cierres-box .ci-mbars{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--soft)}
+#cierres-box .ci-mbars i{display:block;height:100%}
+#cierres-box .ci-mt{display:inline-flex;align-items:center;gap:6px}
+#cierres-box .ci-mt svg{width:14px;height:14px;flex:none}
+#cierres-box .ci-bills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px}
+#cierres-box .ci-nota{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:.84rem}
+.ci-billin{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ci-billin label{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 12px;font-weight:700;font-size:.84rem}
+.ci-billin input{width:76px;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 8px;text-align:right;font-weight:700;color:var(--fg)}
+.ci-form{display:flex;flex-direction:column;gap:12px}
+.sheet[data-kind="cierre"]{max-width:640px;margin:0 auto}
+.ci-form textarea{width:100%;min-height:64px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:10px;font:inherit;resize:vertical}
+@media (min-width:760px){ #cierres-box .ci-sum{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media (min-width:1180px){ #cierres-box .ci-wrap{grid-template-columns:minmax(0,1fr) 420px} #cierres-box .ci-side{position:sticky;top:90px} }
+@media (max-width:520px){
+  #cierres-box .ci-cell{min-height:52px;padding:5px 4px}
+  #cierres-box .ci-cell .s{display:none}
+  #cierres-box .ci-cell .foot{flex-direction:column;align-items:flex-start;gap:2px}
+  #cierres-box .ci-cell .dots i{width:7px;height:7px}
+  #cierres-box .ci-cell .p{font-size:.6rem}
+  #cierres-box .ci-bills,.ci-billin{grid-template-columns:1fr}
+}
 /* ---------- Panel gerencial (administrador) ---------- */
 #s-panel .pg-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #s-panel .pg-head .select{width:auto;font-weight:600}
@@ -550,9 +655,33 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
           <aside class="card mv-detail" id="mv-detail"></aside>
         </div>
       </div>
-      <div id="cierres-box" class="card soonbox" hidden>
-        <span class="pill low">Próxima parte</span><h2>Cierres de caja</h2>
-        <p class="hint">Al final de cada día cuentas el efectivo y la app lo compara con lo que se vendió, para saber si la caja cuadra.</p>
+      <div id="cierres-box" hidden>
+        <div class="mv-range">
+          <div class="mv-dates">
+            <label class="mv-rf" for="ci-desde">Desde<input type="date" id="ci-desde"></label>
+            <label class="mv-rf" for="ci-hasta">Hasta<input type="date" id="ci-hasta"></label>
+          </div>
+          <div class="chips" id="ci-rap"></div>
+        </div>
+        <div class="ci-filt">
+          <div class="ci-fg"><span class="ci-fl">Quién cerró</span><div class="chips" id="ci-user"></div></div>
+          <div class="ci-fg"><span class="ci-fl">Resultado</span><div class="chips" id="ci-est"></div></div>
+        </div>
+        <div class="ci-sum" id="ci-sum"></div>
+        <div class="ci-wrap">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h2>Calendario de cierres</h2>
+              <div class="ci-legend"><span><i style="background:var(--good)"></i>Cuadró</span><span><i style="background:var(--warn)"></i>Sobró</span><span><i style="background:var(--bad)"></i>Faltó</span><span><i style="background:var(--blue)"></i>Abierta</span><span><i style="background:var(--muted)"></i>Sin cerrar</span></div></div>
+            <p class="hint">Cada punto es un turno: mañana, tarde y noche. El porcentaje compara lo vendido con lo estimado. Toca un día para ver sus turnos.</p>
+            <div class="ci-months" id="ci-cal"></div>
+          </div>
+          <div class="ci-side" id="ci-side">
+            <div class="card"><h2 id="ci-dayt"></h2><div id="ci-daycmp"></div><div class="ci-trows" id="ci-turnos"></div>
+              <div class="ci-legend"><span><u></u>Venta estimada</span><span>Toca un turno para ver lo que se hizo</span></div></div>
+            <div class="card" id="ci-proy"></div>
+            <aside class="card" id="ci-det"></aside>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -723,6 +852,14 @@ try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
 if (!S || !S.products) S = seed();
 
 // Ventas ficticias desde el 1 de enero del año pasado hasta ayer, para probar el panel. Se borran con "Empezar de cero".
+// Reparte un día de ejemplo entre los tres turnos: [total, ganancia, ventas, efectivo, transferencia, tarjeta].
+function partirDia(total, ganancia, t) {
+  let x = Math.floor(t / 864e5) % 2147483647 || 1; const r = () => (x = x * 16807 % 2147483647) / 2147483647; r(); r(); r();
+  const w = [0.2, 0.33, 0.47].map(v => v * (0.75 + r() * 0.5)), sw = w.reduce((a, b) => a + b, 0);
+  let restT = total, restG = ganancia;
+  return w.map((v, i) => { const tt = i === 2 ? restT : Math.round(total * v / sw), gg = i === 2 ? restG : Math.round(ganancia * v / sw); restT -= tt; restG -= gg;
+    const ef = Math.round(tt * (0.5 + r() * 0.12)), tr = Math.round(tt * (0.25 + r() * 0.1)); return [tt, gg, Math.max(1, Math.round(tt / (24000 + r() * 10000))), ef, tr, tt - ef - tr]; });
+}
 function genHistory(s) {
   let n = 11; const rnd = () => (n = n * 16807 % 2147483647) / 2147483647;
   const SEASON = [1.12, 0.84, 0.9, 0.96, 0.95, 1.12, 1.05, 0.94, 1.16, 1.04, 0.98, 1.48], WEEK = [1.15, 0.6, 0.65, 0.75, 0.9, 1.45, 1.75];
@@ -746,6 +883,7 @@ function genHistory(s) {
     const r = rnd();
     out.push({ k: "venta", dia: 1, t: +d + (13 + rnd() * 8) * 36e5, lines, total, ganancia: Math.round(total - costo), user: dd % 2 ? "v1" : "v2", medio: r < 0.6 ? "Efectivo" : r < 0.9 ? "Transferencia" : "Tarjeta", ejemplo: true });
   }
+  out.forEach(m => { if (m.dia) m.turnos = partirDia(m.total, m.ganancia, m.t); });
   s.movs = out.concat(s.movs).sort((a, b) => a.t - b.t);
 }
 // Agrega los productos nuevos a una app que ya estaba instalada, sin tocar lo que ya tenía.
@@ -759,7 +897,10 @@ if (S.hist === 1 && !S.real && S.movs.every(m => m.ejemplo)) {
   S.movs = S.movs.filter(m => !(m.dia || (m.k === "compra" && new Date(m.t).getDay() === 1 && new Date(m.t).getHours() === 10 && new Date(m.t).getMinutes() === 0)));
   S.hist = 0;
 }
-if (!S.hist && !S.real && S.movs.every(m => m.ejemplo)) { genHistory(S); S.hist = 2; }
+if (!S.hist && !S.real && S.movs.every(m => m.ejemplo)) { genHistory(S); S.hist = 3; }
+// Versión 3: cada día de ejemplo se reparte entre los turnos de mañana, tarde y noche para los cierres de caja.
+if (S.hist === 2) { S.movs.forEach(m => { if (m.dia && !m.turnos) m.turnos = partirDia(m.total, m.ganancia, m.t); }); S.hist = 3; }
+S.cierres = S.cierres || [];
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { console.warn("No se pudo guardar", e); } };
 save();
 
@@ -1222,6 +1363,254 @@ $("tx-box").addEventListener("click", e => {
 });
 
 /* ---------- Ajustes ---------- */
+/* ---------- Cierres de caja ---------- */
+// Tres turnos de 6 horas; el de noche termina a las 2 a. m. del día siguiente (fin 26).
+const CI_SVG = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const TURNOS = [
+  { n: 1, nombre: "Turno mañana", corto: "mañana", ini: 8, fin: 14, user: "v1", cls: "", icon: CI_SVG('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>') },
+  { n: 2, nombre: "Turno tarde", corto: "tarde", ini: 14, fin: 20, user: "v2", cls: "tarde", icon: CI_SVG('<path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9V2M4.2 10.2l1.4 1.4M1 18h2M21 18h2M18.4 11.6l1.4-1.4M23 22H1M16 5l-4 4-4-4"/>') },
+  { n: 3, nombre: "Turno noche", corto: "noche", ini: 20, fin: 26, user: "admin", cls: "noche", icon: CI_SVG('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>') }];
+const CI_BASE = 200000, BILLETES = [100000, 50000, 20000, 10000, 5000, 2000];
+const CI_EST = { cuadro: ["Cuadró", "var(--good)"], sobro: ["Sobró", "var(--warn)"], falto: ["Faltó", "var(--bad)"], abierta: ["Abierta", "var(--blue)"],
+  pendiente: ["Pendiente", "var(--blue)"], sincerrar: ["Sin cerrar", "var(--muted)"], sinventas: ["Sin ventas", "var(--muted)"] };
+const CI_DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const CI_MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const ciHora = t => new Date(t).toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" });
+const ciH = h => new Date(2000, 0, 1, h % 24).toLocaleTimeString("es-CO", { hour: "numeric" });
+const ciSigned = n => n > 0 ? "+" + money(n) : money(n);
+const ciShort = n => { const a = Math.abs(n), s = n < 0 ? "−" : ""; return a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1).replace(".", ",")} M` : a >= 1e3 ? `${s}$${Math.round(a / 1e3)} mil` : `${s}$${Math.round(a)}`; };
+const ciEn = (dia, h) => { const d = new Date(dia); d.setHours(h); return +d; };
+let ciD0, ciD1; [ciD0, ciD1] = MV_RAP["Últimos 7 días"]();
+let ciUser = "todos", ciFil = "todos", ciSel = null, ciDay = null, CI = null;
+let CI_VER = { medios: true, gastos: true, billetes: true, productos: true, ventas: true };
+try { const v = JSON.parse(localStorage.getItem("pininos-cierre-ver")); if (v) CI_VER = { ...CI_VER, ...v }; } catch (e) {}
+
+// Índice de ventas por día y caché de turnos; se rehace en cada dibujo para leer siempre los datos al día.
+function ciIndex() {
+  const idx = new Map();
+  S.movs.forEach(m => { if (m.k !== "venta") return; const d = new Date(m.t); d.setHours(0, 0, 0, 0); const k = +d; if (!idx.has(k)) idx.set(k, []); idx.get(k).push(m); });
+  CI = { idx, cache: new Map(), now: Date.now() };
+}
+// Cierre de ejemplo para los días de prueba: casi siempre cuadra, a veces sobra o falta un poco.
+function ciEjemplo(dia, n, esperado) {
+  let x = (Math.floor(dia / 864e5) * 31 + n * 7919) % 2147483647 || 1; const r = () => (x = x * 16807 % 2147483647) / 2147483647; r(); r(); r();
+  const a = r(), dif = a < 0.74 ? 0 : a < 0.87 ? -[500, 1000, 2000, 5000, 10000, 20000][Math.floor(r() * 6)] : [100, 500, 1000, 2000, 3000][Math.floor(r() * 5)];
+  const contado = esperado + dif, bills = []; let resto = contado;
+  BILLETES.forEach(b => { const cap = b === 100000 ? 2 + Math.floor(r() * 4) : 99, q = Math.min(cap, Math.floor(resto / b)); bills.push(q); resto -= q * b; });
+  return { base: CI_BASE, contado, bills, monedas: resto, ejemplo: true, cierra: ciEn(dia, TURNOS[n - 1].fin) + Math.floor(r() * 15) * 6e4,
+    nota: dif < -4000 ? "No se encontró el faltante. Revisar las ventas en efectivo del turno." : dif < 0 ? "Pudo ser un cambio mal dado." : dif > 0 ? "Un cliente no recibió el cambio completo." : "" };
+}
+// Junta todo lo de un turno: ventas, medios de pago, cierre y resultado.
+function ciTurno(dia, T, conEst = true) {
+  const key = dia + "-" + T.n;
+  if (CI.cache.has(key)) { const c = CI.cache.get(key); if (conEst && c.est === undefined) c.est = ciEstimado(dia, T); return c; }
+  const a = ciEn(dia, T.ini), b = ciEn(dia, T.fin), t = { dia, T, a, b, total: 0, ganancia: 0, n: 0, pagos: { Efectivo: 0, Transferencia: 0, Tarjeta: 0 }, ventas: [], prod: {}, gen: false };
+  (CI.idx.get(dia) || []).forEach(m => { if (!m.dia || !m.turnos) return; const x = m.turnos[T.n - 1], sh = x[0] / (m.total || 1);
+    t.gen = true; t.total += x[0]; t.ganancia += x[1]; t.n += x[2]; t.pagos.Efectivo += x[3]; t.pagos.Transferencia += x[4]; t.pagos.Tarjeta += x[5];
+    m.lines.forEach(l => { const u = Math.round(l.und * sh); if (u) { t.prod[l.pid] = t.prod[l.pid] || [0, 0]; t.prod[l.pid][0] += u; t.prod[l.pid][1] += l.total * sh; } }); });
+  [dia, +masD(new Date(dia), 1)].forEach(k => (CI.idx.get(k) || []).forEach(m => { if (m.dia || m.t < a || m.t >= b) return;
+    t.total += m.total; t.ganancia += m.ganancia; t.n++; t.pagos[medioDe(m)] += m.total; t.ventas.push(m);
+    m.lines.forEach(l => { t.prod[l.pid] = t.prod[l.pid] || [0, 0]; t.prod[l.pid][0] += l.und; t.prod[l.pid][1] += l.total; }); }));
+  t.ventas.sort((x, y) => x.t - y.t);
+  t.gastoCaja = 0;
+  const real = (S.cierres || []).find(c => c.dia === dia && c.n === T.n);
+  t.cierre = real || null; t.base = real ? real.base : CI_BASE;
+  t.esperado = t.base + t.pagos.Efectivo - t.gastoCaja;
+  if (!t.cierre && t.gen && b <= CI.now) t.cierre = ciEjemplo(dia, T.n, t.esperado);
+  t.user = t.cierre && t.cierre.user ? t.cierre.user : T.user;
+  if (t.cierre) { t.contado = t.cierre.contado; t.dif = t.contado - t.esperado; t.estado = t.dif === 0 ? "cuadro" : t.dif < 0 ? "falto" : "sobro"; }
+  else { t.dif = 0; t.estado = a > CI.now ? "pendiente" : b > CI.now ? "abierta" : t.n ? "sincerrar" : "sinventas"; }
+  CI.cache.set(key, t);
+  if (conEst) t.est = ciEstimado(dia, T);
+  return t;
+}
+// Venta estimada: promedio de lo que vendió ese mismo turno los últimos 4 días iguales (por ejemplo, los 4 lunes anteriores).
+function ciEstimado(dia, T) {
+  const prev = [1, 2, 3, 4].map(k => +masD(new Date(dia), -7 * k)).map(d => ciTurno(d, T, false)).filter(x => x.n && x.estado !== "abierta");
+  return prev.length ? Math.round(prev.reduce((s, x) => s + x.total, 0) / prev.length / 1000) * 1000 : null;
+}
+const ciPct = (v, e) => e ? Math.round(v / e * 100) : null;
+const ciCol = p => p == null ? "var(--muted)" : p >= 100 ? "var(--good)" : p >= 90 ? "var(--warn)" : "var(--bad)";
+const ciCls = p => p >= 100 ? "cuadro" : p >= 90 ? "sobro" : "falto";
+const ciVivo = t => t.estado === "abierta" || t.estado === "pendiente";
+const ciBar = (v, e, col) => { const mx = Math.max(v, e || 0, 1) * 1.08; return `<span class="ci-meta"><i style="width:${v / mx * 100}%;background:${col}"></i>${e ? `<u style="left:${e / mx * 100}%"></u>` : ""}</span>`; };
+const ciPill = t => `<span class="ci-pill st-${t.estado}"><i></i>${CI_EST[t.estado][0]}${t.dif ? " " + money(Math.abs(t.dif)) : ""}</span>`;
+const ciVs = t => { const p = ciPct(t.total, t.est); if (p == null) return `<span class="ci-vs" style="color:var(--muted)">Sin estimado</span>`;
+  return `<span class="ci-vs" style="color:${ciVivo(t) ? "var(--blue)" : ciCol(p)}">${ciVivo(t) ? `Va en ${p}%` : `${p >= 100 ? "▲" : "▼"} ${p}% del estimado`}</span>`; };
+const ciDiaLargo = dia => { const d = new Date(dia), dif = Math.round((dHoy() - d) / 864e5), s = `${CI_DIAS[d.getDay()]} ${d.getDate()} de ${CI_MESES[d.getMonth()]}`;
+  return dif === 0 ? `Hoy · ${s}` : dif === 1 ? `Ayer · ${s}` : s[0].toUpperCase() + s.slice(1); };
+const ciHorario = t => `${ciHora(t.a)} a ${t.cierre && !t.cierre.ejemplo ? ciHora(t.cierre.cierra) : t.estado === "abierta" ? "ahora" : ciHora(t.cierre ? t.cierre.cierra : t.b)}`;
+
+// Proyección al cierre del día: cada vez que se cierra un turno, a los que faltan se les ajusta su estimado
+// según cómo va el día (si lo cerrado vendió 80% de lo estimado, a los que faltan también se les espera 80%).
+function ciProyeccion(dia) {
+  const filas = TURNOS.map(T => ciTurno(dia, T));
+  if (filas.some(f => !f.est)) return null;
+  let cer = 0; while (cer < 3 && !ciVivo(filas[cer]) && filas[cer].estado !== "sinventas") cer++;
+  const calc = (k, ahora) => { const c = filas.slice(0, k), fac = k ? Math.min(1.5, Math.max(0.6, c.reduce((s, f) => s + f.total, 0) / c.reduce((s, f) => s + f.est, 0))) : 1;
+    const resto = filas.slice(k).map(f => Math.round(Math.max(ahora ? f.total : 0, f.est * fac) / 1000) * 1000);
+    return { fac, v: c.reduce((s, f) => s + f.total, 0) + resto.reduce((s, x) => s + x, 0), resto }; };
+  const pasos = []; for (let k = 0; k <= cer; k++) pasos.push({ k, ...calc(k) });
+  return { filas, cer, pasos, ahora: calc(cer, true), inicial: pasos[0].v };
+}
+
+const CI_VERL = [["medios", "Medios de pago"], ["gastos", "Gastos de la caja"], ["billetes", "Billetes contados"], ["productos", "Lo más vendido"], ["ventas", "Cada venta"]];
+function ciDetalle(t) {
+  if (!t) return `<p class="hint">Elige un día y un turno para ver su cierre.</p>`;
+  const T = t.T;
+  let h = `<div class="ci-rec"><div class="ci-rhead"><span class="ci-tic ${T.cls}">${T.icon}</span><span class="t"><b>${T.nombre} · ${U(t.user).nombre}</b><small>${ciDiaLargo(t.dia)} · ${ciHorario(t)}</small></span>${ciPill(t)}</div>
+    <div class="ci-ver"><span>Ver</span>${CI_VERL.map(([k, l]) => `<button type="button" data-civer="${k}" aria-pressed="${CI_VER[k]}">${l}</button>`).join("")}</div>`;
+  // Lo que se hizo en el turno.
+  const porHora = {}; t.ventas.forEach(v => { const hh = new Date(v.t).getHours(); porHora[hh] = (porHora[hh] || 0) + v.total; });
+  const pico = Object.entries(porHora).sort((x, y) => y[1] - x[1])[0];
+  h += `<div class="ci-sec"><h3>Lo que se hizo</h3><div class="ci-rl tot"><span>Total vendido · ${t.n} ${t.n === 1 ? "venta" : "ventas"}</span><span class="num">${money(t.total)}</span></div>
+    <div class="ci-rl" style="color:var(--good)"><span>Ganancia</span><span class="num">+${money(t.ganancia)}</span></div>
+    <div class="ci-rl"><span class="m">Cada cliente gastó en promedio</span><span class="num">${money(t.n ? t.total / t.n : 0)}</span></div>
+    ${pico ? `<div class="ci-rl"><span class="m">Hora con más ventas</span><span>${ciH(+pico[0])} a ${ciH(+pico[0] + 1)} · ${money(pico[1])}</span></div>` : ""}</div>`;
+  // Comparativo contra la venta estimada del turno.
+  const p = ciPct(t.total, t.est), vivo = ciVivo(t), wd = CI_DIAS[new Date(t.dia).getDay()];
+  h += `<div class="ci-sec"><h3>Comparado con lo estimado</h3>${t.est ? `
+    <div class="ci-rl"><span class="m">Venta estimada para este turno</span><span class="num">${money(t.est)}</span></div>
+    <div class="ci-rl tot"><span>Se vendió</span><span class="num">${money(t.total)}</span></div>
+    ${ciBar(t.total, t.est, vivo ? "var(--blue)" : ciCol(p))}
+    <div class="ci-dif st-${vivo ? "abierta" : ciCls(p)}"><span>${vivo ? `Va en ${p}% de lo estimado` : p >= 100 ? `Vendió ${p - 100}% más de lo estimado` : `Vendió ${100 - p}% menos de lo estimado`}<small>${vivo ? "El turno sigue abierto." : `${ciSigned(t.total - t.est)} frente a lo estimado`}</small></span><span class="num">${p}%</span></div>
+    <p class="hint">El estimado es el promedio de lo que vendió este mismo turno los últimos 4 ${wd === "sábado" || wd === "domingo" ? wd + "s" : wd}.</p>` : `<p class="hint">Todavía no hay semanas anteriores para calcular un estimado.</p>`}</div>`;
+  // Cuadre del efectivo: la razón de ser del cierre.
+  h += `<div class="ci-sec"><h3>Cuadre del efectivo</h3>
+    <div class="ci-rl"><span class="m">Base con la que abrió</span><span class="num">${money(t.base)}</span></div>
+    <div class="ci-rl"><span class="m">+ Ventas en efectivo</span><span class="num">${money(t.pagos.Efectivo)}</span></div>
+    <div class="ci-rl"><span class="m">− Gastos pagados con la caja</span><span class="num">${money(t.gastoCaja)}</span></div>
+    <div class="ci-rl tot"><span>Debía haber en la caja</span><span class="num">${money(t.esperado)}</span></div>`;
+  if (!t.cierre) h += `<div class="ci-dif st-${t.estado === "abierta" || t.estado === "pendiente" ? "abierta" : "sincerrar"}"><span>${t.estado === "pendiente" ? "El turno todavía no empieza" : t.estado === "abierta" ? "La caja sigue abierta" : "Este turno no se cerró"}<small>${t.estado === "pendiente" ? "" : "Al terminar el turno se cuenta la plata y se guarda el cierre."}</small></span></div>
+    ${t.estado !== "pendiente" ? `<button class="btn wide" type="button" data-a="ci-cerrar" data-dia="${t.dia}" data-n="${T.n}">Cerrar ${T.nombre.toLowerCase()}</button>` : ""}</div>`;
+  else h += `<div class="ci-rl tot"><span>Contaron</span><span class="num">${money(t.contado)}</span></div>
+    <div class="ci-dif st-${t.estado}"><span>${t.dif === 0 ? "La caja cuadró exacto" : t.dif < 0 ? "Faltó plata" : "Sobró plata"}<small>${t.dif === 0 ? "Lo contado es igual a lo que debía haber." : "Diferencia entre lo contado y lo que debía haber."}</small></span><span class="num">${ciSigned(t.dif)}</span></div>
+    <div class="ci-rl"><span class="m">Se guardó (retiro)</span><span class="num">${money(t.contado - CI_BASE)}</span></div>
+    <div class="ci-rl"><span class="m">Quedó de base para el siguiente turno</span><span class="num">${money(CI_BASE)}</span></div>
+    ${t.cierre.nota ? `<div class="ci-nota"><b>Nota del cierre:</b> ${t.cierre.nota.replace(/</g, "&lt;")}</div>` : ""}</div>`;
+  if (CI_VER.medios) { const tt = t.total || 1;
+    h += `<div class="ci-sec"><h3>Medios de pago</h3><div class="ci-mbars">${MEDIOS.map(m => `<i style="width:${t.pagos[m] / tt * 100}%;background:${MCOL[m]}"></i>`).join("")}</div>
+      ${MEDIOS.map(m => `<div class="ci-rl"><span class="ci-mt" style="color:${MCOL[m]}">${msvg(m)}<span style="color:var(--fg)">${m}</span></span><span class="num">${money(t.pagos[m])} <span class="m">${Math.round(t.pagos[m] / tt * 100)}%</span></span></div>`).join("")}
+      <p class="hint">Transferencias y tarjeta no entran a la caja, por eso no se cuentan en el cuadre.</p></div>`; }
+  if (CI_VER.gastos) h += `<div class="ci-sec"><h3>Gastos pagados con la caja</h3><p class="hint">Cuando esté la parte de Gastos, aquí aparecerá lo que se pagó con la plata de la caja (hielo, bolsas, domicilios).</p></div>`;
+  if (CI_VER.billetes) h += `<div class="ci-sec"><h3>Billetes contados</h3>${t.cierre && t.cierre.bills ? `<div class="ci-bills">${BILLETES.map((b, i) => [b, t.cierre.bills[i]]).filter(x => x[1] > 0).map(([b, q]) => `<div class="ci-rl"><span>${q} × ${money(b)}</span><span class="num">${money(q * b)}</span></div>`).join("")}${t.cierre.monedas ? `<div class="ci-rl"><span>Monedas</span><span class="num">${money(t.cierre.monedas)}</span></div>` : ""}</div>` : `<p class="hint">Se llena cuando se cierra la caja.</p>`}</div>`;
+  if (CI_VER.productos) { const top = Object.entries(t.prod).sort((x, y) => y[1][1] - x[1][1]).slice(0, 5);
+    h += `<div class="ci-sec"><h3>Lo más vendido</h3>${top.length ? top.map(([pid, x]) => `<div class="ci-rl"><span>${x[0]} und. · ${P(pid).nombre}</span><span class="num">${money(x[1])}</span></div>`).join("") : `<p class="hint">Aún no hay ventas.</p>`}</div>`; }
+  if (CI_VER.ventas) h += `<div class="ci-sec"><h3>Cada venta</h3>${t.ventas.length ? t.ventas.slice().reverse().map(v => `<div class="ci-rl"><span><span class="m">${ciHora(v.t)}</span> · ${concepto(v).txt}</span><span class="num" style="color:${MCOL[medioDe(v)]}">${money(v.total)}</span></div>`).join("")
+    : t.gen ? `<p class="hint">En los días de ejemplo las ventas están agrupadas, por eso no aparecen una por una.</p>` : `<p class="hint">Aún no hay ventas.</p>`}</div>`;
+  return h + `</div>`;
+}
+
+function renderCierres() {
+  ciIndex(); if (ciSel) ciSel = ciTurno(ciSel.dia, ciSel.T);
+  const [d0, d1] = ciD0 <= ciD1 ? [ciD0, ciD1] : [ciD1, ciD0], hoy = dHoy();
+  $("ci-desde").value = isoD(ciD0); $("ci-hasta").value = isoD(ciD1); $("ci-desde").max = $("ci-hasta").max = isoD(hoy);
+  const rap = Object.keys(MV_RAP).find(k => { const [x, y] = MV_RAP[k](); return isoD(x) === isoD(d0) && isoD(y) === isoD(d1); });
+  $("ci-rap").innerHTML = Object.keys(MV_RAP).filter(k => k !== "Este año").map(k => `<button type="button" data-cir="${k}" aria-pressed="${k === rap}">${k}</button>`).join("");
+  // Todos los turnos del periodo (sin los que no han empezado ni los días sin ventas).
+  const dias = []; for (let d = new Date(d0); d <= d1 && d <= hoy; d = masD(d, 1)) dias.push(+d);
+  const todos = dias.flatMap(dia => TURNOS.map(T => ciTurno(dia, T))).filter(t => t.estado !== "pendiente" && t.estado !== "sinventas");
+  const pasaU = t => ciUser === "todos" || t.user === ciUser, pasaE = t => ciFil === "todos" || t.estado === ciFil;
+  const L = todos.filter(t => pasaU(t) && pasaE(t));
+  const nU = todos.filter(pasaE), nE = todos.filter(pasaU);
+  $("ci-user").innerHTML = [["todos", "Todos"], ...USERS.map(u => [u.id, u.nombre])].map(([v, l]) => `<button type="button" data-ciu="${v}" aria-pressed="${v === ciUser}">${l} <span>${v === "todos" ? nU.length : nU.filter(t => t.user === v).length}</span></button>`).join("");
+  $("ci-est").innerHTML = [["todos", "Todos"], ["cuadro", "Cuadró"], ["falto", "Faltó"], ["sobro", "Sobró"], ["abierta", "Abierta"], ["sincerrar", "Sin cerrar"]].map(([v, l]) => `<button type="button" data-cie="${v}" aria-pressed="${v === ciFil}">${l} <span>${v === "todos" ? nE.length : nE.filter(t => t.estado === v).length}</span></button>`).join("");
+  // Resumen del periodo.
+  const cer = L.filter(t => t.cierre), cuad = cer.filter(t => t.dif === 0), neto = cer.reduce((s, t) => s + t.dif, 0), conE = L.filter(t => t.est && !ciVivo(t));
+  const sp = ciPct(conE.reduce((s, t) => s + t.total, 0), conE.reduce((s, t) => s + t.est, 0));
+  $("ci-sum").innerHTML = `<div><small>Total vendido</small><b class="num">${ciShort(L.reduce((s, t) => s + t.total, 0))}</b><em>${new Set(L.map(t => t.dia)).size} días · ${L.length} turnos</em></div>
+    <div><small>Frente a lo estimado</small><b class="num" style="color:${ciCol(sp)}">${sp == null ? "—" : sp + "%"}</b><em>${sp == null ? "Sin estimado" : `Estimado ${ciShort(conE.reduce((s, t) => s + t.est, 0))}`}</em></div>
+    <div><small>Cuadraron</small><b class="num" style="color:var(--good)">${cuad.length}</b><em>de ${cer.length} cierres</em></div>
+    <div><small>Diferencias</small><b class="num" style="color:${neto < 0 ? "var(--bad)" : neto > 0 ? "var(--warn)" : "var(--good)"}">${ciSigned(neto)}</b><em>${cer.filter(t => t.dif < 0).length} faltaron · ${cer.filter(t => t.dif > 0).length} sobraron</em></div>`;
+  // Calendario.
+  const porDia = {}; L.forEach(t => (porDia[t.dia] = porDia[t.dia] || []).push(t));
+  if (ciSel && !L.includes(ciSel) && ciSel.dia !== ciDay) ciSel = null;
+  if (ciDay == null || !porDia[ciDay]) { const last = L.filter(t => t.estado !== "abierta").pop() || L[L.length - 1]; ciDay = ciSel ? ciSel.dia : last ? last.dia : null; }
+  if (!ciSel && ciDay != null) { const ds = porDia[ciDay]; ciSel = ds.find(t => t.estado === "abierta") || ds[ds.length - 1]; }
+  let out = "";
+  for (let m = new Date(d0.getFullYear(), d0.getMonth(), 1); m <= d1; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) {
+    const y = m.getFullYear(), mo = m.getMonth(), nd = new Date(y, mo + 1, 0).getDate(), pad = (new Date(y, mo, 1).getDay() + 6) % 7;
+    let cells = ["L", "M", "M", "J", "V", "S", "D"].map(w => `<span class="ci-wd">${w}</span>`).join("") + `<span class="ci-cell blank"></span>`.repeat(pad);
+    for (let dd = 1; dd <= nd; dd++) {
+      const dia = +new Date(y, mo, dd), cs = porDia[dia] || [];
+      if (!cs.length) { cells += `<span class="ci-cell off"><span class="n">${dd}</span></span>`; continue; }
+      const e = cs.filter(t => t.est && !ciVivo(t)), pp = ciPct(e.reduce((s, t) => s + t.total, 0), e.reduce((s, t) => s + t.est, 0));
+      cells += `<button type="button" class="ci-cell${dia === ciDay ? " on" : ""}${dia === +hoy ? " hoy" : ""}" data-ciday="${dia}"><span class="n">${dd}</span><span class="s num">${ciShort(cs.reduce((s, t) => s + t.total, 0))}</span>
+        <span class="foot"><span class="dots">${cs.map(t => `<i style="background:${CI_EST[t.estado][1]}" title="${t.T.nombre}: ${CI_EST[t.estado][0]}"></i>`).join("")}</span>${pp == null ? "" : `<span class="p" style="color:${ciCol(pp)}">${pp}%</span>`}</span></button>`;
+    }
+    out += `<div class="ci-month"><h3>${CI_MESES[mo]} ${y}</h3><div class="ci-cal">${cells}</div></div>`;
+  }
+  $("ci-cal").innerHTML = out || `<p class="hint">No hay cierres con esos filtros en estas fechas.</p>`;
+  // Panel del día: los tres turnos, comparados con lo estimado, y la proyección al cierre.
+  const Pr = ciDay != null ? ciProyeccion(ciDay) : null, filas = ciDay != null ? TURNOS.map(T => ciTurno(ciDay, T)) : [];
+  $("ci-dayt").textContent = ciDay != null ? ciDiaLargo(ciDay) : "Elige un día";
+  const dv = filas.reduce((s, t) => s + t.total, 0), de = Pr ? Pr.inicial : 0, dp = ciPct(dv, de), dviv = filas.some(ciVivo);
+  $("ci-daycmp").innerHTML = de ? `<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px"><div class="ci-rl"><span class="m">Vendido en el día</span><b class="num">${money(dv)}</b></div>
+    <div class="ci-rl"><span class="m">Venta estimada del día</span><span class="num">${money(de)}</span></div>${ciBar(dv, de, dviv ? "var(--blue)" : ciCol(dp))}
+    <div class="ci-rl"><span>${dviv ? "El día sigue en curso" : dp >= 100 ? "El día superó lo estimado" : "El día quedó por debajo de lo estimado"}</span><b class="num" style="color:${dviv ? "var(--blue)" : ciCol(dp)}">${dp}%</b></div></div>` : "";
+  $("ci-turnos").innerHTML = filas.map((t, i) => { const proy = Pr && ciVivo(t) ? `<small style="color:var(--blue);font-weight:700">Proyección al cierre ${money(Pr.ahora.resto[i - Pr.cer])}</small>` : "";
+    if (t.estado === "pendiente") return `<div class="ci-trow pend"><span class="ci-tic ${t.T.cls}">${t.T.icon}</span><span class="t"><b>${t.T.nombre}</b><small>${U(t.user).nombre} · empieza a las ${ciH(t.T.ini)}</small><small>${t.est ? `Estimado ${money(t.est)}` : "Sin estimado"}</small>${proy}</span><span class="v">${ciPill(t)}</span></div>`;
+    return `<button type="button" class="ci-trow${ciSel === t ? " on" : ""}" data-ciday="${t.dia}" data-cin="${t.T.n}"><span class="ci-tic ${t.T.cls}">${t.T.icon}</span>
+      <span class="t"><b>${t.T.nombre}</b><small>${U(t.user).nombre} · ${ciHorario(t)}</small><small>${t.est ? `Estimado ${money(t.est)}` : "Sin estimado"}</small>${proy}</span>
+      <span class="v"><b class="num">${money(t.total)}</b>${ciVs(t)}${ciPill(t)}</span>${ciBar(t.total, t.est, ciVivo(t) ? "var(--blue)" : ciCol(ciPct(t.total, t.est)))}</button>`; }).join("");
+  $("ci-proy").hidden = !Pr;
+  if (Pr) {
+    const fin = Pr.cer === 3, real = fin ? Pr.pasos[3].v : null;
+    $("ci-proy").innerHTML = `<h2>Proyección de venta al cierre del día</h2>
+      <div class="ci-proyhead"><span>${fin ? "El día cerró en" : "Si sigue así, el día cerrará en"}<small>${fin ? `${ciPct(real, Pr.inicial)}% de lo estimado al empezar el día` : `Estimado al empezar el día: ${money(Pr.inicial)}`}</small></span><b class="num">${money(fin ? real : Pr.ahora.v)}</b></div>
+      <div class="ci-steps">${Pr.pasos.map((st, i) => { const last = i === Pr.pasos.length - 1;
+        if (st.k === 0) return `<div class="ci-step${last ? " now" : ""}"><i></i><span>Al empezar el día</span><b class="num">${money(st.v)}</b><small>Suma de lo estimado para los tres turnos.</small></div>`;
+        if (st.k === 3) return `<div class="ci-step now"><i></i><span>Venta real del día</span><b class="num">${money(st.v)}</b><small>Cerraron los tres turnos. ${ciSigned(st.v - Pr.inicial)} frente a lo estimado al empezar.</small></div>`;
+        const pc = Math.round(st.fac * 100), sube = pc >= 100 ? "sube" : "baja";
+        return `<div class="ci-step${last ? " now" : ""}"><i></i><span>Al cerrar el turno ${TURNOS[st.k - 1].corto}</span><b class="num">${money(st.v)}</b><small>${st.k === 1 ? "La mañana vendió" : "Lo que va del día vendió"} ${pc}% de lo estimado, así que ${st.k === 1 ? `a la tarde y a la noche se les ${sube}` : `a la noche se le ${sube}`} el estimado en esa misma medida.</small></div>`; }).join("")}</div>
+      <p class="hint">Se recalcula cada vez que se cierra un turno.</p>`;
+  }
+  $("ci-det").innerHTML = ciDetalle(ciSel);
+}
+
+// Formulario para cerrar un turno: se cuentan los billetes y la app compara con lo que debía haber.
+function ciAbrirCierre(dia, n) {
+  ciIndex(); const t = ciTurno(dia, TURNOS[n - 1]);
+  openSheet(`<div class="cart-h"><h2>Cerrar ${t.T.nombre.toLowerCase()}</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <div class="ci-form" id="ci-form" data-dia="${dia}" data-n="${n}" data-ef="${t.pagos.Efectivo}">
+      <p class="hint">${ciDiaLargo(dia)} · de ${ciH(t.T.ini)} a ${ciH(t.T.fin)}</p><p class="hint">Cuenta la plata que hay en la caja y anota cuántos billetes hay de cada uno.</p>
+      <label class="field" for="ci-base">Base con la que abrió<input id="ci-base" type="number" min="0" step="1000" inputmode="numeric" value="${CI_BASE}"></label>
+      <div class="ci-billin">${BILLETES.map((b, i) => `<label for="ci-b${i}">${money(b)}<input id="ci-b${i}" type="number" min="0" step="1" inputmode="numeric" placeholder="0"></label>`).join("")}
+        <label for="ci-mon">Monedas ($)<input id="ci-mon" type="number" min="0" step="50" inputmode="numeric" placeholder="0"></label></div>
+      <div id="ci-res"></div>
+      <label class="field" for="ci-nota">Nota (opcional)<textarea id="ci-nota" placeholder="Por ejemplo: un cliente pagó con un billete roto"></textarea></label>
+      <button class="btn wide" type="button" data-a="ci-guardar">Guardar cierre</button>
+    </div>`, "cierre");
+  ciPreview();
+}
+function ciLeer() {
+  const f = $("ci-form"), bills = BILLETES.map((b, i) => Math.max(0, Math.floor(+$("ci-b" + i).value || 0))), monedas = Math.max(0, +$("ci-mon").value || 0), base = Math.max(0, +$("ci-base").value || 0);
+  const contado = bills.reduce((s, q, i) => s + q * BILLETES[i], 0) + monedas, esperado = base + +f.dataset.ef;
+  return { dia: +f.dataset.dia, n: +f.dataset.n, bills, monedas, base, contado, esperado };
+}
+function ciPreview() {
+  if (!$("ci-form")) return; const r = ciLeer(), d = r.contado - r.esperado, st = d === 0 ? "cuadro" : d < 0 ? "falto" : "sobro";
+  $("ci-res").innerHTML = `<div class="ci-rl"><span class="m">Ventas en efectivo del turno</span><span class="num">${money(r.esperado - r.base)}</span></div>
+    <div class="ci-rl tot"><span>Debe haber en la caja</span><span class="num">${money(r.esperado)}</span></div>
+    <div class="ci-rl tot"><span>Contaste</span><span class="num">${money(r.contado)}</span></div>
+    <div class="ci-dif st-${r.contado ? st : "sincerrar"}" style="margin-top:6px"><span>${!r.contado ? "Anota los billetes que contaste" : d === 0 ? "La caja cuadra exacto" : d < 0 ? "Falta plata" : "Sobra plata"}</span><span class="num">${r.contado ? ciSigned(d) : ""}</span></div>`;
+}
+$("sheet").addEventListener("input", e => { if (e.target.closest("#ci-form")) ciPreview(); });
+$("cierres-box").addEventListener("click", e => {
+  let b;
+  if ((b = e.target.closest("[data-cir]"))) { [ciD0, ciD1] = MV_RAP[b.dataset.cir](); ciDay = null; ciSel = null; return renderCierres(); }
+  if ((b = e.target.closest("[data-ciu]"))) { ciUser = b.dataset.ciu; return renderCierres(); }
+  if ((b = e.target.closest("[data-cie]"))) { ciFil = b.dataset.cie; return renderCierres(); }
+  if ((b = e.target.closest("[data-civer]"))) { CI_VER[b.dataset.civer] = !CI_VER[b.dataset.civer]; try { localStorage.setItem("pininos-cierre-ver", JSON.stringify(CI_VER)); } catch (er) {} return renderCierres(); }
+  if ((b = e.target.closest("[data-a='ci-cerrar']"))) return ciAbrirCierre(+b.dataset.dia, +b.dataset.n);
+  if ((b = e.target.closest("[data-cin]"))) { ciDay = +b.dataset.ciday; ciSel = ciTurno(ciDay, TURNOS[b.dataset.cin - 1]); renderCierres();
+    if (innerWidth < 1180) $("ci-det").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  if ((b = e.target.closest("[data-ciday]"))) { ciDay = +b.dataset.ciday; ciSel = TURNOS.map(T => ciTurno(ciDay, T)).find(t => t.estado !== "pendiente" && t.estado !== "sinventas") || null;
+    renderCierres(); if (innerWidth < 1180) $("ci-side").scrollIntoView({ behavior: "smooth", block: "start" }); }
+});
+["ci-desde", "ci-hasta"].forEach(id => $(id).addEventListener("change", () => { if (!$("ci-desde").value || !$("ci-hasta").value) return;
+  const f = v => { const [y, m, d] = v.split("-").map(Number); return new Date(y, m - 1, d); }; ciD0 = f($("ci-desde").value); ciD1 = f($("ci-hasta").value); ciDay = null; ciSel = null; renderCierres(); }));
+
 const RESET_BASE = `<h2>Empezar de cero</h2><p class="hint">Borra las ventas y compras de ejemplo y deja el inventario en cero, para usar la app con tus datos reales.</p><button class="btn line" type="button" data-a="reset-ask">Empezar de cero</button>`;
 function renderAjustes() {
   $("s-pct").value = S.pct;
@@ -1281,7 +1670,7 @@ function renderAll() {
   if (!me) return;
   if (SOON[view]) return renderPronto();
   if (view === "inicio" && isAdmin()) return renderPanel();
-  ({ inicio: renderInicio, vender: renderVender, comprar: renderComprar, movs: renderMovs, ajustes: renderAjustes, inventario: renderInventario, estadisticas: renderStats, empleados: renderEmpleados })[view]();
+  ({ inicio: renderInicio, vender: renderVender, comprar: renderComprar, movs: () => { renderMovs(); if (!$("cierres-box").hidden) renderCierres(); }, ajustes: renderAjustes, inventario: renderInventario, estadisticas: renderStats, empleados: renderEmpleados })[view]();
 }
 
 /* ---------- Hoja inferior ---------- */
@@ -1325,7 +1714,7 @@ document.addEventListener("click", e => {
   const t = e.target.closest(".tile[data-pid]"); if (t) { addToCart(+t.dataset.pid); return; }
   const inv = e.target.closest("[data-buy]"); if (inv) { buySheet(P(inv.dataset.buy)); return; }
   const m = e.target.closest("#modo [data-m]"); if (m) { modo = m.dataset.m; pressIn(m); renderVender(); return; }
-  const ms = e.target.closest("#movseg [data-ms]"); if (ms) { pressIn(ms); $("tx-box").hidden = ms.dataset.ms !== "tx"; $("cierres-box").hidden = ms.dataset.ms === "tx"; return; }
+  const ms = e.target.closest("#movseg [data-ms]"); if (ms) { pressIn(ms); $("tx-box").hidden = ms.dataset.ms !== "tx"; $("cierres-box").hidden = ms.dataset.ms === "tx"; if (ms.dataset.ms !== "tx") renderCierres(); return; }
   const fu = e.target.closest("[data-fu]"); if (fu) { fUser = fu.dataset.fu; pressIn(fu); renderMovs(); return; }
   const fm = e.target.closest("[data-fm]"); if (fm) { fMedio = fm.dataset.fm; pressIn(fm); renderMovs(); return; }
   const mk = e.target.closest("#movtab [data-k]"); if (mk) { movKind = mk.dataset.k; renderMovs(); return; }
@@ -1352,9 +1741,16 @@ document.addEventListener("click", e => {
   }
   if (a === "reset-ask") $("reset-box").innerHTML = `<h2>¿Seguro?</h2><p class="hint">Se borran todas las ventas y compras. Los 10 productos se quedan, con inventario en cero.</p><div class="row2"><button class="btn" type="button" data-a="reset-yes">Sí, borrar</button><button class="btn line" type="button" data-a="reset-no">Cancelar</button></div>`;
   if (a === "reset-no") $("reset-box").innerHTML = RESET_BASE;
+  if (a === "ci-guardar") {
+    const r = ciLeer(); if (!r.contado) return toast("Anota los billetes que contaste.");
+    S.cierres = (S.cierres || []).filter(c => !(c.dia === r.dia && c.n === r.n));
+    S.cierres.push({ dia: r.dia, n: r.n, user: me.id, base: r.base, contado: r.contado, bills: r.bills, monedas: r.monedas, nota: $("ci-nota").value.trim(), cierra: Date.now() });
+    save(); closeSheet(); ciDay = r.dia; ciSel = null; renderCierres(); ciSel = ciTurno(r.dia, TURNOS[r.n - 1]); renderCierres();
+    const d = r.contado - r.esperado; toast(d === 0 ? "Cierre guardado. La caja cuadró." : d < 0 ? `Cierre guardado. Faltaron ${money(-d)}.` : `Cierre guardado. Sobraron ${money(d)}.`);
+  }
   if (a === "reset-yes") {
     S.products.forEach(p => { p.stock = 0; p.costoCaja = SEED[p.id - 1][3]; });
-    S.movs = []; S.real = true; cart = []; save(); $("reset-box").innerHTML = RESET_BASE; renderAjustes();
+    S.movs = []; S.cierres = []; S.real = true; cart = []; save(); $("reset-box").innerHTML = RESET_BASE; renderAjustes();
     toast("Listo. Registra tus compras en Compras.");
   }
 });
