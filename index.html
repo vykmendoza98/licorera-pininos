@@ -19,6 +19,8 @@
   --bg:#f4f5f7; --card:#ffffff; --fg:#17191c; --muted:#6b7079; --line:#e6e8ec; --soft:#f7f8fa;
   --ink:#ffc533; --ink-fg:#2a2105; --yellow:#ffc533; --yellow-soft:#fff5d6; --yellow-ink:#2a2105;
   --good:#16834f; --good-soft:#e3f5ec; --bad:#d23c32; --bad-soft:#fde8e6; --warn:#b4540a; --warn-soft:#fdeedd;
+  --h1:#fff8e1; --h2:#ffe9a8; --h3:#ffd766; --h4:#ffc533; --h5:#e0a400;
+  --q1:#e0393e; --q2:#f57c2b; --q3:#f2b51c; --q4:#7cbf3f; --q5:#16a34a; --grid:#e3e6eb;
   color-scheme:light;
   --font:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
 }
@@ -26,6 +28,8 @@ body.dark{
   --bg:#0f1215; --card:#171b20; --fg:#e9edf2; --muted:#9aa3ae; --line:#272d35; --soft:#1e2329;
   --ink:#2b323b; --ink-fg:#ffffff; --yellow:#ffc533; --yellow-soft:#3a3010; --yellow-ink:#2a2105;
   --good:#3fd18c; --good-soft:#12301f; --bad:#ff7b72; --bad-soft:#3a1a18; --warn:#f5a25d; --warn-soft:#33220f; --blue:#7fa8ff; --blue-soft:#1a2740;
+  --h1:#26230f; --h2:#3d3412; --h3:#5e4c12; --h4:#8a6c10; --h5:#c99a06;
+  --q1:#ff5a5f; --q2:#ff9248; --q3:#ffc533; --q4:#a3e06b; --q5:#3fd18c; --grid:#262c34;
   color-scheme:dark;
 }
 .themebtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:99px;padding:7px 12px;font-weight:700;font-size:.8rem;cursor:pointer}
@@ -314,6 +318,95 @@ td.r,th.r{text-align:right}
 @media (max-width:759px){ #s-movs table{min-width:0} #s-movs td,#s-movs th{white-space:normal;padding:10px 8px} #s-movs td:first-child{font-size:.76rem;color:var(--muted);width:70px} #s-movs td.r{white-space:nowrap} #s-movs td:first-child{white-space:nowrap} #s-movs th:nth-child(3),#s-movs td:nth-child(3),#s-movs th:nth-child(4),#s-movs td:nth-child(4),#s-movs th:nth-child(5),#s-movs td:nth-child(5),#s-movs th:nth-child(7),#s-movs td:nth-child(7){display:none} }
 @media (max-width:520px){ #s-movs .mv-dates{grid-template-columns:1fr 1fr;width:100%} #s-movs .mv-medio{flex-direction:column;align-items:flex-start;gap:6px} }
 /* Cierres de caja: calendario por días con tres turnos, estimado y proyección */
+/* Movimientos A: calendario de calor, panel del día y lista que se despliega */
+#tx-box .ma-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#tx-box .ma-kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0;display:flex;flex-direction:column;gap:2px}
+#tx-box .ma-kpi small{color:var(--muted);font-weight:600;font-size:.76rem}
+#tx-box .ma-kpi b{font-size:1.2rem;font-weight:800}
+#tx-box .ma-kpi em{font-style:normal;font-size:.74rem;font-weight:700}
+#tx-box .ma-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+#tx-box .ma-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+#tx-box .ma-row2{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+#tx-box .ma-heat{display:flex;gap:3px;align-items:center;font-size:.72rem;color:var(--muted)}
+#tx-box .ma-heat i{width:16px;height:10px;border-radius:3px}
+#tx-box .ma-months{display:flex;flex-direction:column;gap:18px}
+#tx-box .ma-month h3{margin:0 0 8px;font-size:.9rem;font-weight:800;text-transform:capitalize}
+#tx-box .ma-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+#tx-box .ma-wd{font-size:.68rem;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase}
+#tx-box .ma-cell{border:1px solid var(--line);border-radius:10px;padding:6px;min-height:68px;display:flex;flex-direction:column;justify-content:space-between;gap:2px;text-align:left;min-width:0;color:var(--fg);font:inherit}
+#tx-box .ma-cell .n{font-weight:800;font-size:.78rem}
+#tx-box .ma-cell .s{font-size:.68rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tx-box .ma-cell .io{display:flex;height:4px;border-radius:2px;overflow:hidden;background:rgba(127,127,127,.15)}
+#tx-box .ma-cell .io i{display:block;height:100%}
+#tx-box .ma-cell .p{font-size:.62rem;font-weight:800}
+#tx-box .ma-cell.off{background:none;border-style:dashed;opacity:.4}
+#tx-box .ma-cell.blank{visibility:hidden}
+#tx-box .ma-cell.on{outline:2px solid var(--fg);outline-offset:1px}
+#tx-box .ma-rl{display:flex;justify-content:space-between;gap:10px;font-size:.86rem}
+#tx-box .ma-rl .m{color:var(--muted)}
+#tx-box .ci-meta{position:relative;display:block;height:8px;border-radius:4px;background:var(--soft)}
+#tx-box .ci-meta i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+#tx-box .ci-meta u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--fg);border-radius:1px}
+#tx-box .ma-split{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--soft)}
+#tx-box .ma-split i{display:block}
+#tx-box .ma-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.76rem;color:var(--muted);align-items:center}
+#tx-box .ma-legend u{display:inline-block;width:14px;height:0;border-top:2px dashed var(--fg);margin-right:5px;vertical-align:3px}
+#tx-box .ma-legend b{color:var(--fg)}
+#tx-box .ma-hours{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+#tx-box .ma-hours svg{width:100%;height:auto;display:block;overflow:visible}
+#tx-box .ma-hours svg text{font-family:var(--font);fill:var(--muted)}
+#tx-box .ma-hours .hit{fill:transparent;cursor:pointer}
+#tx-box .ma-hours g.hb:hover .hit{fill:var(--soft)}
+#tx-box .ma-hours .gl{stroke:var(--grid);stroke-width:1}
+#tx-box .ma-hours .norm{fill:none;stroke:var(--fg);stroke-width:1.5;stroke-dasharray:3 3;opacity:.55}
+#tx-box .ma-hours .nd{fill:var(--card);stroke:var(--fg);stroke-width:1.2;opacity:.7}
+#tx-box .ma-hours text.pk{font-weight:800;fill:var(--fg)}
+#tx-box .ma-hours .sel{fill:none;stroke:var(--fg);stroke-width:1.5}
+#tx-box .ma-qscale{display:flex;gap:3px;align-items:center;font-size:.72rem;color:var(--muted)}
+#tx-box .ma-qscale i{width:16px;height:8px;border-radius:2px}
+#tx-box .ma-hstats{display:flex;flex-direction:column;gap:6px}
+#tx-box .ma-hstats div{background:var(--soft);border-radius:10px;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+#tx-box .ma-hstats small{color:var(--muted);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+#tx-box .ma-hstats b{font-size:.84rem;font-weight:800;text-align:right}
+#tx-box .ma-hstats i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+#tx-box .ma-head{display:flex;justify-content:space-between;align-items:center;gap:12px;border:0;background:none;padding:0;text-align:left;width:100%;color:var(--fg);font:inherit}
+#tx-box .ma-head .tt{display:flex;flex-direction:column;gap:2px;min-width:0}
+#tx-box .ma-head small{color:var(--muted);font-size:.8rem}
+#tx-box .ma-head .tg{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--yellow-soft);border:1px solid var(--yellow);border-radius:99px;padding:6px 12px;font-weight:800;font-size:.8rem}
+#tx-box .ma-head .tg svg{width:14px;height:14px;transition:transform .2s}
+#tx-box .ma-head[aria-expanded="true"] .tg svg{transform:rotate(180deg)}
+#tx-box .ma-body{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:12px}
+#tx-box .ma-fil{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#tx-box .ma-fil .seg button{flex:none}
+#tx-box .ma-fil .search{flex:1 1 220px}
+#tx-box .ma-fil select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:.85rem;color:var(--fg);min-width:0;flex:1 1 150px}
+#tx-box .ma-fil .chips{flex:1 1 100%}
+#tx-box .chips span{color:var(--muted);font-weight:600}
+#tx-box .chips button[aria-pressed="true"] span{color:var(--yellow-ink);opacity:.7}
+#tx-box .ma-fchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--yellow);background:var(--yellow-soft);color:var(--fg);border-radius:99px;padding:6px 10px;font-weight:700;font-size:.78rem}
+#tx-box .ma-tot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#tx-box .ma-tot div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;min-width:0}
+#tx-box .ma-tot small{color:var(--muted);font-size:.7rem;font-weight:700}
+#tx-box .ma-tot b{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tx-box .ma-dgrp{display:flex;justify-content:space-between;gap:10px;font-size:.76rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:12px 0 4px;border-bottom:1px solid var(--line)}
+#tx-box .ma-dgrp:first-child{padding-top:0}
+#tx-box .ma-mrow{display:flex;gap:10px;align-items:center;padding:10px 0;border:0;border-bottom:1px solid var(--line);background:none;width:100%;text-align:left;color:var(--fg);font:inherit}
+#tx-box .ma-mrow .t{flex:1;min-width:0;display:flex;flex-direction:column}
+#tx-box .ma-mrow .t b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tx-box .ma-mrow .t small{color:var(--muted);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tx-box .ma-mrow .t small.ex{color:var(--warn);font-size:.62rem}
+#tx-box .ma-mrow .v{font-weight:800;white-space:nowrap}
+#tx-box .ma-mrow .v.in{color:var(--good)}
+#tx-box .ma-mrow.on{background:var(--soft);border-radius:10px;padding-inline:8px}
+#tx-box .ma-lines{display:flex;flex-direction:column;gap:5px;font-size:.82rem;padding:4px 8px 12px 46px;max-height:320px;overflow:auto}
+#tx-box .ma-lines div{display:flex;justify-content:space-between;gap:10px}
+#tx-box .ma-lines .g{color:var(--good);font-weight:700;border-top:1px solid var(--line);padding-top:5px}
+#tx-box .mtag svg{width:14px;height:14px}
+@media (min-width:600px){ #tx-box .ma-tot{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media (min-width:760px){ #tx-box .ma-kpis{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media (min-width:1000px){ #tx-box .ma-fil select{flex:0 1 auto} #tx-box .ma-fil .chips{flex:0 1 auto} }
+@media (min-width:1180px){ #tx-box .ma-wrap{grid-template-columns:minmax(0,1fr) 400px} #tx-box .ma-side{position:sticky;top:90px} }
+@media (max-width:520px){ #tx-box .ma-cell{min-height:54px;padding:4px} #tx-box .ma-cell .s{display:none} #tx-box .ma-kpi b{font-size:1rem} }
 #cierres-box{display:flex;flex-direction:column;gap:14px}
 #cierres-box .ci-filt{display:flex;gap:10px 16px;flex-wrap:wrap}
 #cierres-box .ci-fg{display:flex;gap:8px;align-items:center;min-width:0;max-width:100%}
@@ -638,21 +731,37 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
           </div>
           <div class="chips" id="mv-rap"></div>
         </div>
-        <div class="mv-tiles" id="mv-tiles"></div>
-        <div class="mv-medios" id="mv-medios"></div>
-        <div class="mv-tools">
-          <label class="search" for="q3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input id="q3" type="search" placeholder="Buscar producto o responsable" autocomplete="off"></label>
-          <div class="chips" id="mv-tipo"></div>
-          <div class="chips" id="mv-medio"></div>
-          <div class="chips" id="mv-user"></div>
+        <div class="ma-kpis" id="ma-kpis"></div>
+        <div class="ma-wrap">
+          <div class="card">
+            <div class="ma-row2"><h2>¿Qué días se vende más?</h2>
+              <div class="ma-heat"><span>Menos</span><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i><i style="background:var(--h4)"></i><i style="background:var(--h5)"></i><span>Más</span></div></div>
+            <p class="hint">El color es lo vendido en el día. La barrita de abajo muestra lo que entró (verde) contra lo que salió (rojo). El porcentaje compara con lo estimado. Toca un día.</p>
+            <div class="ma-months" id="ma-cal"></div>
+          </div>
+          <div class="ma-side" id="ma-side"><div class="card" id="ma-day"></div></div>
         </div>
-        <div class="mv-wrap">
-          <div class="panel" style="min-width:0"><div class="tablebox"><table>
-            <thead><tr><th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Responsable</th><th>Medio de pago</th><th class="r">Valor</th><th class="r">Ganancia</th></tr></thead>
-            <tbody id="movs"></tbody>
-          </table></div></div>
-          <aside class="card mv-detail" id="mv-detail"></aside>
+        <div class="card" id="ma-mv">
+          <button type="button" class="ma-head" id="ma-head" aria-expanded="false" aria-controls="ma-body">
+            <span class="tt"><h2>Todos los movimientos</h2><small id="ma-sum"></small></span>
+            <span class="tg"><span id="ma-lbl">Ver lista</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="ma-body" id="ma-body" hidden>
+            <div class="ma-fil">
+              <div class="seg" id="ma-scope"><button type="button" data-masc="dia">Día elegido</button><button type="button" data-masc="per">Todo el periodo</button></div>
+              <label class="search" for="ma-q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="ma-q" type="search" placeholder="Buscar producto o responsable" autocomplete="off"></label>
+            </div>
+            <div class="ma-fil">
+              <div class="chips" id="ma-tipo"></div>
+              <select id="ma-medio" aria-label="Medio de pago"><option value="">Todos los medios</option><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select>
+              <select id="ma-user" aria-label="Responsable"><option value="">Todos los responsables</option><option value="v1">Vendedor 1</option><option value="v2">Vendedor 2</option><option value="admin">Administrador</option></select>
+              <select id="ma-ord" aria-label="Ordenar"><option value="rec">Más recientes</option><option value="ant">Más antiguos</option><option value="may">Mayor valor</option></select>
+              <span id="ma-hrchip"></span>
+            </div>
+            <div class="ma-tot" id="ma-tot"></div>
+            <div id="ma-list"></div>
+          </div>
         </div>
       </div>
       <div id="cierres-box" hidden>
@@ -1272,7 +1381,6 @@ function renderComprar() {
 }
 
 /* ---------- Movimientos (inicio del administrador) ---------- */
-let fUser = "Todos", fMedio = "Todos", fTipo = "todo", mvSel = null, mvMax = 100;
 const MICON = {
   Efectivo: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
   Transferencia: '<path d="M7 7h12l-3-3M17 17H5l3 3"/>',
@@ -1294,72 +1402,204 @@ const MV_RAP = {
   "Mes pasado": () => [new Date(dHoy().getFullYear(), dHoy().getMonth() - 1, 1), new Date(dHoy().getFullYear(), dHoy().getMonth(), 0)],
   "Este año": () => [new Date(dHoy().getFullYear(), 0, 1), dHoy()],
 };
-let mvD0, mvD1; [mvD0, mvD1] = MV_RAP["Últimos 7 días"]();
+let mvD0, mvD1; [mvD0, mvD1] = MV_RAP["Este mes"]();
 const mvRango = () => mvD0 <= mvD1 ? [mvD0, mvD1] : [mvD1, mvD0];
-function spark(vals, color) {
-  const W = 160, H = 34, max = Math.max(1, ...vals), step = W / Math.max(1, vals.length - 1);
-  const pts = vals.map((v, i) => `${(i * step).toFixed(1)},${(H - 3 - v / max * (H - 8)).toFixed(1)}`).join(" "), last = pts.split(" ").pop().split(",");
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,${H} ${pts} ${W},${H}" fill="${color}" opacity=".12"/><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${last[0]}" cy="${last[1]}" r="3" fill="${color}"/></svg>`;
-}
 function concepto(mv) {
   if (mv.k === "compra") { const p = P(mv.pid), cj = mv.und / p.porCaja; return { p, txt: Number.isInteger(cj) ? `${cj} ${cj === 1 ? "caja" : "cajas"} ${p.nombre}` : `${mv.und} und. ${p.nombre}` }; }
   const p = P(mv.lines[0].pid), n = mv.lines.length;
   if (mv.dia) return { p, txt: `Ventas del día · ${mv.lines.reduce((a, l) => a + l.und, 0)} unidades` };
   return { p, txt: n > 1 ? `${p.nombre} y ${n - 1} más` : `${mv.lines[0].cant} ${mv.lines[0].tipo === "caja" ? (mv.lines[0].cant === 1 ? "caja" : "cajas") : "und."} ${p.nombre}` };
 }
-function mvDetalle(m) {
-  if (!m) return `<p class="hint">Toca un movimiento para ver el detalle.</p>`;
-  const c = concepto(m), d = new Date(m.t);
-  const head = `<div class="concept">${avatar(c.p)}<span class="t"><b>${c.txt}</b><small>${d.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" })} · ${d.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}</small></span></div>
-    <div class="chips"><span class="tp ${m.k}">${m.k === "venta" ? "Venta" : "Compra"}</span><span class="tp" style="background:var(--soft)">${mtag(medioDe(m))}</span><span class="tp" style="background:var(--soft)">${U(m.user).nombre}</span>${m.ejemplo ? '<span class="tp" style="background:var(--warn-soft);color:var(--warn)">Ejemplo</span>' : ""}</div>`;
-  if (m.k === "compra") { const p = P(m.pid);
-    return head + `<div class="mv-sum"><div><span>Unidades que entraron</span><b class="num">${m.und}</b></div><div><span>Costo por unidad</span><b class="num">${money(m.total / m.und)}</b></div><div><span>Total pagado</span><b class="num">${money(m.total)}</b></div></div>`; }
-  return head + `<div class="mv-lines">${m.lines.map(l => `<div><span>${l.tipo === "caja" ? `${l.cant} ${l.cant === 1 ? "caja" : "cajas"}` : `${l.cant} und.`} · ${P(l.pid).nombre}</span><span class="num">${money(l.total)}</span></div>`).join("")}</div>
-    <div class="mv-sum"><div><b>Total</b><b class="num">${money(m.total)}</b></div><div style="color:var(--good)"><span>Ganancia</span><b class="num">+${money(m.ganancia)}</b></div><div><span>Margen</span><span class="num">${(m.ganancia / (m.total || 1) * 100).toFixed(1).replace(".", ",")}%</span></div></div>`;
+// Calendario de calor: cada día pintado según lo vendido, con su % frente a lo estimado. Al tocar un día se ve su detalle y las ventas por hora.
+const maSum = (l, f) => l.reduce((a, m) => a + f(m), 0);
+const MA_H0 = 8, MA_NH = 18; // de 8 a. m. a 2 a. m., igual que los turnos
+const MA_Q = ["var(--q1)", "var(--q2)", "var(--q3)", "var(--q4)", "var(--q5)"];
+// Cómo se reparte la venta dentro de cada turno en los días de ejemplo (que solo guardan el total del turno).
+const MA_FORMA = [[0.5, 0.7, 0.9, 1, 1.1, 1.2], [1, 0.9, 0.9, 1, 1.2, 1.4], [1.6, 1.5, 1.3, 1, 0.6, 0.3]];
+const maHh = h => new Date(2000, 0, 1, h % 24).toLocaleTimeString("es-CO", { hour: "numeric" });
+const maK = n => ciShort(n).replace(" mil", "k").replace(" M", "M");
+let maDay = null, maTipo = "todo", maOpen = false, maScope = "dia", maHr = null, maMax = 40, maSel = null, MA = null;
+try { maOpen = localStorage.getItem("pininos-mov-lista") === "1"; } catch (e) {}
+
+function maIndex() {
+  const idx = new Map(), pos = new Map();
+  S.movs.forEach((m, i) => { const d = new Date(m.t); d.setHours(0, 0, 0, 0); const k = +d; if (!idx.has(k)) idx.set(k, []); idx.get(k).push(m); pos.set(m, i); });
+  MA = { idx, pos, horas: new Map(), est: new Map() };
 }
+const maDia = k => MA.idx.get(k) || [];
+const maVentas = k => maSum(maDia(k).filter(m => m.k === "venta"), m => m.total);
+const maCompras = k => maSum(maDia(k).filter(m => m.k === "compra"), m => m.total);
+const maClientes = l => maSum(l.filter(m => m.k === "venta"), m => m.dia && m.turnos ? m.turnos.reduce((a, x) => a + x[2], 0) : 1);
+function maPagos(l) {
+  const o = { Efectivo: 0, Transferencia: 0, Tarjeta: 0 };
+  l.filter(m => m.k === "venta").forEach(m => { if (m.dia && m.turnos) m.turnos.forEach(x => { o.Efectivo += x[3]; o.Transferencia += x[4]; o.Tarjeta += x[5]; }); else o[medioDe(m)] += m.total; });
+  return o;
+}
+function maHoras(k) {
+  if (MA.horas.has(k)) return MA.horas.get(k);
+  const h = Array(MA_NH).fill(0);
+  maDia(k).filter(m => m.k === "venta").forEach(m => {
+    if (m.dia && m.turnos) {
+      let x = (Math.floor(k / 864e5) * 13 + 7) % 2147483647 || 1; const r = () => (x = x * 16807 % 2147483647) / 2147483647; r(); r(); r();
+      m.turnos.forEach((tt, i) => { const w = MA_FORMA[i].map(v => v * (0.7 + r() * 0.6)), sw = w.reduce((a, b) => a + b, 0); let rest = tt[0];
+        w.forEach((v, j) => { const val = j === 5 ? rest : Math.round(tt[0] * v / sw); rest -= val; h[i * 6 + j] += val; }); });
+    } else { const hr = new Date(m.t).getHours(), i = (hr < 2 ? hr + 24 : hr) - MA_H0; if (i >= 0 && i < MA_NH) h[i] += m.total; }
+  });
+  MA.horas.set(k, h); return h;
+}
+// Venta estimada del día: promedio de los últimos 4 días iguales (por ejemplo, los 4 sábados anteriores).
+function maEst(k) {
+  if (MA.est.has(k)) return MA.est.get(k);
+  const prev = [1, 2, 3, 4].map(i => maVentas(+masD(new Date(k), -7 * i))).filter(Boolean);
+  const e = prev.length ? Math.round(prev.reduce((a, b) => a + b, 0) / prev.length / 1000) * 1000 : null;
+  MA.est.set(k, e); return e;
+}
+// Proyección de hoy: lo vendido hasta ahora más lo que normalmente se vende en las horas que faltan.
+function maProy() {
+  const k = +dHoy(), prev = [1, 2, 3, 4].map(i => +masD(dHoy(), -7 * i)).filter(x => maVentas(x));
+  if (!prev.length) return null;
+  const hr = new Date().getHours(), reloj = i => (i + MA_H0) % 24, falta = i => { const c = reloj(i); return i + MA_H0 >= 24 ? hr < 2 && c > hr : c > hr; };
+  const f = prev.map(x => maHoras(x).reduce((a, v, i) => a + (falta(i) ? v : 0), 0));
+  return maVentas(k) + Math.round(f.reduce((a, b) => a + b, 0) / f.length / 1000) * 1000;
+}
+const maPct = (v, e) => e ? Math.round(v / e * 100) : null;
+const maDelta = (v, p) => p ? Math.round((v / p - 1) * 100) : null;
+const maDeltaTxt = d => d == null ? `<em style="color:var(--muted)">Sin datos antes</em>` : `<em style="color:${d >= 0 ? "var(--good)" : "var(--bad)"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d)}% vs. periodo anterior</em>`;
+
 function renderMovs() {
-  const [d0, d1] = mvRango(), fin = +masD(d1, 1), q = $("q3").value.trim().toLowerCase();
+  maIndex();
+  const [d0, d1] = mvRango(), hoy = +dHoy(), fin = +masD(d1, 1);
   $("mv-desde").value = isoD(mvD0); $("mv-hasta").value = isoD(mvD1); $("mv-desde").max = $("mv-hasta").max = isoD(dHoy());
   const rap = Object.keys(MV_RAP).find(k => { const [a, b] = MV_RAP[k](); return isoD(a) === isoD(d0) && isoD(b) === isoD(d1); });
   $("mv-rap").innerHTML = Object.keys(MV_RAP).map(k => `<button type="button" data-mvr="${k}" aria-pressed="${k === rap}">${k}</button>`).join("");
-  const all = S.movs.filter(m => m.t >= +d0 && m.t < fin), ventas = all.filter(m => m.k === "venta"), compras = all.filter(m => m.k === "compra");
-  const nd = Math.round((d1 - d0) / 864e5) + 1, dia = f => { const o = Array(nd).fill(0); all.forEach(m => { const i = Math.floor((m.t - d0) / 864e5); if (i >= 0 && i < nd) o[i] += f(m); }); return o; };
-  const sum = (l, f) => l.reduce((a, m) => a + f(m), 0);
-  $("mv-tiles").innerHTML = [
-    ["Ventas", money(sum(ventas, m => m.total)), dia(m => m.k === "venta" ? m.total : 0), "var(--good)"],
-    ["Compras de mercancía", money(sum(compras, m => m.total)), dia(m => m.k === "compra" ? m.total : 0), "var(--bad)"],
-    ["Ganancia de las ventas", money(sum(ventas, m => m.ganancia)), dia(m => m.k === "venta" ? m.ganancia : 0), "var(--blue)"],
-    ["Ventas hechas (clientes atendidos)", String(ventas.length), dia(m => m.k === "venta" ? 1 : 0), "var(--warn)"],
-  ].map(([l, v, sp, c]) => `<div class="mv-tile"><small>${l}</small><b class="num">${v}</b>${spark(sp, c)}</div>`).join("");
-  const vt = sum(ventas, m => m.total) || 1;
-  $("mv-medios").innerHTML = MEDIOS.map(k => { const x = ventas.filter(m => medioDe(m) === k), t = sum(x, m => m.total);
-    return `<div class="mv-medio"><span class="mi" style="color:${MCOL[k]}">${msvg(k)}</span><span><small>${k} · ${x.length} ${x.length === 1 ? "venta" : "ventas"}</small><b class="num">${money(t)}</b><em>${Math.round(t / vt * 100)}%</em></span></div>`; }).join("");
-  const cnt = f => all.filter(f).length;
-  $("mv-tipo").innerHTML = [["todo", "Todo"], ["venta", "Ventas"], ["compra", "Compras"]].map(([v, l]) => `<button type="button" data-mvt="${v}" aria-pressed="${v === fTipo}">${l} <span>${cnt(m => v === "todo" || m.k === v)}</span></button>`).join("");
-  $("mv-medio").innerHTML = ["Todos", ...MEDIOS].map(v => `<button type="button" data-mvm="${v}" aria-pressed="${v === fMedio}">${v === "Todos" ? "Todos los medios" : v}</button>`).join("");
-  $("mv-user").innerHTML = ["Todos", ...USERS.map(u => u.nombre)].map(v => `<button type="button" data-mvu="${v}" aria-pressed="${v === fUser}">${v === "Todos" ? "Todos" : v}</button>`).join("");
-  const rows = all.filter(m => (fTipo === "todo" || m.k === fTipo) && (fMedio === "Todos" || medioDe(m) === fMedio) && (fUser === "Todos" || U(m.user).nombre === fUser))
-    .map(m => ({ m, c: concepto(m) })).filter(r => !q || `${r.c.txt} ${U(r.m.user).nombre} ${r.m.lines ? r.m.lines.map(l => P(l.pid).nombre).join(" ") : ""}`.toLowerCase().includes(q)).reverse();
-  if (!rows.some(r => r.m === mvSel)) mvSel = rows.length ? rows[0].m : null;
-  $("movs").innerHTML = rows.slice(0, mvMax).map(({ m, c }, i) => `<tr class="clk${m === mvSel ? " on" : ""}" data-mv="${i}"><td>${new Date(m.t).toLocaleDateString("es-CO", { day: "2-digit", month: "short" })}<span class="hr"> · </span><span class="hr2">${new Date(m.t).toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}</span></td>
-    <td><div class="concept">${avatar(c.p, true)}<span class="t"><b>${c.txt}</b>${m.ejemplo ? '<small class="ex">ejemplo</small>' : ""}</span></div></td><td><span class="tp ${m.k}">${m.k === "venta" ? "Venta" : "Compra"}</span></td>
-    <td><div class="concept" title="${U(m.user).nombre}"><span class="av-u">${U(m.user).ini}</span><span class="un">${U(m.user).nombre}</span></div></td><td>${mtag(medioDe(m))}</td>
-    <td class="r"><b style="color:${m.k === "venta" ? "var(--good)" : "var(--fg)"}">${m.k === "venta" ? "+" : "−"}${money(m.total)}</b></td>
-    <td class="r">${m.k === "venta" ? `${money(m.ganancia)}<span class="mbar"><i style="width:${Math.min(100, m.ganancia / (m.total || 1) * 500).toFixed(0)}%"></i></span>` : "—"}</td></tr>`).join("")
-    + (rows.length > mvMax ? `<tr><td colspan="7"><button type="button" class="mv-more" data-a="mv-more">Mostrando ${mvMax} de ${rows.length}. Ver 100 más</button></td></tr>` : "")
-    || `<tr><td colspan="7" class="hint" style="padding:22px 14px">No hay movimientos con ese filtro en estas fechas.</td></tr>`;
-  renderMovs.rows = rows;
-  $("mv-detail").innerHTML = mvDetalle(mvSel);
+  const ds = []; for (let d = new Date(d0); d <= d1 && +d <= hoy; d = masD(d, 1)) ds.push(+d);
+  const L = S.movs.filter(m => m.t >= +d0 && m.t < fin), n = Math.round((d1 - d0) / 864e5) + 1, P0 = S.movs.filter(m => m.t >= +masD(d0, -n) && m.t < +d0);
+  const v = maSum(L.filter(m => m.k === "venta"), m => m.total), s = maSum(L.filter(m => m.k !== "venta"), m => m.total), pv = maSum(P0.filter(m => m.k === "venta"), m => m.total);
+  const conE = ds.filter(k => k !== hoy && maEst(k) && maVentas(k)), pe = maPct(maSum(conE, maVentas), maSum(conE, maEst));
+  $("ma-kpis").innerHTML = `<div class="ma-kpi"><small>Entró (ventas)</small><b class="num" style="color:var(--good)">${ciShort(v)}</b>${maDeltaTxt(maDelta(v, pv))}</div>
+    <div class="ma-kpi"><small>Salió (compras)</small><b class="num" style="color:var(--bad)">${ciShort(s)}</b><em style="color:var(--muted)">${L.filter(m => m.k !== "venta").length} pagos</em></div>
+    <div class="ma-kpi"><small>Quedó en el periodo</small><b class="num">${ciShort(v - s)}</b><em style="color:var(--muted)">Entró menos salió</em></div>
+    <div class="ma-kpi"><small>Frente a lo estimado</small><b class="num" style="color:${ciCol(pe)}">${pe == null ? "—" : pe + "%"}</b><em style="color:var(--muted)">Días ya cerrados</em></div>`;
+  // Calendario
+  const mx = Math.max(1, ...ds.map(maVentas));
+  if (maDay == null || !ds.includes(maDay)) maDay = ds.length ? ds[ds.length - 1] : hoy;
+  let out = "";
+  for (let m = new Date(d0.getFullYear(), d0.getMonth(), 1); m <= d1; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) {
+    const y = m.getFullYear(), mo = m.getMonth(), nd = new Date(y, mo + 1, 0).getDate(), pad = (new Date(y, mo, 1).getDay() + 6) % 7;
+    let cells = ["L", "M", "M", "J", "V", "S", "D"].map(w => `<span class="ma-wd">${w}</span>`).join("") + `<span class="ma-cell blank"></span>`.repeat(pad);
+    for (let dd = 1; dd <= nd; dd++) {
+      const k = +new Date(y, mo, dd);
+      if (!ds.includes(k)) { cells += `<span class="ma-cell off"><span class="n">${dd}</span></span>`; continue; }
+      const vv = maVentas(k), ss = maCompras(k), lvl = vv ? Math.min(5, 1 + Math.floor(vv / mx * 4.999)) : 0, e = k === hoy ? null : maEst(k), p = vv ? maPct(vv, e) : null;
+      cells += `<button type="button" class="ma-cell${k === maDay ? " on" : ""}" data-maday="${k}" style="background:${lvl ? `var(--h${lvl})` : "var(--card)"};color:${lvl >= 4 ? "var(--yellow-ink)" : "var(--fg)"}">
+        <span class="n">${dd}${k === hoy ? " · hoy" : ""}</span><span class="s num">${ciShort(vv)}</span>
+        <span class="io"><i style="width:${vv / Math.max(1, vv + ss) * 100}%;background:var(--good)"></i><i style="width:${ss / Math.max(1, vv + ss) * 100}%;background:var(--bad)"></i></span>
+        ${p == null ? "" : `<span class="p" style="color:${lvl >= 4 ? "var(--yellow-ink)" : ciCol(p)}">${p >= 100 ? "▲" : "▼"} ${p}%</span>`}</button>`;
+    }
+    out += `<div class="ma-month"><h3>${CI_MESES[mo]} ${y}</h3><div class="ma-cal">${cells}</div></div>`;
+  }
+  $("ma-cal").innerHTML = out || `<p class="hint">Elige fechas que no estén en el futuro.</p>`;
+  // Panel del día
+  const dl = maDia(maDay), vd = maVentas(maDay), sd = maCompras(maDay), isHoy = maDay === hoy, e = maEst(maDay), pr = isHoy ? maProy() : null, p = maPct(isHoy ? pr : vd, e);
+  const cl = maClientes(dl), pg = maPagos(dl), hrs = maHoras(maDay);
+  $("ma-day").innerHTML = `<h2>${ciDiaLargo(maDay)}</h2>
+    <div class="ma-rl"><span class="m">Vendido</span><b class="num">${money(vd)}</b></div>
+    ${e ? `<div class="ma-rl"><span class="m">Venta estimada</span><span class="num">${money(e)}</span></div>${ciBar(isHoy ? pr : vd, e, ciCol(p))}
+    <div class="ma-rl"><span>${isHoy ? `Si sigue así, hoy cerrará en <b>${money(pr)}</b>` : p >= 100 ? "Superó lo estimado" : "Quedó por debajo de lo estimado"}</span><b class="num" style="color:${ciCol(p)}">${p}%</b></div>` : `<p class="hint">Todavía no hay semanas anteriores para estimar.</p>`}
+    <div class="ma-rl"><span class="m">Compras</span><span class="num" style="color:${sd ? "var(--bad)" : "var(--muted)"}">${sd ? "−" + money(sd) : "$0"}</span></div>
+    <div class="ma-rl"><span class="m">Clientes atendidos</span><span class="num">${cl} · promedio ${money(cl ? vd / cl : 0)}</span></div>
+    ${maHorasSvg(maDay, hrs)}
+    <div class="ma-split">${MEDIOS.map(k => `<i style="width:${pg[k] / Math.max(1, vd) * 100}%;background:${MCOL[k]}"></i>`).join("")}</div>
+    <div class="ma-legend">${MEDIOS.map(k => `<span>${mtag(k)} <b class="num">${ciShort(pg[k])}</b></span>`).join("")}</div>`;
+  renderMaList();
 }
-$("mv-rap").addEventListener("click", e => { const b = e.target.closest("[data-mvr]"); if (b) { [mvD0, mvD1] = MV_RAP[b.dataset.mvr](); mvMax = 100; renderMovs(); } });
+
+// Ventas por hora en semáforo: rojo poca venta, amarillo media, verde mucha. La línea punteada es lo normal ese día de la semana.
+function maHorasSvg(k, hrs) {
+  const prev = [1, 2, 3, 4].map(i => +masD(new Date(k), -7 * i)).filter(x => maVentas(x));
+  const norm = prev.length ? hrs.map((_, i) => prev.reduce((a, x) => a + maHoras(x)[i], 0) / prev.length) : null;
+  const top = Math.max(...hrs, 1), mx = Math.max(top, ...(norm || [0])) * 1.12;
+  const W = 380, H = 150, L = 34, bw = (W - L) / MA_NH, Y = x => H - x / mx * H, pico = hrs.indexOf(Math.max(...hrs));
+  const lvl = x => Math.min(4, Math.floor(x / top * 4.999));
+  const g = [0.25, 0.5, 0.75, 1].map(f => `<line class="gl" x1="${L}" x2="${W}" y1="${Y(mx * f)}" y2="${Y(mx * f)}"/><text x="${L - 4}" y="${Y(mx * f) + 3}" font-size="9" text-anchor="end">${maK(mx * f)}</text>`).join("");
+  const bars = hrs.map((x, i) => { const q = lvl(x), y = Y(x), bx = L + i * bw + 2.5;
+    return `<g class="hb" data-mahr="${i + MA_H0}"><rect class="hit" x="${L + i * bw}" y="0" width="${bw}" height="${H}" rx="4"/>
+      ${x ? `<rect x="${bx}" y="${y}" width="${bw - 5}" height="${H - y}" rx="4" fill="url(#maq${q})"${i === pico ? ' filter="url(#maglow)"' : ""}/><rect x="${bx}" y="${y}" width="${bw - 5}" height="3" rx="1.5" fill="${MA_Q[q]}"/>` : `<rect x="${bx}" y="${H - 2}" width="${bw - 5}" height="2" rx="1" fill="var(--grid)"/>`}
+      ${maHr === i + MA_H0 ? `<rect class="sel" x="${L + i * bw + 1}" y="1" width="${bw - 2}" height="${H - 2}" rx="5"/>` : ""}
+      <title>${maHh(i + MA_H0)} a ${maHh(i + MA_H0 + 1)}: ${money(x)}${norm ? ` (lo normal: ${money(norm[i])})` : ""}</title></g>`; }).join("");
+  const nl = norm ? `<polyline class="norm" points="${norm.map((x, i) => `${L + i * bw + bw / 2},${Y(x)}`).join(" ")}"/>${norm.map((x, i) => `<circle class="nd" cx="${L + i * bw + bw / 2}" cy="${Y(x)}" r="2.2"/>`).join("")}` : "";
+  const pk = hrs[pico] ? `<text class="pk" x="${L + pico * bw + bw / 2}" y="${Y(hrs[pico]) - 7}" font-size="10" text-anchor="middle">${maK(hrs[pico])}</text>` : "";
+  const defs = `<defs>${MA_Q.map((c, q) => `<linearGradient id="maq${q}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${c}"/><stop offset="1" style="stop-color:${c};stop-opacity:.25"/></linearGradient>`).join("")}
+    <filter id="maglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  const conV = hrs.map((x, i) => [x, i]).filter(([x]) => x), floja = conV.length ? conV.reduce((a, b) => b[0] < a[0] ? b : a) : null, tot = hrs.reduce((a, b) => a + b, 0);
+  const tres = hrs.map((_, i) => i < MA_NH - 2 ? hrs[i] + hrs[i + 1] + hrs[i + 2] : 0), t3 = tres.indexOf(Math.max(...tres));
+  return `<div class="ma-hours"><div class="ma-row2"><b style="font-size:.85rem">Ventas por hora</b>
+      <span class="ma-qscale"><span>Poca venta</span>${MA_Q.map(c => `<i style="background:${c}"></i>`).join("")}<span>Mucha</span></span></div>
+    <svg viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="Ventas por hora">${defs}${g}${bars}${nl}${pk}
+      ${[0, 3, 6, 9, 12, 15].map(i => `<text x="${L + i * bw + bw / 2}" y="${H + 14}" font-size="10" text-anchor="middle">${maHh(i + MA_H0).replace(/\s/g, "")}</text>`).join("")}</svg>
+    <div class="ma-legend">${norm ? `<span><u></u>Lo normal un ${CI_DIAS[new Date(k).getDay()]} (últimas ${prev.length} semanas)</span>` : ""}<span>Toca una barra para ver esas ventas</span></div>
+    ${tot ? `<div class="ma-hstats"><div><small><i style="background:var(--q5)"></i>Hora pico</small><b>${maHh(pico + MA_H0)} a ${maHh(pico + MA_H0 + 1)} · ${ciShort(hrs[pico])}</b></div>
+      <div><small><i style="background:var(--q4)"></i>Mejores 3 horas</small><b>${maHh(t3 + MA_H0)} a ${maHh(t3 + MA_H0 + 3)} · ${ciShort(tres[t3])}</b></div>
+      <div><small><i style="background:var(--q1)"></i>Más floja</small><b>${floja ? `${maHh(floja[1] + MA_H0)} a ${maHh(floja[1] + MA_H0 + 1)} · ${ciShort(floja[0])}` : "—"}</b></div></div>` : ""}</div>`;
+}
+
+// Lista de todos los movimientos: se despliega u oculta, y se filtra por tipo, medio, responsable, hora y texto.
+function maRow(m) {
+  const c = concepto(m), on = maSel === m, d = new Date(m.t), venta = m.k === "venta";
+  const sub = m.dia ? `Día completo · ${m.turnos ? m.turnos.reduce((a, x) => a + x[2], 0) + " clientes" : ""}` : `${d.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })} · ${venta ? "Venta" : "Compra"} · ${U(m.user).nombre} · ${medioDe(m)}`;
+  let det = "";
+  if (on) det = m.k === "compra"
+    ? `<div class="ma-lines"><div><span>Unidades que entraron</span><b class="num">${m.und}</b></div><div><span>Costo por unidad</span><span class="num">${money(m.total / m.und)}</span></div><div><span>Pagado por ${medioDe(m).toLowerCase()} · ${U(m.user).nombre}</span></div></div>`
+    : `<div class="ma-lines">${m.lines.map(l => `<div><span>${l.tipo === "caja" ? `${l.cant} ${l.cant === 1 ? "caja" : "cajas"}` : `${l.cant} und.`} · ${P(l.pid).nombre}</span><span class="num">${money(l.total)}</span></div>`).join("")}
+      <div class="g"><span>Ganancia · margen ${(m.ganancia / (m.total || 1) * 100).toFixed(1).replace(".", ",")}%</span><b class="num">+${money(m.ganancia)}</b></div></div>`;
+  return `<button type="button" class="ma-mrow${on ? " on" : ""}" data-mam="${MA.pos.get(m)}">${avatar(c.p, true)}
+    <span class="t"><b>${c.txt}${m.ejemplo ? ' <small class="ex">ejemplo</small>' : ""}</b><small>${sub}</small></span><span class="v num${venta ? " in" : ""}">${venta ? "+" : "−"}${money(m.total)}</span></button>${det}`;
+}
+function renderMaList() {
+  const [d0, d1] = mvRango(), fin = +masD(d1, 1), all = S.movs.filter(m => m.t >= +d0 && m.t < fin);
+  const vin = maSum(all.filter(m => m.k === "venta"), m => m.total), vout = maSum(all.filter(m => m.k !== "venta"), m => m.total);
+  $("ma-sum").textContent = `${all.length.toLocaleString("es-CO")} en el periodo · entró ${ciShort(vin)} · salió ${ciShort(vout)}`;
+  $("ma-head").setAttribute("aria-expanded", maOpen); $("ma-body").hidden = !maOpen; $("ma-lbl").textContent = maOpen ? "Ocultar" : "Ver lista";
+  if (!maOpen) return;
+  const q = $("ma-q").value.trim().toLowerCase(), md = $("ma-medio").value, us = $("ma-user").value, ord = $("ma-ord").value;
+  const base = maScope === "dia" ? maDia(maDay) : all;
+  const enHora = m => { if (maHr == null) return true; if (m.dia || m.k !== "venta") return false; const hr = new Date(m.t).getHours(); return (hr < 2 ? hr + 24 : hr) === maHr; };
+  const pre = base.filter(m => (!md || medioDe(m) === md) && (!us || m.user === us) && enHora(m)
+    && (!q || `${concepto(m).txt} ${U(m.user).nombre} ${m.lines ? m.lines.map(l => P(l.pid).nombre).join(" ") : P(m.pid).nombre}`.toLowerCase().includes(q)));
+  const lst = pre.filter(m => maTipo === "todo" || m.k === maTipo).sort((a, b) => ord === "may" ? b.total - a.total : ord === "ant" ? a.t - b.t : b.t - a.t);
+  document.querySelectorAll("#ma-scope button").forEach(b => b.setAttribute("aria-pressed", b.dataset.masc === maScope));
+  $("ma-scope").querySelector('[data-masc="dia"]').textContent = `Día ${new Date(maDay).getDate()} ${CI_MESES[new Date(maDay).getMonth()].slice(0, 3)}`;
+  $("ma-tipo").innerHTML = [["todo", "Todo"], ["venta", "Ventas"], ["compra", "Compras"]].map(([v, l]) => `<button type="button" data-mat="${v}" aria-pressed="${v === maTipo}">${l} <span>${v === "todo" ? pre.length : pre.filter(m => m.k === v).length}</span></button>`).join("");
+  $("ma-hrchip").innerHTML = maHr == null ? "" : `<button type="button" class="ma-fchip" data-mahr="">De ${maHh(maHr)} a ${maHh(maHr + 1)} ✕</button>`;
+  const vi = maSum(lst.filter(m => m.k === "venta"), m => m.total), vo = maSum(lst.filter(m => m.k !== "venta"), m => m.total);
+  $("ma-tot").innerHTML = `<div><small>Movimientos</small><b class="num">${lst.length.toLocaleString("es-CO")}</b></div><div><small>Entró</small><b class="num" style="color:var(--good)">${money(vi)}</b></div>
+    <div><small>Salió</small><b class="num" style="color:var(--bad)">${money(vo)}</b></div><div><small>Quedó</small><b class="num">${money(vi - vo)}</b></div>`;
+  let html = "", last = null;
+  lst.slice(0, maMax).forEach(m => {
+    const d = new Date(m.t); d.setHours(0, 0, 0, 0); const k = +d;
+    if (maScope === "per" && ord !== "may" && k !== last) { last = k; const dd = lst.filter(x => x.t >= k && x.t < +masD(d, 1)); html += `<div class="ma-dgrp"><span>${ciDiaLargo(k)}</span><span class="num">${dd.length} · ${ciShort(maSum(dd.filter(x => x.k === "venta"), x => x.total))}</span></div>`; }
+    html += maRow(m);
+  });
+  const ocultos = maHr != null && base.some(m => m.dia);
+  $("ma-list").innerHTML = (ocultos ? `<p class="hint">Los días de ejemplo guardan solo el total del día, por eso no salen al filtrar por hora.</p>` : "")
+    + (html || `<p class="hint">No hay movimientos con esos filtros.</p>`)
+    + (lst.length > maMax ? `<button type="button" class="mv-more" data-mamore>Ver ${Math.min(40, lst.length - maMax)} más (quedan ${lst.length - maMax})</button>` : "");
+}
+$("mv-rap").addEventListener("click", e => { const b = e.target.closest("[data-mvr]"); if (b) { [mvD0, mvD1] = MV_RAP[b.dataset.mvr](); maDay = null; maSel = null; maMax = 40; renderMovs(); } });
 ["mv-desde", "mv-hasta"].forEach(id => $(id).addEventListener("change", () => { if (!$("mv-desde").value || !$("mv-hasta").value) return;
-  const f = v => { const [y, m, d] = v.split("-").map(Number); return new Date(y, m - 1, d); }; mvD0 = f($("mv-desde").value); mvD1 = f($("mv-hasta").value); mvMax = 100; renderMovs(); }));
+  const f = v => { const [y, m, d] = v.split("-").map(Number); return new Date(y, m - 1, d); }; mvD0 = f($("mv-desde").value); mvD1 = f($("mv-hasta").value); maDay = null; maSel = null; maMax = 40; renderMovs(); }));
+$("ma-head").addEventListener("click", () => { maOpen = !maOpen; try { localStorage.setItem("pininos-mov-lista", maOpen ? "1" : "0"); } catch (e) {} renderMaList(); });
+["ma-q", "ma-medio", "ma-user", "ma-ord"].forEach(id => $(id).addEventListener("input", () => { maMax = 40; maSel = null; renderMaList(); }));
 $("tx-box").addEventListener("click", e => {
-  const t = e.target.closest("[data-mvt]"); if (t) { fTipo = t.dataset.mvt; return renderMovs(); }
-  const m = e.target.closest("[data-mvm]"); if (m) { fMedio = m.dataset.mvm; return renderMovs(); }
-  const u = e.target.closest("[data-mvu]"); if (u) { fUser = u.dataset.mvu; return renderMovs(); }
-  if (e.target.closest('[data-a="mv-more"]')) { mvMax += 100; return renderMovs(); }
-  const r = e.target.closest("[data-mv]"); if (r) { mvSel = renderMovs.rows[+r.dataset.mv].m; renderMovs(); if (innerWidth < 1280) $("mv-detail").scrollIntoView({ behavior: "smooth", block: "start" }); }
+  let b;
+  if ((b = e.target.closest("[data-maday]"))) { maDay = +b.dataset.maday; maSel = null; maMax = 40; renderMovs(); if (innerWidth < 1180) $("ma-side").scrollIntoView({ behavior: "smooth", block: "start" }); }
+  else if ((b = e.target.closest("[data-mat]"))) { maTipo = b.dataset.mat; maMax = 40; renderMaList(); }
+  else if ((b = e.target.closest("[data-masc]"))) { maScope = b.dataset.masc; maMax = 40; maSel = null; renderMaList(); }
+  else if ((b = e.target.closest("[data-mamore]"))) { maMax += 40; renderMaList(); }
+  else if ((b = e.target.closest("[data-mahr]"))) { const h = b.dataset.mahr === "" ? null : +b.dataset.mahr; maHr = h === maHr ? null : h; maMax = 40; maSel = null;
+    if (maHr != null) { maOpen = true; try { localStorage.setItem("pininos-mov-lista", "1"); } catch (e) {} }
+    renderMovs(); if (maHr != null && b.closest("svg")) $("ma-mv").scrollIntoView({ behavior: "smooth", block: "start" }); }
+  else if ((b = e.target.closest("[data-mam]"))) { const m = S.movs[+b.dataset.mam]; maSel = maSel === m ? null : m; renderMaList(); }
 });
 
 /* ---------- Ajustes ---------- */
@@ -1715,9 +1955,6 @@ document.addEventListener("click", e => {
   const inv = e.target.closest("[data-buy]"); if (inv) { buySheet(P(inv.dataset.buy)); return; }
   const m = e.target.closest("#modo [data-m]"); if (m) { modo = m.dataset.m; pressIn(m); renderVender(); return; }
   const ms = e.target.closest("#movseg [data-ms]"); if (ms) { pressIn(ms); $("tx-box").hidden = ms.dataset.ms !== "tx"; $("cierres-box").hidden = ms.dataset.ms === "tx"; if (ms.dataset.ms !== "tx") renderCierres(); return; }
-  const fu = e.target.closest("[data-fu]"); if (fu) { fUser = fu.dataset.fu; pressIn(fu); renderMovs(); return; }
-  const fm = e.target.closest("[data-fm]"); if (fm) { fMedio = fm.dataset.fm; pressIn(fm); renderMovs(); return; }
-  const mk = e.target.closest("#movtab [data-k]"); if (mk) { movKind = mk.dataset.k; renderMovs(); return; }
 
   const b = e.target.closest("[data-a]"); if (!b) return;
   const a = b.dataset.a, i = +b.dataset.i;
@@ -1757,7 +1994,6 @@ document.addEventListener("click", e => {
 $("q").addEventListener("input", renderVender);
 $("q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); const f = matches()[0]; if (f) { addToCart(f.id); $("q").select(); } } });
 $("q2").addEventListener("input", renderComprar);
-$("q3").addEventListener("input", renderMovs);
 $("s-pct").addEventListener("change", e => { const v = +e.target.value; if (v >= 0) { S.pct = v; save(); renderAjustes(); toast(`Ahora vendes con ${v}% sobre el costo.`); } });
 document.addEventListener("keydown", e => {
   if (!me) return;
