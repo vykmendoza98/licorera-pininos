@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffc533">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>body{margin:0}</style>
+<title>Licorera Pininos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: programa de punto de venta claro. Computador: menú blanco a la izquierda, encabezado con acciones, tarjetas de balance y tablas. Celular: pestañas abajo y hoja para cobrar. */
+[hidden]{display:none!important}
+:root{
+  --bg:#f4f5f7; --card:#ffffff; --fg:#17191c; --muted:#6b7079; --line:#e6e8ec; --soft:#f7f8fa;
+  --ink:#1c1e21; --ink-fg:#ffffff; --yellow:#ffc533; --yellow-soft:#fff5d6; --yellow-ink:#2a2105;
+  --good:#16834f; --good-soft:#e3f5ec; --bad:#d23c32; --bad-soft:#fde8e6; --warn:#b4540a; --warn-soft:#fdeedd;
+  color-scheme:light;
+  --font:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.45}
+.num{font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+h2{margin:0;font-weight:700;font-size:1.05rem}
+.hint{font-size:.82rem;color:var(--muted);margin:0}
+.ex{font-size:.66rem;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.05em}
+.ic{width:20px;height:20px;flex:none}
+kbd{font-family:var(--font);font-size:.7rem;font-weight:700;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--soft);color:var(--muted)}
+
+/* ---------- Botones y campos ---------- */
+.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:700;background:var(--yellow);color:var(--yellow-ink);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.ink{background:var(--ink);color:var(--ink-fg)}
+.btn.line{background:var(--card);border:1px solid var(--line);color:var(--fg);font-weight:600}
+.btn.wide{width:100%}
+.field{display:flex;flex-direction:column;gap:6px;font-size:.82rem;color:var(--muted);font-weight:600}
+.field input,.select{font-weight:500;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
+.seg{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{flex:1;border:0;background:transparent;padding:8px 12px;border-radius:8px;font-weight:600;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--ink-fg)}
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0 12px;flex:1;min-width:0}
+.search svg{width:18px;height:18px;color:var(--muted);flex:none}
+.search input{border:0;background:transparent;padding:11px 0;width:100%;outline:0;min-width:0}
+
+/* ---------- Entrada ---------- */
+.login{min-height:100%;display:grid;place-items:center;background:var(--bg);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px}
+.login-card{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 24px;display:flex;flex-direction:column;gap:18px;box-shadow:0 12px 40px rgba(20,22,26,.08)}
+.brandmark{display:flex;align-items:center;gap:10px}
+.brandmark .mk{width:40px;height:40px;border-radius:11px;background:var(--yellow);color:var(--yellow-ink);display:grid;place-items:center}
+.brandmark .mk svg{width:22px;height:22px}
+.brandmark b{font-weight:800;font-size:1.15rem;display:block;line-height:1.15}
+.brandmark small{color:var(--muted)}
+.users{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.user{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.8rem;font-weight:600}
+.user .ini{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--soft)}
+.user[aria-pressed="true"]{border-color:var(--yellow);background:var(--yellow-soft)}
+.user[aria-pressed="true"] .ini{background:var(--yellow);color:var(--yellow-ink)}
+.err{color:var(--bad);font-size:.85rem;font-weight:600;margin:0}
+.demo{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:.78rem;color:var(--muted)}
+.demo b{color:var(--fg)}
+
+/* ---------- Estructura ---------- */
+.shell{min-height:100%;display:flex}
+.side{display:none}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px}
+body.in::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--card)}
+.top h1{margin:0;font-weight:800;font-size:1.2rem}
+.top-actions{display:none;gap:10px}
+.chip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);padding:5px 10px 5px 5px;border-radius:99px;font-size:.78rem;font-weight:600}
+.av-u{width:28px;height:28px;border-radius:50%;background:var(--yellow);color:var(--yellow-ink);display:grid;place-items:center;font-weight:800;font-size:.72rem;flex:none}
+.screen{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 150px;display:flex;flex-direction:column;gap:16px;width:100%;max-width:1240px;margin:0 auto}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- Inicio ---------- */
+.hello{font-weight:800;font-size:1.45rem;margin:4px 0 0;text-wrap:balance}
+.choices{display:grid;grid-template-columns:1fr;gap:12px}
+.choice{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px;text-align:left}
+.choice:hover{border-color:var(--yellow)}
+.choice .cic{flex:none;width:54px;height:54px;border-radius:14px;display:grid;place-items:center}
+.choice .cic svg{width:28px;height:28px}
+.choice b{display:block;font-size:1.2rem;font-weight:800}
+.choice span span{font-size:.88rem;color:var(--muted)}
+.choice.sell .cic{background:var(--yellow);color:var(--yellow-ink)}
+.choice.buy .cic{background:var(--ink);color:var(--ink-fg)}
+
+/* Tarjetas de balance */
+.kpis{display:grid;grid-template-columns:1fr;gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.kpi .kic{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none}
+.kpi .kic svg{width:20px;height:20px}
+.kpi small{display:block;color:var(--muted);font-size:.78rem;font-weight:600}
+.kpi b{font-size:1.25rem;font-weight:800}
+.kpi.g .kic{background:var(--good-soft);color:var(--good)} .kpi.g b{color:var(--good)}
+.kpi.r .kic{background:var(--bad-soft);color:var(--bad)} .kpi.r b{color:var(--bad)}
+.kpi.y .kic{background:var(--yellow-soft);color:var(--warn)}
+.kpi.n .kic{background:var(--soft);color:var(--fg)}
+.tips{display:flex;flex-direction:column;gap:8px}
+.tip{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:.88rem}
+.tip .dot{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.8rem;background:var(--yellow-soft);color:var(--warn)}
+.tip.warn .dot{background:var(--warn-soft);color:var(--warn)}
+
+/* ---------- Avatar de botella ---------- */
+.av{flex:none;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:.8rem;color:#fff;position:relative}
+.av.sm{width:30px;height:30px;border-radius:8px;font-size:.68rem}
+.av.l::after{content:"1L";position:absolute;right:-4px;bottom:-4px;background:var(--fg);color:var(--card);font-size:.55rem;padding:1px 4px;border-radius:5px}
+
+/* ---------- Vender ---------- */
+.sellwrap{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tools{display:flex;flex-direction:column;gap:10px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:8px;position:relative}
+.tile:hover{border-color:var(--yellow)}
+.tile:active{transform:scale(.98)}
+.tile .n{font-weight:700;font-size:.9rem;line-height:1.25}
+.tile .p{font-weight:800;font-size:1.05rem}
+.tile .s{font-size:.74rem;color:var(--muted);font-weight:500}
+.tile .s.low{color:var(--warn);font-weight:700}
+.tile .badge{position:absolute;top:8px;right:8px;background:var(--yellow);color:var(--yellow-ink);font-weight:800;font-size:.78rem;min-width:24px;height:24px;border-radius:12px;display:grid;place-items:center;padding:0 6px}
+.ticket{display:none}
+.cart{display:flex;flex-direction:column;gap:12px}
+.cart-h{display:flex;justify-content:space-between;align-items:center}
+.item{display:flex;align-items:center;gap:10px}
+.item .t{flex:1;min-width:0}
+.item .t b{display:block;font-weight:700;font-size:.88rem}
+.item .t small{color:var(--muted)}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-weight:800}
+.qty span{min-width:20px;text-align:center;font-weight:800}
+.sum{background:var(--soft);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.sum div{display:flex;justify-content:space-between;gap:8px}
+.sum .g{color:var(--good);font-weight:700}
+.sum .tot{font-weight:800;font-size:1.5rem;border-top:1px solid var(--line);padding-top:8px;align-items:baseline}
+.sum .tot span:first-child{font-size:1rem}
+.empty{text-align:center;padding:28px 8px;color:var(--muted);font-size:.88rem}
+.cartbar{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:6;
+  padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:0 10px}
+.cartbar button{width:100%;border:0;border-radius:12px;background:var(--ink);color:var(--ink-fg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+
+/* ---------- Tablas ---------- */
+.seg.big button{padding:10px 12px}
+.filters .select{padding:10px 12px}
+#f-count:not(:empty){background:var(--yellow);color:var(--yellow-ink);border-radius:99px;font-size:.7rem;padding:0 6px;margin-left:2px}
+.tabs-line{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs-line button{flex:1;border:0;background:none;padding:12px 10px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs-line button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--ink)}
+.tablebox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th{white-space:nowrap;text-align:left;font-weight:600;font-size:.78rem;color:var(--muted);padding:12px 14px;background:var(--soft)}
+td{white-space:nowrap;padding:12px 14px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;vertical-align:middle}
+td.r,th.r{text-align:right}
+.concept{display:flex;align-items:center;gap:10px}
+.concept .t b{display:block;font-weight:600}
+.concept .t small{color:var(--muted)}
+.pill{display:inline-block;padding:3px 9px;border-radius:6px;font-size:.72rem;font-weight:700;background:var(--good-soft);color:var(--good)}
+.pill.low{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.clickrow{cursor:pointer}
+.clickrow:hover td{background:var(--soft)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+.row2{display:flex;gap:8px}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:minmax(0,150px) 1fr auto;gap:10px;align-items:center;font-size:.85rem}
+.bar .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.bar .track{display:block;height:12px;background:var(--soft);border-radius:6px;overflow:hidden}
+.bar .fill{display:block;height:100%;background:var(--yellow);border-radius:6px}
+.bar .fill.g{background:var(--good)}
+.soon{margin-left:auto;font-size:.62rem;font-weight:700;background:var(--soft);color:var(--muted);padding:2px 6px;border-radius:5px}
+.morelist{display:flex;flex-direction:column}
+.morelist button{border:0;background:none;display:flex;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line);font-weight:600;text-align:left}
+.morelist button svg{width:20px;height:20px;color:var(--muted)}
+.soonbox{display:flex;flex-direction:column;gap:12px;align-items:flex-start;max-width:560px}
+.soonbox ul{margin:0;padding-left:18px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+
+/* ---------- Pestañas (celular) ---------- */
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;z-index:7;
+  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px))}
+.tabs button{flex:1;border:0;background:transparent;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.68rem;color:var(--muted);font-weight:600}
+.tabs svg{width:22px;height:22px}
+.tabs button[aria-current="page"]{color:var(--fg)}
+.tabs button[aria-current="page"] svg{background:var(--yellow-soft);border-radius:8px;box-shadow:0 0 0 5px var(--yellow-soft)}
+
+/* ---------- Hoja inferior (celular) ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:90%;overflow:auto;background:var(--card);border-radius:20px 20px 0 0;z-index:21;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:10px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto}
+.x{border:0;background:var(--soft);width:32px;height:32px;border-radius:50%;font-size:1.1rem;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(70px + env(safe-area-inset-top,0px));background:var(--ink);color:var(--ink-fg);padding:12px 18px;border-radius:12px;font-size:.88rem;font-weight:600;z-index:30;max-width:90%}
+
+/* ---------- Computador ---------- */
+@media (min-width:520px){
+  .side{display:flex;flex-direction:column;gap:14px;width:236px;flex:none;background:var(--card);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;
+    padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:14px;padding-block:18px}
+  .profile{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+  .profile .who{display:flex;align-items:center;gap:10px}
+  .profile .who b{display:block;font-size:.88rem}
+  .profile .who small{color:var(--muted);font-size:.75rem}
+  .profile .plink{border:0;background:none;padding:2px 0;display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;color:var(--fg);text-align:left}
+  .profile .plink svg{width:15px;height:15px;color:var(--muted)}
+  .profile .date{font-size:.75rem;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+  .side .navlabel{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:6px 10px 0}
+  .side nav{display:flex;flex-direction:column;gap:2px;flex:1}
+  .side nav button{border:0;background:transparent;display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:10px;font-weight:600;text-align:left;color:var(--fg)}
+  .side nav button svg{width:19px;height:19px;color:var(--muted)}
+  .side nav button:hover{background:var(--soft)}
+  .side nav button[aria-current="page"]{background:var(--yellow-soft)}
+  .side nav button[aria-current="page"] svg{color:var(--fg)}
+  .side nav .grp{font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:12px 12px 4px}
+  .side nav{overflow-y:auto}
+  .side .out{border:0;background:none;color:var(--bad);font-weight:600;display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line);border-radius:0}
+  .side .out svg{width:18px;height:18px}
+  .top{position:static;padding-left:28px;padding-right:28px;padding-block:14px}
+  .top h1{font-size:1.35rem}
+  .top .chip{display:none}
+  .top-actions{display:flex}
+  body.in::before{display:none}
+  .tabs,.cartbar{display:none!important}
+  .screen{padding-left:28px;padding-right:28px;padding-block:22px 40px}
+  .choices{grid-template-columns:1fr 1fr}
+  .choice{padding:26px}
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .kpis.four{grid-template-columns:repeat(4,1fr)}
+  .sellwrap{grid-template-columns:1fr 380px}
+  .tools{flex-direction:row}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(168px,1fr))}
+  .ticket{display:block;position:sticky;top:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .cols{grid-template-columns:3fr 2fr}
+}
+@media (min-width:520px) and (max-width:899.98px){
+  .side{width:72px;padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:10px;align-items:center}
+  .side .brandmark span:last-child,.side .profile,.side nav .grp,.side .lbl,.side .soon{display:none}
+  .side nav button,.side .out{justify-content:center;padding:11px}
+  .side nav{align-items:stretch;width:100%}
+  .top,.screen{padding-left:20px;padding-right:20px}
+  .top .top-actions .btn{padding:10px 12px}
+  .kpis,.kpis.four{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpi{flex-direction:column;align-items:flex-start;gap:8px;padding:12px}
+  .kpi b{font-size:1.05rem}
+  .sellwrap{grid-template-columns:1fr}
+  .ticket{display:none}
+  .cartbar:not([hidden]){display:block!important;left:72px;bottom:0;padding-block:10px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .choices{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:rise .22s ease-out}@keyframes rise{from{transform:translateY(40px);opacity:.4}}
+}
+</style>
+</head>
+<body>
+
+<!-- ENTRADA -->
+<div class="login" id="login">
+  <form class="login-card" id="f-login" autocomplete="off">
+    <div class="brandmark">
+      <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v4l2 3v12a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9l2-3z"/><path d="M8 13h8"/></svg></span>
+      <span><b>Licorera Pininos</b><small>Ingresa para empezar</small></span>
+    </div>
+    <div class="field">¿Quién eres?<div class="users" id="users"></div></div>
+    <label class="field" for="clave">Contraseña<input id="clave" type="password" inputmode="numeric" placeholder="••••"></label>
+    <p class="err" id="err" hidden></p>
+    <button class="btn ink wide" type="submit">Entrar</button>
+    <div class="demo">Claves de prueba: Administrador <b>1234</b> · Vendedor 1 <b>1111</b> · Vendedor 2 <b>2222</b></div>
+  </form>
+</div>
+
+<!-- APLICACIÓN -->
+<div class="shell" id="shell" hidden>
+  <aside class="side">
+    <div class="brandmark">
+      <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v4l2 3v12a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9l2-3z"/><path d="M8 13h8"/></svg></span>
+      <span><b>Licorera Pininos</b></span>
+    </div>
+    <div class="profile">
+      <div class="who"><span class="av-u" id="who-ini"></span><span><b id="who-n"></b><small id="who-r"></small></span></div>
+      <div class="date" id="today2"></div>
+      <button class="plink" type="button" data-go="ajustes" id="cfg-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Configuraciones</button>
+    </div>
+    <nav id="sidenav"></nav>
+    <button class="out" type="button" data-a="salir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span class="lbl">Cerrar sesión</span></button>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <h1 id="title">Inicio</h1>
+      <div class="top-actions">
+        <button class="btn line" type="button" data-go="comprar">Nueva compra</button>
+        <button class="btn" type="button" data-go="vender">Nueva venta</button>
+      </div>
+      <button class="chip" type="button" data-a="salir" title="Cerrar sesión"><span class="av-u" id="chip-ini"></span><span id="chip-n"></span> · Salir</button>
+    </header>
+
+    <!-- INICIO -->
+    <main class="screen" id="s-inicio">
+      <p class="hello" id="hello"></p>
+      <div class="choices">
+        <button class="choice sell" data-go="vender"><span class="cic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/></svg></span>
+          <span><b>Nueva venta</b><span>Cobra a un cliente, al detal o por caja</span></span></button>
+        <button class="choice buy" data-go="comprar"><span class="cic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></svg></span>
+          <span><b>Nueva compra</b><span>Registra la mercancía que llegó del proveedor</span></span></button>
+      </div>
+      <div id="admin-home" class="cols" hidden>
+        <div class="col">
+          <h2>Hoy</h2>
+          <div class="kpis" id="home-kpis"></div>
+        </div>
+        <div class="col"><h2>Recomendaciones</h2><div class="tips" id="tips"></div></div>
+      </div>
+    </main>
+
+    <!-- VENDER -->
+    <main class="screen" id="s-vender" hidden>
+      <div class="sellwrap">
+        <div class="col">
+          <div class="tools">
+            <label class="search" for="q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input id="q" type="search" placeholder="Buscar producto" autocomplete="off"></label>
+            <div class="seg" id="modo"><button type="button" data-m="unidad" aria-pressed="true">Por unidad</button><button type="button" data-m="caja" aria-pressed="false">Por caja</button></div>
+          </div>
+          <div class="grid" id="grid"></div>
+          <p class="hint">Toca un producto para agregarlo. En el computador: <kbd>F2</kbd> buscar, <kbd>Enter</kbd> agregar el primero, <kbd>F12</kbd> cobrar.</p>
+        </div>
+        <aside class="ticket"><div class="cart" id="ticket"></div></aside>
+      </div>
+    </main>
+
+    <!-- COMPRAR -->
+    <main class="screen" id="s-comprar" hidden>
+      <div class="row"><label class="search" for="q2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q2" type="search" placeholder="Buscar producto" autocomplete="off"></label></div>
+      <div class="panel">
+        <div class="tablebox"><table>
+          <thead><tr><th>Producto</th><th>Presentación</th><th class="r">Costo caja</th><th class="r">Costo und.</th><th class="r">Venta und.</th><th class="r">Existencias</th><th></th></tr></thead>
+          <tbody id="inv"></tbody>
+        </table></div>
+      </div>
+      <p class="hint">Toca un producto para registrar la compra al proveedor.</p>
+    </main>
+
+    <!-- INICIO DEL ADMINISTRADOR: movimientos -->
+    <main class="screen" id="s-movs" hidden>
+      <div class="seg big" id="movseg"><button type="button" data-ms="tx" aria-pressed="true">Transacciones</button><button type="button" data-ms="cierres" aria-pressed="false">Cierres de caja</button></div>
+      <div id="tx-box" class="col">
+        <div class="row filters">
+          <button class="btn line" type="button" data-a="filtrar"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtrar<span id="f-count"></span></button>
+          <select class="select" id="periodo" style="width:auto">
+            <option value="diario">Diario</option><option value="semanal">Semanal</option><option value="mensual" selected>Mensual</option><option value="todo">Todo</option>
+          </select>
+          <input class="select" id="fecha" type="month" style="width:auto">
+          <label class="search" for="q3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="q3" type="search" placeholder="Buscar concepto..." autocomplete="off"></label>
+        </div>
+        <div class="kpis" id="mov-kpis"></div>
+        <div class="panel">
+          <div class="tabs-line" role="tablist" id="movtab">
+            <button role="tab" data-k="venta" aria-selected="true">Ingresos</button>
+            <button role="tab" data-k="compra" aria-selected="false">Egresos</button>
+            <button role="tab" data-k="cobrar" aria-selected="false">Por cobrar</button>
+            <button role="tab" data-k="pagar" aria-selected="false">Por pagar</button>
+          </div>
+          <div class="tablebox"><table>
+            <thead><tr><th>Concepto</th><th class="r">Valor</th><th class="r" id="th-gan">Ganancia</th><th>Medio de pago</th><th>Fecha y hora</th><th>Responsable</th><th>Estado</th></tr></thead>
+            <tbody id="movs"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div id="cierres-box" class="card soonbox" hidden>
+        <span class="pill low">Próxima parte</span><h2>Cierres de caja</h2>
+        <p class="hint">Al final de cada día cuentas el efectivo y la app lo compara con lo que se vendió, para saber si la caja cuadra.</p>
+      </div>
+    </main>
+
+    <!-- AJUSTES (admin) -->
+    <main class="screen" id="s-ajustes" hidden>
+      <div class="cols">
+        <div class="card">
+          <h2>Precios</h2>
+          <label class="field" for="s-pct">Ganancia sobre el costo (%)<input id="s-pct" type="number" min="0" step="1" inputmode="numeric"></label>
+          <p class="hint" id="pct-help"></p>
+        </div>
+        <div class="card" id="reset-box"></div>
+      </div>
+    </main>
+    <!-- INVENTARIO -->
+    <main class="screen" id="s-inventario" hidden>
+      <div class="kpis" id="inv-kpis"></div>
+      <div class="panel"><div class="tablebox"><table>
+        <thead><tr><th>Producto</th><th class="r">Existencias</th><th class="r">Cajas</th><th class="r">Valor al costo</th><th class="r">Valor a la venta</th><th>Estado</th></tr></thead>
+        <tbody id="inv2"></tbody>
+      </table></div></div>
+    </main>
+
+    <!-- ESTADÍSTICAS -->
+    <main class="screen" id="s-estadisticas" hidden>
+      <div class="cols">
+        <div class="card"><h2>Ganancia por producto</h2><p class="hint">Desde que empezaste a registrar ventas.</p><div class="bars" id="st-prod"></div></div>
+        <div class="card"><h2>Ventas por persona</h2><div class="bars" id="st-user"></div><h2>Ventas por medio de pago</h2><div class="bars" id="st-medio"></div></div>
+      </div>
+    </main>
+
+    <!-- EMPLEADOS -->
+    <main class="screen" id="s-empleados" hidden>
+      <div class="panel"><div class="tablebox"><table>
+        <thead><tr><th>Usuario</th><th>Permisos</th><th class="r">Ventas hoy</th><th class="r">Vendido hoy</th></tr></thead>
+        <tbody id="emp"></tbody>
+      </table></div></div>
+      <p class="hint">Más adelante podrás cambiar los nombres y las contraseñas desde aquí.</p>
+    </main>
+
+    <!-- PRÓXIMAMENTE -->
+    <main class="screen" id="s-pronto" hidden><div class="card soonbox" id="pronto"></div></main>
+  </div>
+
+  <div class="cartbar" id="cartbar" hidden><button type="button" data-a="opencart"><span id="cart-n"></span><span id="cart-t" class="num"></span></button></div>
+  <nav class="tabs" id="tabs"></nav>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const KEY = "licorera-pininos-v4";
+const money = n => (n < 0 ? "−$" : "$") + Math.abs(Math.round(n)).toLocaleString("es-CO");
+const $ = id => document.getElementById(id);
+
+// Usuarios de prueba. En la versión instalada cada clave se cambiará desde Ajustes.
+const USERS = [
+  { id: "admin", nombre: "Administrador", ini: "AD", clave: "1234", rol: "admin" },
+  { id: "v1", nombre: "Vendedor 1", ini: "V1", clave: "1111", rol: "vendedor" },
+  { id: "v2", nombre: "Vendedor 2", ini: "V2", clave: "2222", rol: "vendedor" },
+];
+const MEDIOS = ["Efectivo", "Transferencia", "Tarjeta"];
+
+const ICONS = {
+  inicio: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  vender: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/>',
+  comprar: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/>',
+  movs: '<path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/>',
+  ajustes: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  up: '<path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+  cash: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+  box: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/>',
+  inventario: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>',
+  estadisticas: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  clientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M22 20c0-2.6-1.9-4.8-4.5-5.6"/>',
+  proveedores: '<path d="M1 6h13v10H1zM14 10h4l4 4v2h-8"/><circle cx="5.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/>',
+  gastos: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+  empleados: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+  mas: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+  star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+};
+const LABELS = { inicio: "Inicio", vender: "Vender", comprar: "Compras", movs: "Movimientos", inventario: "Inventario", estadisticas: "Estadísticas",
+  clientes: "Clientes", proveedores: "Proveedores", gastos: "Gastos", empleados: "Empleados", ajustes: "Ajustes" };
+const TITLES = { ...LABELS, vender: "Nueva venta", comprar: "Registrar compra" };
+const SOON = {
+  clientes: ["Clientes y fiados", "Aquí vas a tener la lista de clientes, sobre todo los de por mayor, y lo que cada uno te debe.", ["Agregar clientes con nombre y teléfono", "Vender fiado y anotar abonos", "Ver quién te debe y desde cuándo"]],
+  proveedores: ["Proveedores", "Aquí vas a guardar a quién le compras cada producto y lo que le debes.", ["Lista de proveedores y sus productos", "Comparar precios entre proveedores", "Cuentas por pagar con fecha de vencimiento"]],
+  gastos: ["Gastos del negocio", "Aquí vas a registrar arriendo, servicios, sueldos y otros gastos para ver tu ganancia real.", ["Registrar gastos fijos y del día", "Ganancia neta del mes: ventas menos costos menos gastos", "Cierre de caja al final del día"]],
+};
+const GROUPS = [["", ["inicio", "vender", "comprar"]], ["Análisis", ["inventario", "estadisticas"]], ["Gestiona tus contactos", ["clientes", "proveedores"]], ["Tu negocio", ["gastos", "empleados", "ajustes"]]];
+const SELLER = ["inicio", "vender", "comprar", "inventario"];
+const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
+
+// 10 cervezas de ejemplo. Costos de compra aproximados en pesos colombianos.
+// [nombre, presentación, unidades por caja, costo de la caja, iniciales, color]
+const SEED = [
+  ["Águila Negra", "Botella 330 ml", 30, 81000, "AN", "#1d1d1d"],
+  ["Águila Light", "Botella 330 ml", 30, 84000, "AL", "#3d7fc1"],
+  ["Club Colombia", "Botella 330 ml", 30, 105000, "CC", "#a8322d"],
+  ["Costeñita", "Botella 330 ml", 30, 72000, "Co", "#2a6fb0"],
+  ["Andina", "Lata 330 ml", 30, 69000, "An", "#c0392b"],
+  ["Andina Light", "Lata 330 ml", 30, 72000, "AL", "#5a9e4b"],
+  ["Poker", "Botella 330 ml", 30, 78000, "Po", "#b5121b"],
+  ["Águila Litro", "Botella 1 L", 12, 66000, "Ág", "#c99a06"],
+  ["Águila Light Litro", "Botella 1 L", 12, 69000, "AL", "#3d7fc1"],
+  ["Club Colombia Litro", "Botella 1 L", 12, 84000, "CC", "#a8322d"],
+];
+
+let me = null, cart = [], modo = "unidad", view = "inicio", pick = "admin", medio = "Efectivo", movKind = "venta";
+const isAdmin = () => me && me.rol === "admin";
+
+let S;
+const P = id => S.products.find(p => p.id === +id);
+const U = id => USERS.find(u => u.id === id) || USERS[0];
+const look = p => SEED[p.id - 1];
+const costoUnd = p => p.costoCaja / p.porCaja;
+const precio = (p, tipo, s = S) => (tipo === "caja" ? p.costoCaja : p.costoCaja / p.porCaja) * (1 + s.pct / 100);
+const unidades = (p, it) => it.tipo === "caja" ? it.cant * p.porCaja : it.cant;
+const avatar = (p, sm) => `<span class="av${sm ? " sm" : ""}${p.porCaja === 12 ? " l" : ""}" style="background:${look(p)[5]}">${look(p)[4]}</span>`;
+
+function sellItems(s, items, t, user, med, ejemplo) {
+  let total = 0, costo = 0;
+  const lines = items.map(it => {
+    const p = s.products.find(x => x.id === it.pid);
+    const und = unidades(p, it), tot = precio(p, it.tipo, s) * it.cant;
+    p.stock -= und; total += tot; costo += (p.costoCaja / p.porCaja) * und;
+    return { ...it, und, total: tot };
+  });
+  const v = { k: "venta", t, lines, total, ganancia: total - costo, user, medio: med, ejemplo: !!ejemplo };
+  s.movs.push(v);
+  return v;
+}
+
+function seed() {
+  const now = Date.now();
+  const products = SEED.map(([nombre, tam, porCaja, costoCaja], i) => ({ id: i + 1, nombre, tam, porCaja, costoCaja, stock: porCaja * 2 }));
+  const s = { pct: 10, products, movs: [] };
+  products.forEach(p => s.movs.push({ k: "compra", t: now - 864e5, pid: p.id, und: p.porCaja * 2, total: p.costoCaja * 2, user: "admin", medio: "Transferencia", ejemplo: true }));
+  sellItems(s, [{ pid: 1, cant: 6, tipo: "unidad" }], now - 3 * 36e5, "v1", "Efectivo", true);
+  sellItems(s, [{ pid: 3, cant: 1, tipo: "caja" }], now - 2 * 36e5, "v2", "Transferencia", true);
+  sellItems(s, [{ pid: 8, cant: 4, tipo: "unidad" }, { pid: 2, cant: 2, tipo: "unidad" }], now - 36e5, "v1", "Efectivo", true);
+  return s;
+}
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+if (!S || !S.products) S = seed();
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+function toast(msg) {
+  const el = $("toast"); el.textContent = msg; el.hidden = false;
+  clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 2400);
+}
+const isToday = t => new Date(t).toDateString() === new Date().toDateString();
+const fechaHora = t => new Date(t).toLocaleString("es-CO", { day: "2-digit", month: "short", hour: "numeric", minute: "2-digit" });
+const hoyVentas = () => S.movs.filter(m => m.k === "venta" && isToday(m.t));
+const invValor = () => S.products.reduce((a, p) => a + Math.max(p.stock, 0) * costoUnd(p), 0);
+const kpi = (cls, ic, label, val) => `<div class="kpi ${cls}"><span class="kic">${svg(ic)}</span><span><small>${label}</small><b class="num">${val}</b></span></div>`;
+const segHtml = (id, opts, cur, attr) => `<div class="seg" id="${id}">${opts.map(o => `<button type="button" data-${attr}="${o}" aria-pressed="${o === cur}">${o}</button>`).join("")}</div>`;
+
+/* ---------- Entrada ---------- */
+function renderUsers() {
+  $("users").innerHTML = USERS.map(u => `<button type="button" class="user" data-u="${u.id}" aria-pressed="${u.id === pick}"><span class="ini">${u.ini}</span>${u.nombre}</button>`).join("");
+}
+$("users").addEventListener("click", e => { const b = e.target.closest("[data-u]"); if (!b) return; pick = b.dataset.u; renderUsers(); $("err").hidden = true; $("clave").focus(); });
+$("f-login").addEventListener("submit", e => {
+  e.preventDefault();
+  const u = U(pick);
+  if ($("clave").value !== u.clave) { $("err").textContent = "Contraseña incorrecta. Intenta de nuevo."; $("err").hidden = false; $("clave").select(); return; }
+  me = u; $("clave").value = ""; $("err").hidden = true;
+  $("login").hidden = true; $("shell").hidden = false; document.body.classList.add("in");
+  buildNav(); go("inicio");
+});
+function logout() {
+  me = null; cart = []; closeSheet();
+  $("shell").hidden = true; $("login").hidden = false; document.body.classList.remove("in");
+  renderUsers(); $("clave").focus();
+}
+
+/* ---------- Navegación ---------- */
+const navItems = () => isAdmin() ? GROUPS.flatMap(g => g[1]) : SELLER;
+const navBtn = k => `<button data-go="${k}" title="${LABELS[k]}">${svg(k)}<span class="lbl">${LABELS[k]}</span>${SOON[k] ? '<span class="soon">Pronto</span>' : ""}</button>`;
+function buildNav() {
+  const items = navItems();
+  $("sidenav").innerHTML = isAdmin() ? GROUPS.map(([g, ks]) => (g ? `<div class="grp">${g}</div>` : "") + ks.map(navBtn).join("")).join("") : items.map(navBtn).join("");
+  const tabs = items.length > 5 ? items.slice(0, 4) : items;
+  $("tabs").innerHTML = tabs.map(k => `<button data-go="${k}">${svg(k)}${LABELS[k]}</button>`).join("") + (items.length > 5 ? `<button data-a="more" id="tab-more">${svg("mas")}Más</button>` : "");
+  $("who-ini").textContent = me.ini; $("chip-ini").textContent = me.ini;
+  $("who-n").textContent = me.nombre; $("chip-n").textContent = me.nombre;
+  $("who-r").textContent = isAdmin() ? "Acceso completo" : "Ventas y compras";
+}
+function go(v) {
+  if (!navItems().includes(v)) v = "inicio";
+  view = v;
+  closeSheet();
+  const screen = SOON[v] ? "pronto" : (v === "inicio" && isAdmin()) ? "movs" : v;
+  document.querySelectorAll("main.screen").forEach(el => el.hidden = el.id !== "s-" + screen);
+  document.querySelectorAll("nav [data-go]").forEach(b => b.dataset.go === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  const more = $("tab-more"); if (more) more.toggleAttribute("aria-current", !document.querySelector(`#tabs [data-go="${v}"]`));
+  $("title").textContent = (v === "inicio" && isAdmin()) ? "Movimientos" : TITLES[v];
+  $("cfg-link").hidden = !isAdmin();
+  window.scrollTo(0, 0); renderAll();
+  if (v === "vender" && matchMedia("(min-width:900px)").matches) $("q").focus();
+}
+
+/* ---------- Inicio ---------- */
+function renderInicio() {
+  const h = new Date().getHours();
+  $("hello").textContent = `${h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches"}, ${me.nombre}. ¿Qué vas a hacer?`;
+  $("admin-home").hidden = !isAdmin();
+  if (!isAdmin()) return;
+  const hv = hoyVentas();
+  $("home-kpis").innerHTML =
+    kpi("g", "up", "Ganancia de hoy", money(hv.reduce((a, v) => a + v.ganancia, 0))) +
+    kpi("n", "cash", "Vendido hoy", money(hv.reduce((a, v) => a + v.total, 0))) +
+    kpi("y", "box", "Inventario vale", money(invValor()));
+  const tips = [];
+  S.products.filter(p => p.stock < p.porCaja).forEach(p => tips.push(["warn", "!", `Te quedan ${Math.max(p.stock, 0)} ${p.nombre}. Pide al menos 1 caja.`]));
+  const gain = {};
+  S.movs.filter(m => m.k === "venta").forEach(v => v.lines.forEach(l => { const p = P(l.pid); gain[l.pid] = (gain[l.pid] || 0) + l.total - costoUnd(p) * l.und; }));
+  const top = Object.entries(gain).sort((a, b) => b[1] - a[1])[0];
+  if (top) tips.push(["", "★", `${P(top[0]).nombre} es la que más ganancia te deja: ${money(top[1])}.`]);
+  tips.push(["", "%", `De cada $1.000 que cobras, ganas ${money(S.pct / (100 + S.pct) * 1000)}.`]);
+  if (S.movs.some(x => x.ejemplo)) tips.push(["", "i", "Estás viendo datos de ejemplo. En Ajustes puedes empezar de cero."]);
+  $("tips").innerHTML = tips.map(([c, i, t]) => `<div class="tip ${c}"><span class="dot">${i}</span><span>${t}</span></div>`).join("");
+}
+
+/* ---------- Vender ---------- */
+function cartTotals() {
+  let total = 0, costo = 0;
+  cart.forEach(c => { const p = P(c.pid); total += precio(p, c.tipo) * c.cant; costo += costoUnd(p) * unidades(p, c); });
+  return { total, costo, gan: total - costo };
+}
+function cartHtml(inSheet) {
+  const head = `<div class="cart-h"><h2>Venta actual</h2>${inSheet ? '<button class="x" data-a="close" aria-label="Cerrar">×</button>' : ""}</div>`;
+  if (!cart.length) return head + `<div class="empty">Aún no has agregado productos.<br>Tócalos para empezar.</div>`;
+  const t = cartTotals();
+  return head + cart.map((c, i) => { const p = P(c.pid); return `<div class="item">${avatar(p, true)}<div class="t"><b>${p.nombre}</b><small>${c.tipo === "caja" ? `Caja x${p.porCaja}` : "Unidad"} · ${money(precio(p, c.tipo))}</small></div>
+    <div class="qty"><button data-a="minus" data-i="${i}" aria-label="Quitar uno">−</button><span class="num">${c.cant}</span><button data-a="plus" data-i="${i}" aria-label="Agregar uno">+</button></div></div>`; }).join("") +
+    `<div class="field">Medio de pago${segHtml("medio", MEDIOS, medio, "med")}</div>
+    <div class="sum num">${isAdmin() ? `<div><span>Te costó</span><span>${money(t.costo)}</span></div><div class="g"><span>Ganancia</span><span>${money(t.gan)}</span></div>` : ""}<div class="tot"><span>Total</span><span>${money(t.total)}</span></div></div>
+    <button class="btn wide" data-a="cobrar">Cobrar ${money(t.total)} <kbd>F12</kbd></button><button class="btn line wide" data-a="vaciar">Vaciar venta</button>`;
+}
+const matches = () => { const q = $("q").value.trim().toLowerCase(); return S.products.filter(p => p.nombre.toLowerCase().includes(q)); };
+function addToCart(pid) { const c = cart.find(x => x.pid === pid && x.tipo === modo); c ? c.cant++ : cart.push({ pid, tipo: modo, cant: 1 }); renderVender(); }
+function renderVender() {
+  $("grid").innerHTML = matches().map(p => {
+    const inCart = cart.filter(c => c.pid === p.id && c.tipo === modo).reduce((a, c) => a + c.cant, 0);
+    return `<button class="tile" data-pid="${p.id}">${inCart ? `<span class="badge">${inCart}</span>` : ""}${avatar(p)}
+      <span class="n">${p.nombre}<br><span class="s">${p.tam}${modo === "caja" ? ` · caja x${p.porCaja}` : ""}</span></span>
+      <span class="p num">${money(precio(p, modo))}</span>
+      <span class="s${p.stock < p.porCaja ? " low" : ""}">Quedan ${Math.max(p.stock, 0)} und.</span></button>`;
+  }).join("") || `<p class="hint">No hay productos con ese nombre.</p>`;
+  $("ticket").innerHTML = cartHtml(false);
+  const n = cart.reduce((a, c) => a + c.cant, 0);
+  $("cartbar").hidden = !n || view !== "vender";
+  $("cart-n").textContent = `Ver venta · ${n} ${n === 1 ? "artículo" : "artículos"}`;
+  $("cart-t").textContent = money(cartTotals().total);
+  if (!$("sheet").hidden && $("sheet").dataset.kind === "cart") cart.length ? openSheet(cartHtml(true), "cart") : closeSheet();
+}
+function cobrar() {
+  if (!cart.length) return;
+  const v = sellItems(S, cart, Date.now(), me.id, medio);
+  cart = []; save(); closeSheet(); renderVender();
+  toast(isAdmin() ? `Venta guardada (${v.medio}). Ganaste ${money(v.ganancia)}.` : `Venta guardada: ${money(v.total)} en ${v.medio.toLowerCase()}.`);
+}
+
+/* ---------- Compras e inventario ---------- */
+function renderComprar() {
+  const q = $("q2").value.trim().toLowerCase();
+  $("inv").innerHTML = S.products.filter(p => p.nombre.toLowerCase().includes(q)).map(p => {
+    const st = Math.max(p.stock, 0), low = p.stock < p.porCaja;
+    return `<tr class="clickrow" data-buy="${p.id}"><td><div class="concept">${avatar(p, true)}<span class="t"><b>${p.nombre}</b></span></div></td>
+      <td>${p.tam} · caja x${p.porCaja}</td><td class="r">${money(p.costoCaja)}</td><td class="r">${money(costoUnd(p))}</td><td class="r">${money(precio(p, "unidad"))}</td>
+      <td class="r"><span class="pill${low ? " low" : ""}">${st} und.</span><br><small class="hint">${Math.floor(st / p.porCaja)} cj + ${st % p.porCaja}</small></td>
+      <td class="r"><button class="btn line" type="button" data-buy="${p.id}" style="padding:7px 12px">Comprar</button></td></tr>`;
+  }).join("");
+}
+
+/* ---------- Movimientos (inicio del administrador) ---------- */
+let fUser = "Todos", fMedio = "Todos";
+function enPeriodo(t) {
+  const d = new Date(t), n = new Date(), per = $("periodo").value;
+  if (per === "diario") return d.toDateString() === n.toDateString();
+  if (per === "semanal") return n - d < 7 * 864e5;
+  if (per === "mensual") { const [y, m] = ($("fecha").value || "").split("-").map(Number); return d.getFullYear() === y && d.getMonth() + 1 === m; }
+  return true;
+}
+function concepto(mv) {
+  if (mv.k === "compra") return { p: P(mv.pid), txt: `Compra de ${mv.und} ${P(mv.pid).nombre}` };
+  const p = P(mv.lines[0].pid), n = mv.lines.length;
+  return { p, txt: n > 1 ? `${p.nombre} y ${n - 1} más` : `${mv.lines[0].cant} ${mv.lines[0].tipo === "caja" ? "caja" : "und."} ${p.nombre}` };
+}
+function renderMovs() {
+  $("fecha").hidden = $("periodo").value !== "mensual";
+  const q = $("q3").value.trim().toLowerCase();
+  const all = S.movs.filter(m => enPeriodo(m.t) && (fUser === "Todos" || U(m.user).nombre === fUser) && (fMedio === "Todos" || (m.medio || "Efectivo") === fMedio));
+  const ventas = all.filter(m => m.k === "venta"), compras = all.filter(m => m.k === "compra");
+  const vt = ventas.reduce((a, v) => a + v.total, 0), ct = compras.reduce((a, c) => a + c.total, 0);
+  const gan = ventas.reduce((a, v) => a + v.ganancia, 0);
+  $("mov-kpis").innerHTML = kpi("n", "up", "Balance", money(vt - ct)) + kpi("g", "cash", "Ventas totales", money(vt)) + kpi("r", "cash", "Gastos totales", money(ct));
+  $("f-count").textContent = (fUser !== "Todos") + (fMedio !== "Todos") || "";
+  document.querySelectorAll("#movtab button").forEach(b => b.setAttribute("aria-selected", b.dataset.k === movKind));
+  $("th-gan").hidden = movKind !== "venta";
+  if (movKind === "cobrar" || movKind === "pagar") {
+    $("movs").innerHTML = `<tr><td colspan="7" class="hint" style="padding:22px 14px">${movKind === "cobrar" ? "Aquí verás lo que te deben tus clientes (fiados). Lo construimos en la parte de Clientes." : "Aquí verás lo que les debes a tus proveedores. Lo construimos en la parte de Proveedores."}</td></tr>`;
+    return;
+  }
+  const rows = all.filter(m => m.k === movKind).map(m => ({ m, c: concepto(m) })).filter(r => r.c.txt.toLowerCase().includes(q)).reverse();
+  $("movs").innerHTML = rows.map(({ m, c }) => `<tr><td><div class="concept">${avatar(c.p, true)}<span class="t"><b>${c.txt}</b>${m.ejemplo ? '<small class="ex">ejemplo</small>' : ""}</span></div></td>
+    <td class="r"><b>${money(m.total)}</b></td>${movKind === "venta" ? `<td class="r" style="color:var(--good);font-weight:700">+${money(m.ganancia)}</td>` : ""}
+    <td>${m.medio || "Efectivo"}</td><td>${fechaHora(m.t)}</td><td>${U(m.user).nombre}</td><td><span class="pill">Pagado</span></td></tr>`).join("")
+    || `<tr><td colspan="7" class="hint" style="padding:22px 14px">No hay ${movKind === "venta" ? "ventas" : "egresos"} en este periodo.</td></tr>`;
+  if (movKind === "venta" && rows.length) $("movs").insertAdjacentHTML("beforeend", `<tr><td><b>Total del periodo</b></td><td class="r"><b>${money(vt)}</b></td><td class="r" style="color:var(--good);font-weight:800">+${money(gan)}</td><td colspan="4"></td></tr>`);
+}
+function filterSheet() {
+  openSheet(`<div class="cart-h"><h2>Filtrar movimientos</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <div class="field">Responsable${segHtml("fuser", ["Todos", ...USERS.map(u => u.nombre)], fUser, "fu")}</div>
+    <div class="field">Medio de pago${segHtml("fmedio", ["Todos", ...MEDIOS], fMedio, "fm")}</div>
+    <button class="btn ink wide" data-a="close">Ver resultados</button>`, "filter");
+}
+
+/* ---------- Ajustes ---------- */
+const RESET_BASE = `<h2>Empezar de cero</h2><p class="hint">Borra las ventas y compras de ejemplo y deja el inventario en cero, para usar la app con tus datos reales.</p><button class="btn line" type="button" data-a="reset-ask">Empezar de cero</button>`;
+function renderAjustes() {
+  $("s-pct").value = S.pct;
+  $("pct-help").textContent = `Si una cerveza te cuesta $2.000, la vendes a ${money(2000 * (1 + S.pct / 100))}. Tu margen sobre lo que cobras es ${(S.pct / (100 + S.pct) * 100).toFixed(1)}%.`;
+  if (!$("reset-box").innerHTML) $("reset-box").innerHTML = RESET_BASE;
+}
+
+/* ---------- Inventario ---------- */
+function renderInventario() {
+  const low = S.products.filter(p => p.stock < p.porCaja).length;
+  $("inv-kpis").innerHTML = kpi("y", "box", "Inventario al costo", money(invValor())) +
+    kpi("g", "up", "Inventario a precio de venta", money(invValor() * (1 + S.pct / 100))) +
+    kpi(low ? "r" : "n", "inventario", "Productos por acabarse", low);
+  $("inv2").innerHTML = S.products.map(p => {
+    const st = Math.max(p.stock, 0), l = p.stock < p.porCaja;
+    return `<tr><td><div class="concept">${avatar(p, true)}<span class="t"><b>${p.nombre}</b><small>${p.tam}</small></span></div></td>
+      <td class="r"><b>${st}</b> und.</td><td class="r">${Math.floor(st / p.porCaja)} cj + ${st % p.porCaja}</td>
+      <td class="r">${money(st * costoUnd(p))}</td><td class="r">${money(st * precio(p, "unidad"))}</td>
+      <td><span class="pill${l ? " low" : ""}">${l ? "Por acabarse" : "Bien"}</span></td></tr>`;
+  }).join("");
+}
+
+/* ---------- Estadísticas ---------- */
+function bars(entries, fmt, cls) {
+  const max = Math.max(1, ...entries.map(e => e[1]));
+  return entries.map(([l, v]) => `<div class="bar"><span class="lbl">${l}</span><span class="track"><span class="fill ${cls || ""}" style="width:${(v / max * 100).toFixed(1)}%"></span></span><b class="num">${fmt(v)}</b></div>`).join("") || `<p class="hint">Aún no hay ventas.</p>`;
+}
+function renderStats() {
+  const ventas = S.movs.filter(m => m.k === "venta"), gp = {}, gu = {}, gm = {};
+  ventas.forEach(v => {
+    v.lines.forEach(l => { const p = P(l.pid); gp[p.nombre] = (gp[p.nombre] || 0) + l.total - costoUnd(p) * l.und; });
+    gu[U(v.user).nombre] = (gu[U(v.user).nombre] || 0) + v.total;
+    gm[v.medio || "Efectivo"] = (gm[v.medio || "Efectivo"] || 0) + v.total;
+  });
+  const sort = o => Object.entries(o).sort((a, b) => b[1] - a[1]);
+  $("st-prod").innerHTML = bars(sort(gp), money, "g");
+  $("st-user").innerHTML = bars(sort(gu), money);
+  $("st-medio").innerHTML = bars(sort(gm), money);
+}
+
+/* ---------- Empleados ---------- */
+function renderEmpleados() {
+  const hv = hoyVentas();
+  $("emp").innerHTML = USERS.map(u => { const mine = hv.filter(v => v.user === u.id);
+    return `<tr><td><div class="concept"><span class="av-u">${u.ini}</span><span class="t"><b>${u.nombre}</b></span></div></td>
+      <td>${u.rol === "admin" ? "Acceso completo" : "Ventas, compras e inventario"}</td><td class="r">${mine.length}</td><td class="r">${money(mine.reduce((a, v) => a + v.total, 0))}</td></tr>`; }).join("");
+}
+
+/* ---------- Próximamente ---------- */
+function renderPronto() {
+  const [t, d, items] = SOON[view];
+  $("pronto").innerHTML = `<span class="pill low">Próxima parte</span><h2>${t}</h2><p class="hint">${d}</p><ul>${items.map(i => `<li>${i}</li>`).join("")}</ul>`;
+}
+
+function renderAll() {
+  if (!me) return;
+  if (SOON[view]) return renderPronto();
+  if (view === "inicio" && isAdmin()) return renderMovs();
+  ({ inicio: renderInicio, vender: renderVender, comprar: renderComprar, movs: renderMovs, ajustes: renderAjustes, inventario: renderInventario, estadisticas: renderStats, empleados: renderEmpleados })[view]();
+}
+
+/* ---------- Hoja inferior ---------- */
+function openSheet(html, kind) { $("sheet").innerHTML = `<div class="grab"></div>` + html; $("sheet").dataset.kind = kind; $("sheet").hidden = false; $("scrim").hidden = false; }
+function closeSheet() { $("sheet").hidden = true; $("scrim").hidden = true; $("sheet").dataset.kind = ""; }
+$("scrim").addEventListener("click", closeSheet);
+
+let buyMedio = "Transferencia";
+function buySheet(p) {
+  openSheet(`<div class="cart-h"><h2>Comprar ${p.nombre}</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <div class="item">${avatar(p)}<div class="t"><b>${p.tam} · caja de ${p.porCaja}</b><small>Último costo: ${money(p.costoCaja)} la caja</small></div></div>
+    <div class="seg" id="b-tipo"><button type="button" data-bt="caja" aria-pressed="true">Por caja</button><button type="button" data-bt="unidad" aria-pressed="false">Por unidad</button></div>
+    <label class="field" for="b-cant">¿Cuántas compraste?<input id="b-cant" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+    <label class="field" for="b-total">¿Cuánto pagaste en total?<input id="b-total" type="number" min="0" step="50" inputmode="numeric" value="${Math.round(p.costoCaja)}"></label>
+    <div class="field">Medio de pago${segHtml("bmedio", MEDIOS, buyMedio, "bmed")}</div>
+    <div class="sum num" id="b-res"></div>
+    <button class="btn ink wide" data-a="comprar" data-pid="${p.id}">Guardar compra</button>`, "buy");
+  buyPreview(p);
+}
+function buyPreview(p) {
+  const tipo = document.querySelector('#b-tipo [aria-pressed="true"]').dataset.bt;
+  const cant = Math.max(1, +$("b-cant").value || 1), total = +$("b-total").value || 0;
+  const und = tipo === "caja" ? cant * p.porCaja : cant, cu = total / und;
+  $("b-res").innerHTML = `<div><span>Entran</span><span>${und} unidades</span></div><div><span>Costo por unidad</span><span>${money(cu)}</span></div><div class="g"><span>Nuevo precio de venta</span><span>${money(cu * (1 + S.pct / 100))} und.</span></div>`;
+}
+$("sheet").addEventListener("input", () => { const b = $("sheet").querySelector('[data-a="comprar"]'); if (b) buyPreview(P(b.dataset.pid)); });
+
+/* ---------- Acciones ---------- */
+const pressIn = (b) => b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g) { go(g.dataset.go); return; }
+  const bt = e.target.closest("[data-bt]");
+  if (bt) {
+    pressIn(bt);
+    const p = P($("sheet").querySelector('[data-a="comprar"]').dataset.pid), cant = Math.max(1, +$("b-cant").value || 1);
+    $("b-total").value = Math.round(bt.dataset.bt === "caja" ? p.costoCaja * cant : costoUnd(p) * cant);
+    buyPreview(p); return;
+  }
+  const med = e.target.closest("[data-med]"); if (med) { medio = med.dataset.med; document.querySelectorAll("[data-med]").forEach(x => x.setAttribute("aria-pressed", x.dataset.med === medio)); return; }
+  const bmed = e.target.closest("[data-bmed]"); if (bmed) { buyMedio = bmed.dataset.bmed; pressIn(bmed); return; }
+  const t = e.target.closest(".tile[data-pid]"); if (t) { addToCart(+t.dataset.pid); return; }
+  const inv = e.target.closest("[data-buy]"); if (inv) { buySheet(P(inv.dataset.buy)); return; }
+  const m = e.target.closest("#modo [data-m]"); if (m) { modo = m.dataset.m; pressIn(m); renderVender(); return; }
+  const ms = e.target.closest("#movseg [data-ms]"); if (ms) { pressIn(ms); $("tx-box").hidden = ms.dataset.ms !== "tx"; $("cierres-box").hidden = ms.dataset.ms === "tx"; return; }
+  const fu = e.target.closest("[data-fu]"); if (fu) { fUser = fu.dataset.fu; pressIn(fu); renderMovs(); return; }
+  const fm = e.target.closest("[data-fm]"); if (fm) { fMedio = fm.dataset.fm; pressIn(fm); renderMovs(); return; }
+  const mk = e.target.closest("#movtab [data-k]"); if (mk) { movKind = mk.dataset.k; renderMovs(); return; }
+
+  const b = e.target.closest("[data-a]"); if (!b) return;
+  const a = b.dataset.a, i = +b.dataset.i;
+  if (a === "salir") logout();
+  if (a === "close") closeSheet();
+  if (a === "filtrar") filterSheet();
+  if (a === "opencart") openSheet(cartHtml(true), "cart");
+  if (a === "more") openSheet(`<div class="cart-h"><h2>Más opciones</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div><div class="morelist">${navItems().slice(4).map(navBtn).join("")}</div>`, "more");
+  if (a === "plus") { cart[i].cant++; renderVender(); }
+  if (a === "minus") { cart[i].cant--; if (!cart[i].cant) cart.splice(i, 1); renderVender(); }
+  if (a === "vaciar") { cart = []; closeSheet(); renderVender(); }
+  if (a === "cobrar") cobrar();
+  if (a === "comprar") {
+    const p = P(b.dataset.pid), tipo = document.querySelector('#b-tipo [aria-pressed="true"]').dataset.bt;
+    const cant = Math.max(1, Math.floor(+$("b-cant").value || 1)), total = +$("b-total").value;
+    if (!(total > 0)) { toast("Escribe cuánto pagaste."); return; }
+    const und = tipo === "caja" ? cant * p.porCaja : cant;
+    p.costoCaja = total / und * p.porCaja; p.stock += und;
+    S.movs.push({ k: "compra", t: Date.now(), pid: p.id, und, total, user: me.id, medio: buyMedio });
+    save(); closeSheet(); renderComprar();
+    toast(`Compra guardada: +${und} ${p.nombre}.`);
+  }
+  if (a === "reset-ask") $("reset-box").innerHTML = `<h2>¿Seguro?</h2><p class="hint">Se borran todas las ventas y compras. Los 10 productos se quedan, con inventario en cero.</p><div class="row2"><button class="btn" type="button" data-a="reset-yes">Sí, borrar</button><button class="btn line" type="button" data-a="reset-no">Cancelar</button></div>`;
+  if (a === "reset-no") $("reset-box").innerHTML = RESET_BASE;
+  if (a === "reset-yes") {
+    S.products.forEach(p => { p.stock = 0; p.costoCaja = SEED[p.id - 1][3]; });
+    S.movs = []; cart = []; save(); $("reset-box").innerHTML = RESET_BASE; renderAjustes();
+    toast("Listo. Registra tus compras en Compras.");
+  }
+});
+$("q").addEventListener("input", renderVender);
+$("q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); const f = matches()[0]; if (f) { addToCart(f.id); $("q").select(); } } });
+$("q2").addEventListener("input", renderComprar);
+$("q3").addEventListener("input", renderMovs);
+$("periodo").addEventListener("change", renderMovs);
+$("fecha").addEventListener("change", renderMovs);
+{ const n = new Date(); $("fecha").value = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`; }
+$("s-pct").addEventListener("change", e => { const v = +e.target.value; if (v >= 0) { S.pct = v; save(); renderAjustes(); toast(`Ahora vendes con ${v}% sobre el costo.`); } });
+document.addEventListener("keydown", e => {
+  if (!me) return;
+  if (e.key === "F2") { e.preventDefault(); go("vender"); $("q").focus(); }
+  if (e.key === "F12" && view === "vender") { e.preventDefault(); cobrar(); }
+  if (e.key === "Escape") closeSheet();
+});
+
+$("today2").textContent = new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
+save(); renderUsers();
+</script>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>
