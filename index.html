@@ -392,7 +392,8 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
       <div class="card"><div class="card-h"><h2>Lo que va del año</h2><span class="hint" id="ytd-h"></span></div><div class="proj" id="ytd"></div></div>
       <div class="pg-grid two">
         <div class="card">
-          <div class="card-h"><h2>Ventas, gastos y ganancia</h2><span class="hint">Pasa el cursor o toca un mes para ver el detalle</span></div>
+          <div class="card-h"><h2>Ventas, gastos y ganancia</h2><div class="seg" id="pg-gran" style="min-width:230px"></div></div>
+          <p class="hint" id="pg-gran-h"></p>
           <div class="techkpis" id="a-tk"></div>
           <div class="toggles" id="a-tg"></div>
           <div class="chartbox"><canvas id="a-canvas" aria-label="Ventas, gastos y ganancia por mes" role="img"></canvas></div>
@@ -780,11 +781,30 @@ const renderPanel = (() => {
   const tipsHtml = arr => arr.map(([c, i, t, d]) => `<div class="pg-tip ${c}"><span class="ic">${i}</span><span><b>${t}</b>${d}</span></div>`).join("");
 
   const SERIES = [
-    { key: "ventas", label: "Ventas", dark: "#5b8def", light: "#3f7be0", fn: M => M.ventas, axis: "y", type: "bar" },
-    { key: "gastos", label: "Gastos", dark: "#ff6b5e", light: "#f0574a", fn: M => M.costo + gastoTotal(M), axis: "y", type: "bar" },
-    { key: "ganancia", label: "Ganancia", dark: "#2ee59d", light: "#12a36b", fn: utilNeta, axis: "y2", type: "line" },
+    { key: "ventas", label: "Ventas", dark: "#5b8def", light: "#3f7be0", fn: p => p.v, axis: "y", type: "bar" },
+    { key: "gastos", label: "Gastos", dark: "#ff6b5e", light: "#f0574a", fn: p => p.c + p.g, axis: "y", type: "bar" },
+    { key: "ganancia", label: "Ganancia", dark: "#2ee59d", light: "#12a36b", fn: p => p.v - p.c - p.g, axis: "y2", type: "line" },
   ];
-  function buildChart(selIdx) {
+  // Puntos de la gráfica según el filtro: cada día del mes elegido, cada mes, o cada año.
+  let gran = "Mes";
+  function puntos(i) {
+    const M = meses[i];
+    if (gran === "Días") {
+      const v = Array(M.dias).fill(0), c = Array(M.dias).fill(0);
+      S.movs.forEach(mv => { if (mv.k !== "venta") return; const d = new Date(mv.t); if (d.getFullYear() === M.y && d.getMonth() === M.m && d.getDate() <= M.dias) { v[d.getDate() - 1] += mv.total; c[d.getDate() - 1] += mv.total - mv.ganancia; } });
+      const pts = v.map((x, k) => ({ lab: String(k + 1), title: `${cap(DIAS[new Date(M.y, M.m, k + 1).getDay()])} ${k + 1} de ${MESES[M.m]}`, v: x, c: c[k], g: M.fijo / M.total }));
+      return { pts, sel: -1, de: `de ${MESES[M.m]}`, hint: `Cada barra es un día de ${MESES[M.m]} ${M.y}. Cambia el mes arriba para ver otro.` };
+    }
+    if (gran === "Año") {
+      const ys = [...new Set(meses.map(x => x.y))];
+      const pts = ys.map(y => { const ms = meses.filter(x => x.y === y), parcial = ms.some(x => x.parcial);
+        return { y, lab: String(y) + (parcial ? "*" : ""), title: `${y}${parcial ? ` (hasta el ${hoy.getDate()} de ${MESES[hoy.getMonth()]})` : ""}`, v: ms.reduce((a, x) => a + x.ventas, 0), c: ms.reduce((a, x) => a + x.costo, 0), g: ms.reduce((a, x) => a + gastoTotal(x), 0) }; });
+      return { pts, sel: ys.indexOf(M.y), de: `de ${M.y}`, hint: "Cada barra es un año. * = año en curso, hasta hoy." };
+    }
+    return { pts: meses.map(x => ({ lab: MES3[x.m] + (x.parcial ? "*" : ""), title: `${cap(MESES[x.m])} ${x.y}`, v: x.ventas, c: x.costo, g: gastoTotal(x) })), sel: i, de: `de ${MESES[M.m]}`, hint: "Cada barra es un mes. Toca un mes para verlo en todo el panel." };
+  }
+  function buildChart(G) {
+    const pts = G.pts, selIdx = G.sel;
     const box = $("a-canvas");
     if (!box) return;
     if (!window.Chart) { box.parentNode.innerHTML = '<p class="hint">No se pudo cargar la gráfica. Revisa tu conexión a internet.</p>'; return; }
@@ -795,11 +815,11 @@ const renderPanel = (() => {
     const col = s => dark ? s.dark : s.light, gan = col(SERIES[2]);
     const tick = { color: T.tick, font: { family: "Plus Jakarta Sans", size: 11 } };
     chart = new Chart(box, {
-      data: { labels: meses.map(M => MES3[M.m] + (M.parcial ? "*" : "")), datasets: SERIES.map(s => ({
-        type: s.type, label: s.label, yAxisID: s.axis, data: meses.map(s.fn), hidden: !shown[s.key],
-        borderColor: col(s), borderWidth: s.type === "line" ? 3 : 0, tension: 0.38, pointRadius: meses.map((_, i) => i === selIdx ? 6 : 3),
+      data: { labels: pts.map(p => p.lab), datasets: SERIES.map(s => ({
+        type: s.type, label: s.label, yAxisID: s.axis, data: pts.map(s.fn), hidden: !shown[s.key],
+        borderColor: col(s), borderWidth: s.type === "line" ? 3 : 0, tension: 0.38, pointRadius: pts.map((_, i) => i === selIdx ? 6 : pts.length > 20 ? 2 : 3),
         pointBackgroundColor: col(s), pointBorderColor: T.point, pointBorderWidth: 2, pointHoverRadius: 7,
-        backgroundColor: s.type === "line" ? col(s) : meses.map((_, i) => col(s) + (i === selIdx ? "cc" : "40")),
+        backgroundColor: s.type === "line" ? col(s) : pts.map((_, i) => col(s) + (i === selIdx || selIdx < 0 ? "cc" : "40")),
         fill: false, borderRadius: 6, barPercentage: 0.7, maxBarThickness: 46, order: s.type === "bar" ? 3 : 1 })) },
       options: {
         responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
@@ -807,15 +827,15 @@ const renderPanel = (() => {
         plugins: { legend: { display: false },
           tooltip: { backgroundColor: T.tipBg, borderColor: T.tipLine, borderWidth: 1, titleColor: T.tipTitle, bodyColor: T.tipBody, padding: 12, boxPadding: 4,
             titleFont: { family: "Plus Jakarta Sans", weight: "800" }, bodyFont: { family: "Plus Jakarta Sans" },
-            callbacks: { title: it => { const M = meses[it[0].dataIndex]; return `${cap(MESES[M.m])} ${M.y}`; },
+            callbacks: { title: it => pts[it[0].dataIndex].title,
               label: c => ` ${c.dataset.label}: ${money(c.raw)}`,
-              afterBody: it => { const M = meses[it[0].dataIndex]; return ["", "Gastos = mercancía vendida + local", `De cada $1.000 vendidos ganas ${money(div(utilNeta(M), M.ventas) * 1000)}`]; } } } },
+              afterBody: it => { const p = pts[it[0].dataIndex]; return ["", "Gastos = mercancía vendida + local", `De cada $1.000 vendidos ganas ${money(div(p.v - p.c - p.g, p.v) * 1000)}`]; } } } },
         scales: {
           x: { grid: { display: false }, ticks: tick, border: { color: T.axis } },
           y: { position: "left", beginAtZero: true, grid: { color: T.grid }, border: { display: false }, ticks: { ...tick, callback: v => short(v).replace("$", "") }, title: { display: true, text: "Ventas y gastos", color: T.tick, font: { size: 11 } } },
-          y2: { display: shown.ganancia, position: "right", grid: { display: false }, border: { display: false }, ticks: { ...tick, color: gan, callback: v => short(v).replace("$", "") }, title: { display: true, text: "Ganancia", color: gan, font: { size: 11 } } },
+          y2: { display: shown.ganancia, position: "right", beginAtZero: true, grid: { display: false }, border: { display: false }, ticks: { ...tick, color: gan, callback: v => short(v).replace("$", "") }, title: { display: true, text: "Ganancia", color: gan, font: { size: 11 } } },
         },
-        onClick: (e, els) => { if (els.length) { $("pg-mes").value = els[0].index; draw(); } },
+        onClick: (e, els) => { if (els.length && gran === "Mes") { $("pg-mes").value = els[0].index; draw(); } },
       },
     });
     $("a-tg").innerHTML = SERIES.map(s => `<button type="button" data-s="${s.key}" aria-pressed="${shown[s.key]}"><i style="background:${col(s)}"></i>${s.label}</button>`).join("");
@@ -864,8 +884,11 @@ const renderPanel = (() => {
       ["Utilidad neta", money(utilNeta(M)), `<span class="delta ${utilNeta(M) >= 0 ? "up" : "dn"}">${div(utilNeta(M), M.ventas) < -1 ? "Gastos mayores que lo vendido" : `Margen neto ${pct(div(utilNeta(M), M.ventas))}`}</span>`, true],
       ["Venta promedio por día", money(avg), delta(avg, P && div(P.ventas, P.total))],
     ].map(([l, v, d, h]) => `<div class="pg-kpi${h ? " hero" : ""}"><small>${l}</small><b class="num">${v}</b>${d}</div>`).join("");
-    $("a-tk").innerHTML = `<div><small>Ventas de ${MESES[M.m]}</small><b style="color:var(--blue)">${short(M.ventas)}</b></div><div><small>Gastos</small><b style="color:var(--bad)">${short(M.costo + gastoTotal(M))}</b></div><div><small>Ganancia</small><b style="color:${utilNeta(M) >= 0 ? "var(--good)" : "var(--bad)"}">${short(utilNeta(M))}</b></div>`;
-    buildChart(i);
+    const G = puntos(i), t = gran === "Año" ? G.pts[G.sel] : { v: M.ventas, c: M.costo, g: gastoTotal(M) }, tg = t.v - t.c - t.g;
+    $("pg-gran").innerHTML = ["Días", "Mes", "Año"].map(o => `<button type="button" data-gran="${o}" aria-pressed="${o === gran}">${o}</button>`).join("");
+    $("pg-gran-h").textContent = G.hint;
+    $("a-tk").innerHTML = `<div><small>Ventas ${G.de}</small><b style="color:var(--blue)">${short(t.v)}</b></div><div><small>Gastos ${G.de}</small><b style="color:var(--bad)">${short(t.c + t.g)}</b></div><div><small>Ganancia ${G.de}</small><b style="color:${tg >= 0 ? "var(--good)" : "var(--bad)"}">${short(tg)}</b></div>`;
+    buildChart(G);
     renderExplain(M);
     const C = meses[meses.length - 1];
     const pr = [{ label: `Cierre de ${MESES[C.m]}`, gastos: C.fijo, compras: div(C.compras, C.dias) * C.total }, { ...proyectar(1), label: MESES[(hoy.getMonth() + 1) % 12] }, { ...proyectar(2), label: MESES[(hoy.getMonth() + 2) % 12] }];
@@ -884,6 +907,7 @@ const renderPanel = (() => {
   }
 
   $("pg-mes").addEventListener("change", draw);
+  $("pg-gran").addEventListener("click", e => { const b = e.target.closest("[data-gran]"); if (b) { gran = b.dataset.gran; draw(); } });
   $("a-tg").addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (!b) return; shown[b.dataset.s] = !shown[b.dataset.s]; draw(); });
   $("explain").addEventListener("click", e => { const b = e.target.closest("[data-ex]"); if (b) { exTab = b.dataset.ex; renderExplain(meses[+$("pg-mes").value]); } });
 
