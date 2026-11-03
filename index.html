@@ -500,6 +500,10 @@ td.r,th.r{text-align:right}
 .ci-billin input{width:76px;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 8px;text-align:right;font-weight:700;color:var(--fg)}
 .ci-form{display:flex;flex-direction:column;gap:12px}
 .sheet[data-kind="cierre"]{max-width:640px;margin:0 auto}
+.sheet[data-kind="emp"]{max-width:520px;margin:0 auto}
+.emp-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+#s-empleados tr.off td:not(:last-child){opacity:.55}
+@media (max-width:759px){ #s-empleados table{min-width:0} #s-empleados th:nth-child(2),#s-empleados td:nth-child(2),#s-empleados th:nth-child(3),#s-empleados td:nth-child(3){display:none} #s-empleados td,#s-empleados th{padding:10px 8px} }
 .ci-form textarea{width:100%;min-height:64px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:10px;font:inherit;resize:vertical}
 @media (min-width:760px){ #cierres-box .ci-sum{grid-template-columns:repeat(4,minmax(0,1fr))} }
 @media (min-width:1180px){ #cierres-box .ci-wrap{grid-template-columns:minmax(0,1fr) 420px} #cierres-box .ci-side{position:sticky;top:90px} }
@@ -597,7 +601,7 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
     <p class="err" id="err" hidden></p>
     <button class="btn ink wide" type="submit">Entrar</button>
     <div style="display:flex;justify-content:center"><button class="themebtn" type="button" aria-label="Cambiar entre modo diurno y nocturno"></button></div>
-    <div class="demo">Claves de prueba: Administrador <b>1234</b> · Vendedor 1 <b>1111</b> · Vendedor 2 <b>2222</b></div>
+    <div class="demo" id="demo"></div>
   </form>
 </div>
 
@@ -755,7 +759,7 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
             <div class="ma-fil">
               <div class="chips" id="ma-tipo"></div>
               <select id="ma-medio" aria-label="Medio de pago"><option value="">Todos los medios</option><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select>
-              <select id="ma-user" aria-label="Responsable"><option value="">Todos los responsables</option><option value="v1">Vendedor 1</option><option value="v2">Vendedor 2</option><option value="admin">Administrador</option></select>
+              <select id="ma-user" aria-label="Responsable"></select>
               <select id="ma-ord" aria-label="Ordenar"><option value="rec">Más recientes</option><option value="ant">Más antiguos</option><option value="may">Mayor valor</option></select>
               <span id="ma-hrchip"></span>
             </div>
@@ -829,11 +833,13 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
 
     <!-- EMPLEADOS -->
     <main class="screen" id="s-empleados" hidden>
+      <div class="emp-top"><p class="hint">Estos son los nombres que salen al entrar a la app. Toca Editar para cambiar un nombre o una contraseña.</p>
+        <button class="btn" type="button" data-a="emp-add">+ Agregar vendedor</button></div>
       <div class="panel"><div class="tablebox"><table>
-        <thead><tr><th>Usuario</th><th>Permisos</th><th class="r">Ventas hoy</th><th class="r">Vendido hoy</th></tr></thead>
+        <thead><tr><th>Usuario</th><th>Permisos</th><th class="r">Ventas hoy</th><th class="r">Vendido hoy</th><th class="r"></th></tr></thead>
         <tbody id="emp"></tbody>
       </table></div></div>
-      <p class="hint">Más adelante podrás cambiar los nombres y las contraseñas desde aquí.</p>
+      <p class="hint">Un vendedor que ya no trabaja se puede desactivar: deja de salir al entrar, pero sus ventas pasadas se conservan.</p>
     </main>
 
     <!-- PRÓXIMAMENTE -->
@@ -853,8 +859,8 @@ const KEY = "licorera-pininos-v4";
 const money = n => (n < 0 ? "−$" : "$") + Math.abs(Math.round(n)).toLocaleString("es-CO");
 const $ = id => document.getElementById(id);
 
-// Usuarios de prueba. En la versión instalada cada clave se cambiará desde Ajustes.
-const USERS = [
+// Usuarios con los que arranca la app. Después se guardan en S.users y el administrador los cambia desde Empleados.
+let USERS = [
   { id: "admin", nombre: "Administrador", ini: "AD", clave: "1234", rol: "admin" },
   { id: "v1", nombre: "Vendedor 1", ini: "V1", clave: "1111", rol: "vendedor" },
   { id: "v2", nombre: "Vendedor 2", ini: "V2", clave: "2222", rol: "vendedor" },
@@ -1010,6 +1016,8 @@ if (!S.hist && !S.real && S.movs.every(m => m.ejemplo)) { genHistory(S); S.hist 
 // Versión 3: cada día de ejemplo se reparte entre los turnos de mañana, tarde y noche para los cierres de caja.
 if (S.hist === 2) { S.movs.forEach(m => { if (m.dia && !m.turnos) m.turnos = partirDia(m.total, m.ganancia, m.t); }); S.hist = 3; }
 S.cierres = S.cierres || [];
+if (!S.users) S.users = USERS.map(u => ({ ...u }));
+USERS = S.users;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { console.warn("No se pudo guardar", e); } };
 save();
 
@@ -1261,13 +1269,18 @@ const segHtml = (id, opts, cur, attr) => `<div class="seg" id="${id}">${opts.map
 
 /* ---------- Entrada ---------- */
 function renderUsers() {
-  $("users").innerHTML = USERS.map(u => `<button type="button" class="user" data-u="${u.id}" aria-pressed="${u.id === pick}"><span class="ini">${u.ini}</span>${u.nombre}</button>`).join("");
+  if (U(pick).activo === false || !USERS.some(u => u.id === pick)) pick = "admin";
+  $("users").innerHTML = USERS.filter(u => u.activo !== false).map(u => `<button type="button" class="user" data-u="${u.id}" aria-pressed="${u.id === pick}"><span class="ini">${esc(u.ini)}</span>${esc(u.nombre)}</button>`).join("");
+  // Las claves de prueba solo se muestran mientras no se hayan cambiado.
+  const demo = USERS.filter(u => u.activo !== false && { admin: "1234", v1: "1111", v2: "2222" }[u.id] === u.clave);
+  $("demo").innerHTML = demo.length ? "Claves de prueba: " + demo.map(u => `${esc(u.nombre)} <b>${u.clave}</b>`).join(" · ") : ""; $("demo").hidden = !demo.length;
 }
 $("cats").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (b) { cat = b.dataset.cat; renderVender(); } });
 $("users").addEventListener("click", e => { const b = e.target.closest("[data-u]"); if (!b) return; pick = b.dataset.u; renderUsers(); $("err").hidden = true; $("clave").focus(); });
 $("f-login").addEventListener("submit", e => {
   e.preventDefault();
   const u = U(pick);
+  if (u.activo === false) return;
   if ($("clave").value !== u.clave) { $("err").textContent = "Contraseña incorrecta. Intenta de nuevo."; $("err").hidden = false; $("clave").select(); return; }
   me = u; $("clave").value = ""; $("err").hidden = true;
   $("login").hidden = true; $("shell").hidden = false; document.body.classList.add("in");
@@ -1561,6 +1574,7 @@ function renderMaList() {
   $("ma-sum").textContent = `${all.length.toLocaleString("es-CO")} en el periodo · entró ${ciShort(vin)} · salió ${ciShort(vout)}`;
   $("ma-head").setAttribute("aria-expanded", maOpen); $("ma-body").hidden = !maOpen; $("ma-lbl").textContent = maOpen ? "Ocultar" : "Ver lista";
   if (!maOpen) return;
+  const uv = $("ma-user").value; $("ma-user").innerHTML = `<option value="">Todos los responsables</option>` + USERS.map(u => `<option value="${u.id}">${esc(u.nombre)}</option>`).join(""); $("ma-user").value = uv;
   const q = $("ma-q").value.trim().toLowerCase(), md = $("ma-medio").value, us = $("ma-user").value, ord = $("ma-ord").value;
   const base = maScope === "dia" ? maDia(maDay) : all;
   const enHora = m => { if (maHr == null) return true; if (m.dia || m.k !== "venta") return false; const hr = new Date(m.t).getHours(); return (hr < 2 ? hr + 24 : hr) === maHr; };
@@ -1895,9 +1909,39 @@ function renderStats() {
 /* ---------- Empleados ---------- */
 function renderEmpleados() {
   const hv = hoyVentas();
-  $("emp").innerHTML = USERS.map(u => { const mine = hv.filter(v => v.user === u.id);
-    return `<tr><td><div class="concept"><span class="av-u">${u.ini}</span><span class="t"><b>${u.nombre}</b></span></div></td>
-      <td>${u.rol === "admin" ? "Acceso completo" : "Ventas, compras e inventario"}</td><td class="r">${mine.length}</td><td class="r">${money(mine.reduce((a, v) => a + v.total, 0))}</td></tr>`; }).join("");
+  $("emp").innerHTML = USERS.map(u => { const mine = hv.filter(v => v.user === u.id), off = u.activo === false;
+    return `<tr${off ? ' class="off"' : ""}><td><div class="concept"><span class="av-u">${esc(u.ini)}</span><span class="t"><b>${esc(u.nombre)}</b>${off ? '<span class="pill low">Desactivado</span>' : ""}</span></div></td>
+      <td>${u.rol === "admin" ? "Acceso completo" : "Ventas, compras e inventario"}</td><td class="r">${mine.length}</td><td class="r">${money(mine.reduce((a, v) => a + v.total, 0))}</td>
+      <td class="r"><button class="btn line" type="button" data-a="emp-edit" data-uid="${u.id}" style="padding:7px 12px">Editar</button></td></tr>`; }).join("");
+}
+// Iniciales para el círculo: "Vendedor 3" → "V3", "Ana María" → "AM", "Carlos" → "CA".
+const iniDe = n => { const w = n.trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[1][0] : w[0].slice(0, 2)).toUpperCase(); };
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+let empActivo = true;
+function empSheet(u) {
+  const nuevo = !u, n = USERS.filter(x => x.rol === "vendedor").length + 1;
+  empActivo = u ? u.activo !== false : true;
+  openSheet(`<div class="cart-h"><h2>${nuevo ? "Agregar vendedor" : `Editar ${esc(u.nombre)}`}</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <label class="field" for="e-nombre">Nombre para entrar<input id="e-nombre" maxlength="30" autocomplete="off" value="${nuevo ? `Vendedor ${n}` : esc(u.nombre)}"></label>
+    <label class="field" for="e-clave">Contraseña (4 a 8 números)<input id="e-clave" inputmode="numeric" maxlength="8" autocomplete="off" value="${nuevo ? "" : esc(u.clave)}" placeholder="Ejemplo: 3333"></label>
+    ${u && u.rol === "admin" ? `<p class="hint">El administrador siempre tiene acceso completo y no se puede desactivar.</p>`
+      : `<div class="field">¿Puede entrar a la app?${segHtml("e-act", ["Activo", "Desactivado"], empActivo ? "Activo" : "Desactivado", "eact")}</div>`}
+    <p class="err" id="e-err" hidden></p>
+    <button class="btn ink wide" type="button" data-a="emp-guardar" data-uid="${nuevo ? "" : u.id}">${nuevo ? "Agregar vendedor" : "Guardar cambios"}</button>`, "emp");
+  $("e-nombre").focus();
+}
+function empGuardar(uid) {
+  const nombre = $("e-nombre").value.replace(/[<>"&]/g, "").trim().replace(/\s+/g, " "), clave = $("e-clave").value.trim(), err = t => { $("e-err").textContent = t; $("e-err").hidden = false; };
+  if (nombre.length < 2) return err("Escribe un nombre de al menos 2 letras.");
+  if (USERS.some(x => x.id !== uid && x.nombre.toLowerCase() === nombre.toLowerCase())) return err("Ya hay alguien con ese nombre. Usa otro para no confundirlos.");
+  if (!/^\d{4,8}$/.test(clave)) return err("La contraseña debe tener de 4 a 8 números.");
+  let u = USERS.find(x => x.id === uid);
+  if (!u) { let i = 1; while (USERS.some(x => x.id === "v" + i)) i++; u = { id: "v" + i, rol: "vendedor" }; USERS.push(u); }
+  u.nombre = nombre; u.ini = iniDe(nombre); u.clave = clave;
+  if (u.rol !== "admin") u.activo = empActivo;
+  save(); closeSheet(); renderEmpleados(); renderUsers();
+  if (me && me.id === u.id) { $("who-ini").textContent = $("chip-ini").textContent = u.ini; $("who-n").textContent = $("chip-n").textContent = u.nombre; }
+  toast(uid ? `Listo, se guardaron los cambios de ${nombre}.` : `Listo, ${nombre} ya puede entrar con su contraseña.`);
 }
 
 /* ---------- Próximamente ---------- */
@@ -1950,6 +1994,7 @@ document.addEventListener("click", e => {
     buyPreview(p); return;
   }
   const med = e.target.closest("[data-med]"); if (med) { medio = med.dataset.med; document.querySelectorAll("[data-med]").forEach(x => x.setAttribute("aria-pressed", x.dataset.med === medio)); return; }
+  const ea = e.target.closest("[data-eact]"); if (ea) { empActivo = ea.dataset.eact === "Activo"; pressIn(ea); return; }
   const bmed = e.target.closest("[data-bmed]"); if (bmed) { buyMedio = bmed.dataset.bmed; pressIn(bmed); return; }
   const t = e.target.closest(".tile[data-pid]"); if (t) { addToCart(+t.dataset.pid); return; }
   const inv = e.target.closest("[data-buy]"); if (inv) { buySheet(P(inv.dataset.buy)); return; }
@@ -1978,6 +2023,9 @@ document.addEventListener("click", e => {
   }
   if (a === "reset-ask") $("reset-box").innerHTML = `<h2>¿Seguro?</h2><p class="hint">Se borran todas las ventas y compras. Los 10 productos se quedan, con inventario en cero.</p><div class="row2"><button class="btn" type="button" data-a="reset-yes">Sí, borrar</button><button class="btn line" type="button" data-a="reset-no">Cancelar</button></div>`;
   if (a === "reset-no") $("reset-box").innerHTML = RESET_BASE;
+  if (a === "emp-add") empSheet(null);
+  if (a === "emp-edit") empSheet(U(b.dataset.uid));
+  if (a === "emp-guardar") empGuardar(b.dataset.uid);
   if (a === "ci-guardar") {
     const r = ciLeer(); if (!r.contado) return toast("Anota los billetes que contaste.");
     S.cierres = (S.cierres || []).filter(c => !(c.dia === r.dia && c.n === r.n));
