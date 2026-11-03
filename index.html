@@ -141,6 +141,16 @@ body.in::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-in
 .tile .p{font-weight:800;font-size:1.05rem}
 .tile .s{font-size:.74rem;color:var(--muted);font-weight:500}
 .tile .s.low{color:var(--warn);font-weight:700}
+#modo{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))} #modo button{padding-inline:4px;white-space:normal;line-height:1.15}
+.tile .combo-av{display:flex} .tile .combo-av .av{border:2px solid var(--card)} .tile .combo-av .av + .av{margin-left:-12px}
+.tile.add{border-style:dashed;justify-content:center;align-items:center;text-align:center;color:var(--muted)}
+.combo-list{display:flex;flex-direction:column;gap:8px}
+.combo-row{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px}
+.combo-row .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.combo-row .t small{color:var(--muted);font-size:.78rem}
+.cb-it{display:grid;grid-template-columns:minmax(0,1fr) 80px 36px;gap:8px;align-items:center}
+.cb-it select,.cb-it input{font-weight:500;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-width:0}
+.sheet[data-kind="combo"]{max-width:560px;margin:0 auto}
 .tile .badge{position:absolute;top:8px;right:8px;background:var(--yellow);color:var(--yellow-ink);font-weight:800;font-size:.78rem;min-width:24px;height:24px;border-radius:12px;display:grid;place-items:center;padding:0 6px}
 .ticket{display:none}
 .cart{display:flex;flex-direction:column;gap:12px}
@@ -701,7 +711,7 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
           <div class="tools">
             <label class="search" for="q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
               <input id="q" type="search" placeholder="Buscar producto" autocomplete="off"></label>
-            <div class="seg" id="modo"><button type="button" data-m="unidad" aria-pressed="true">Por unidad</button><button type="button" data-m="caja" aria-pressed="false">Por caja</button></div>
+            <div class="seg" id="modo"><button type="button" data-m="unidad" aria-pressed="true">Unidad</button><button type="button" data-m="sixpack" aria-pressed="false">Sixpack</button><button type="button" data-m="media" aria-pressed="false">Media caja</button><button type="button" data-m="caja" aria-pressed="false">Caja</button><button type="button" data-m="combo" aria-pressed="false">Cubetazo</button></div>
           </div>
           <div class="chips" id="cats"></div>
           <div class="grid" id="grid"></div>
@@ -811,6 +821,11 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
           <h2>Gastos fijos del mes</h2>
           <p class="hint">El panel gerencial los usa para calcular tu utilidad neta. Vienen con valores de ejemplo: cámbialos por los tuyos.</p>
           <div class="gastos-f" id="gastos-f"></div>
+        </div>
+        <div class="card">
+          <div class="emp-top"><h2>Cubetazos (combos)</h2><button class="btn" type="button" data-a="cb-new" style="padding:8px 12px">+ Nuevo cubetazo</button></div>
+          <p class="hint">Arma combos con los productos y el precio que quieras. Salen en Vender, en la pestaña Cubetazo.</p>
+          <div class="combo-list" id="combo-list"></div>
         </div>
       </div>
     </main>
@@ -936,17 +951,34 @@ const P = id => S.products.find(p => p.id === +id);
 const U = id => USERS.find(u => u.id === id) || USERS[0];
 const look = p => SEED[p.id - 1];
 const costoUnd = p => p.costoCaja / p.porCaja;
-const precio = (p, tipo, s = S) => (tipo === "caja" ? p.costoCaja : p.costoCaja / p.porCaja) * (1 + s.pct / 100);
-const unidades = (p, it) => it.tipo === "caja" ? it.cant * p.porCaja : it.cant;
+// Presentaciones de venta. El precio sale del costo por unidad más el % de ganancia, por las unidades que lleva.
+// El cubetazo (combo) es aparte: lo arma el administrador en Ajustes con su propio precio.
+const PRES = {
+  unidad: { n: "Unidad", u: p => 1, ok: p => true },
+  sixpack: { n: "Sixpack", u: p => 6, ok: p => ["Cerveza", "Agua y bebidas"].includes(look(p)[6]) && p.porCaja % 6 === 0 && p.porCaja > 6 },
+  media: { n: "Media caja", u: p => p.porCaja / 2, ok: p => p.porCaja % 2 === 0 && p.porCaja >= 10 },
+  caja: { n: "Caja", u: p => p.porCaja, ok: p => true },
+};
+const precio = (p, tipo, s = S) => p.costoCaja / p.porCaja * (PRES[tipo] || PRES.unidad).u(p) * (1 + s.pct / 100);
+const unidades = (p, it) => it.tipo === "combo" ? it.cant : it.cant * (PRES[it.tipo] || PRES.unidad).u(p);
+const presTxt = (tipo, n, p) => tipo === "caja" ? `${n} ${n === 1 ? "caja" : "cajas"}` : tipo === "sixpack" ? `${n} ${n === 1 ? "sixpack" : "sixpacks"}` : tipo === "media" ? `${n} ${n === 1 ? "media caja" : "medias cajas"}` : `${n} und.`;
+const lineaTxt = l => l.tipo === "combo" ? `${l.combo} · ${l.cant} und. ${P(l.pid).nombre}` : `${presTxt(l.tipo, l.cant)} · ${P(l.pid).nombre}`;
+const comboDe = cid => (S.combos || []).find(c => c.id === cid);
+const comboCosto = c => c.items.reduce((a, it) => a + costoUnd(P(it.pid)) * it.und, 0);
 const avatar = (p, sm) => `<span class="av${sm ? " sm" : ""}${look(p)[1].includes("1 L") ? " l" : ""}" style="background:${look(p)[5]}">${look(p)[4]}</span>`;
 
 function sellItems(s, items, t, user, med, ejemplo) {
   let total = 0, costo = 0;
-  const lines = items.map(it => {
+  // Un cubetazo se guarda como una línea por producto que lleva, con el precio del combo repartido según el costo.
+  const lines = items.flatMap(it => {
+    if (it.tipo === "combo") { const c = (s.combos || []).find(x => x.id === it.cid), cc = c.items.reduce((a, x) => a + costoUnd(s.products.find(p => p.id === x.pid)) * x.und, 0) || 1;
+      let rest = c.precio * it.cant;
+      return c.items.map((x, i) => { const p = s.products.find(q => q.id === x.pid), und = x.und * it.cant, cu = costoUnd(p) * und, tot = i === c.items.length - 1 ? rest : Math.round(c.precio * it.cant * cu / (cc * it.cant));
+        rest -= tot; p.stock -= und; total += tot; costo += cu; return { pid: p.id, tipo: "combo", combo: c.nombre, cid: c.id, cant: und, und, total: tot }; }); }
     const p = s.products.find(x => x.id === it.pid);
     const und = unidades(p, it), tot = precio(p, it.tipo, s) * it.cant;
     p.stock -= und; total += tot; costo += (p.costoCaja / p.porCaja) * und;
-    return { ...it, und, total: tot };
+    return [{ ...it, und, total: tot }];
   });
   const v = { k: "venta", t, lines, total, ganancia: total - costo, user, medio: med, ejemplo: !!ejemplo };
   s.movs.push(v);
@@ -1017,6 +1049,10 @@ if (!S.hist && !S.real && S.movs.every(m => m.ejemplo)) { genHistory(S); S.hist 
 if (S.hist === 2) { S.movs.forEach(m => { if (m.dia && !m.turnos) m.turnos = partirDia(m.total, m.ganancia, m.t); }); S.hist = 3; }
 S.cierres = S.cierres || [];
 if (!S.users) S.users = USERS.map(u => ({ ...u }));
+// Cubetazos de ejemplo: 6 cervezas con hielo. El administrador los cambia en Ajustes.
+const redondeo500 = n => Math.ceil(n / 500) * 500;
+if (!S.combos) S.combos = [["Cubetazo Águila", [[1, 6]]], ["Cubetazo Poker", [[7, 6]]], ["Cubetazo Club Colombia", [[3, 6]]], ["Cubetazo mixto", [[1, 3], [7, 3]]]]
+  .map(([nombre, its], i) => { const items = its.map(([pid, und]) => ({ pid, und })); return { id: "c" + (i + 1), nombre, items, precio: redondeo500(items.reduce((a, x) => a + precio(P(x.pid), "unidad") * x.und, 0)) }; });
 USERS = S.users;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { console.warn("No se pudo guardar", e); } };
 save();
@@ -1343,30 +1379,42 @@ function renderInicio() {
 /* ---------- Vender ---------- */
 function cartTotals() {
   let total = 0, costo = 0;
-  cart.forEach(c => { const p = P(c.pid); total += precio(p, c.tipo) * c.cant; costo += costoUnd(p) * unidades(p, c); });
+  cart.forEach(c => { if (c.tipo === "combo") { const k = comboDe(c.cid); total += k.precio * c.cant; costo += comboCosto(k) * c.cant; return; }
+    const p = P(c.pid); total += precio(p, c.tipo) * c.cant; costo += costoUnd(p) * unidades(p, c); });
   return { total, costo, gan: total - costo };
 }
 function cartHtml(inSheet) {
   const head = `<div class="cart-h"><h2>Venta actual</h2>${inSheet ? '<button class="x" data-a="close" aria-label="Cerrar">×</button>' : ""}</div>`;
   if (!cart.length) return head + `<div class="empty">Aún no has agregado productos.<br>Tócalos para empezar.</div>`;
   const t = cartTotals();
-  return head + cart.map((c, i) => { const p = P(c.pid); return `<div class="item">${avatar(p, true)}<div class="t"><b>${p.nombre}</b><small>${c.tipo === "caja" ? `Caja x${p.porCaja}` : "Unidad"} · ${money(precio(p, c.tipo))}</small></div>
+  return head + cart.map((c, i) => { const k = c.tipo === "combo" && comboDe(c.cid), p = P(k ? k.items[0].pid : c.pid);
+    const sub = k ? `${k.items.map(x => `${x.und} ${P(x.pid).nombre}`).join(" + ")} · ${money(k.precio)}` : `${PRES[c.tipo].n}${c.tipo === "unidad" ? "" : ` x${PRES[c.tipo].u(p)}`} · ${money(precio(p, c.tipo))}`;
+    return `<div class="item">${avatar(p, true)}<div class="t"><b>${k ? esc(k.nombre) : p.nombre}</b><small>${sub}</small></div>
     <div class="qty"><button data-a="minus" data-i="${i}" aria-label="Quitar uno">−</button><span class="num">${c.cant}</span><button data-a="plus" data-i="${i}" aria-label="Agregar uno">+</button></div></div>`; }).join("") +
     `<div class="field">Medio de pago${segHtml("medio", MEDIOS, medio, "med")}</div>
     <div class="sum num">${isAdmin() ? `<div><span>Te costó</span><span>${money(t.costo)}</span></div><div class="g"><span>Ganancia</span><span>${money(t.gan)}</span></div>` : ""}<div class="tot"><span>Total</span><span>${money(t.total)}</span></div></div>
     <button class="btn wide" data-a="cobrar">Cobrar ${money(t.total)} <kbd>F12</kbd></button><button class="btn line wide" data-a="vaciar">Vaciar venta</button>`;
 }
-const matches = () => { const q = $("q").value.trim().toLowerCase(); return S.products.filter(p => p.nombre.toLowerCase().includes(q) && (q || cat === "Todos" || look(p)[6] === cat)); };
+const matches = () => { const q = $("q").value.trim().toLowerCase(); return S.products.filter(p => p.nombre.toLowerCase().includes(q) && (q || cat === "Todos" || look(p)[6] === cat) && (modo === "combo" || PRES[modo].ok(p))); };
+const comboMatches = () => { const q = $("q").value.trim().toLowerCase(); return S.combos.filter(c => c.items.length && (`${c.nombre} ${c.items.map(x => P(x.pid).nombre).join(" ")}`.toLowerCase().includes(q)) && (q || cat === "Todos" || c.items.some(x => look(P(x.pid))[6] === cat))); };
 function addToCart(pid) { const c = cart.find(x => x.pid === pid && x.tipo === modo); c ? c.cant++ : cart.push({ pid, tipo: modo, cant: 1 }); renderVender(); }
+function addCombo(cid) { const c = cart.find(x => x.tipo === "combo" && x.cid === cid); c ? c.cant++ : cart.push({ cid, tipo: "combo", cant: 1 }); renderVender(); }
 function renderVender() {
   $("cats").innerHTML = CATS.map(c => `<button type="button" data-cat="${c}" aria-pressed="${c === cat}">${c === "Cerveza" ? "Cervezas" : c}</button>`).join("");
-  $("grid").innerHTML = matches().map(p => {
+  $("grid").innerHTML = modo === "combo" ? comboMatches().map(k => {
+    const inCart = cart.filter(c => c.tipo === "combo" && c.cid === k.id).reduce((a, c) => a + c.cant, 0), p = P(k.items[0].pid), alcanza = Math.min(...k.items.map(x => Math.floor(Math.max(P(x.pid).stock, 0) / x.und)));
+    return `<button class="tile" data-cid="${k.id}">${inCart ? `<span class="badge">${inCart}</span>` : ""}<span class="combo-av">${k.items.map(x => avatar(P(x.pid))).join("")}</span>
+      <span class="n">${esc(k.nombre)}<br><span class="s">${k.items.map(x => `${x.und} ${P(x.pid).nombre}`).join(" + ")}</span></span>
+      <span class="p num">${money(k.precio)}</span>
+      <span class="s${alcanza < 2 ? " low" : ""}">Alcanza para ${alcanza}</span></button>`;
+  }).join("") + (isAdmin() ? `<button class="tile add" type="button" data-go="ajustes"><span class="n">+ Crear o cambiar cubetazos</span><span class="s">Se arman en Ajustes</span></button>` : "") || `<p class="hint">No hay cubetazos con ese nombre.</p>`
+  : matches().map(p => {
     const inCart = cart.filter(c => c.pid === p.id && c.tipo === modo).reduce((a, c) => a + c.cant, 0);
     return `<button class="tile" data-pid="${p.id}">${inCart ? `<span class="badge">${inCart}</span>` : ""}${avatar(p)}
-      <span class="n">${p.nombre}<br><span class="s">${p.tam}${modo === "caja" ? ` · caja x${p.porCaja}` : ""}</span></span>
+      <span class="n">${p.nombre}<br><span class="s">${p.tam}${modo === "unidad" ? "" : ` · ${PRES[modo].n.toLowerCase()} x${PRES[modo].u(p)}`}</span></span>
       <span class="p num">${money(precio(p, modo))}</span>
       <span class="s${p.stock < p.porCaja ? " low" : ""}">Quedan ${Math.max(p.stock, 0)} und.</span></button>`;
-  }).join("") || `<p class="hint">No hay productos con ese nombre.</p>`;
+  }).join("") || `<p class="hint">${modo === "sixpack" ? "El sixpack es para cervezas y bebidas. " : modo === "media" ? "Este producto no se vende por media caja. " : ""}No hay productos con ese nombre.</p>`;
   $("ticket").innerHTML = cartHtml(false);
   const n = cart.reduce((a, c) => a + c.cant, 0);
   $("cartbar").hidden = !n || view !== "vender";
@@ -1421,7 +1469,9 @@ function concepto(mv) {
   if (mv.k === "compra") { const p = P(mv.pid), cj = mv.und / p.porCaja; return { p, txt: Number.isInteger(cj) ? `${cj} ${cj === 1 ? "caja" : "cajas"} ${p.nombre}` : `${mv.und} und. ${p.nombre}` }; }
   const p = P(mv.lines[0].pid), n = mv.lines.length;
   if (mv.dia) return { p, txt: `Ventas del día · ${mv.lines.reduce((a, l) => a + l.und, 0)} unidades` };
-  return { p, txt: n > 1 ? `${p.nombre} y ${n - 1} más` : `${mv.lines[0].cant} ${mv.lines[0].tipo === "caja" ? (mv.lines[0].cant === 1 ? "caja" : "cajas") : "und."} ${p.nombre}` };
+  const cb = [...new Set(mv.lines.filter(l => l.combo).map(l => l.combo))];
+  if (cb.length && mv.lines.every(l => l.combo)) return { p, txt: cb.length > 1 ? `${cb[0]} y ${cb.length - 1} más` : cb[0] };
+  return { p, txt: n > 1 ? `${p.nombre} y ${n - 1} más` : `${presTxt(mv.lines[0].tipo, mv.lines[0].cant)} ${p.nombre}` };
 }
 // Calendario de calor: cada día pintado según lo vendido, con su % frente a lo estimado. Al tocar un día se ve su detalle y las ventas por hora.
 const maSum = (l, f) => l.reduce((a, m) => a + f(m), 0);
@@ -1563,7 +1613,7 @@ function maRow(m) {
   let det = "";
   if (on) det = m.k === "compra"
     ? `<div class="ma-lines"><div><span>Unidades que entraron</span><b class="num">${m.und}</b></div><div><span>Costo por unidad</span><span class="num">${money(m.total / m.und)}</span></div><div><span>Pagado por ${medioDe(m).toLowerCase()} · ${U(m.user).nombre}</span></div></div>`
-    : `<div class="ma-lines">${m.lines.map(l => `<div><span>${l.tipo === "caja" ? `${l.cant} ${l.cant === 1 ? "caja" : "cajas"}` : `${l.cant} und.`} · ${P(l.pid).nombre}</span><span class="num">${money(l.total)}</span></div>`).join("")}
+    : `<div class="ma-lines">${m.lines.map(l => `<div><span>${lineaTxt(l)}</span><span class="num">${money(l.total)}</span></div>`).join("")}
       <div class="g"><span>Ganancia · margen ${(m.ganancia / (m.total || 1) * 100).toFixed(1).replace(".", ",")}%</span><b class="num">+${money(m.ganancia)}</b></div></div>`;
   return `<button type="button" class="ma-mrow${on ? " on" : ""}" data-mam="${MA.pos.get(m)}">${avatar(c.p, true)}
     <span class="t"><b>${c.txt}${m.ejemplo ? ' <small class="ex">ejemplo</small>' : ""}</b><small>${sub}</small></span><span class="v num${venta ? " in" : ""}">${venta ? "+" : "−"}${money(m.total)}</span></button>${det}`;
@@ -1871,6 +1921,49 @@ function renderAjustes() {
   renderGastosF();
   $("pct-help").textContent = `Si una cerveza te cuesta $2.000, la vendes a ${money(2000 * (1 + S.pct / 100))}. Tu margen sobre lo que cobras es ${(S.pct / (100 + S.pct) * 100).toFixed(1)}%.`;
   if (!$("reset-box").innerHTML) $("reset-box").innerHTML = RESET_BASE;
+  renderCombos();
+}
+function renderCombos() {
+  $("combo-list").innerHTML = S.combos.map(k => { const c = comboCosto(k);
+    return `<div class="combo-row"><span class="combo-av">${k.items.map(x => avatar(P(x.pid), true)).join("")}</span><span class="t"><b>${esc(k.nombre)} · ${money(k.precio)}</b>
+      <small>${k.items.map(x => `${x.und} ${P(x.pid).nombre}`).join(" + ")} · ganas ${money(k.precio - c)}</small></span>
+      <button class="btn line" type="button" data-a="cb-edit" data-cbid="${k.id}" style="padding:7px 12px">Editar</button></div>`; }).join("") || `<p class="hint">Todavía no hay cubetazos.</p>`;
+}
+// Editor de cubetazo: nombre, productos con su cantidad y precio del combo.
+let cbDraft = null;
+function cbSheet(k) {
+  cbDraft = k ? { id: k.id, nombre: k.nombre, precio: k.precio, items: k.items.map(x => ({ ...x })) } : { id: null, nombre: "Cubetazo", precio: 0, items: [{ pid: 1, und: 6 }] };
+  if (!k) cbDraft.precio = redondeo500(precio(P(1), "unidad") * 6);
+  openSheet(`<div class="cart-h"><h2>${k ? "Editar cubetazo" : "Nuevo cubetazo"}</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <label class="field" for="cb-nombre">Nombre<input id="cb-nombre" maxlength="40" autocomplete="off" value="${esc(cbDraft.nombre)}"></label>
+    <div class="field">¿Qué lleva?<div class="combo-list" id="cb-items"></div><button class="btn line" type="button" data-a="cb-add">+ Agregar otro producto</button></div>
+    <label class="field" for="cb-precio">Precio del cubetazo<input id="cb-precio" type="number" min="0" step="500" inputmode="numeric" value="${cbDraft.precio}"></label>
+    <div class="sum num" id="cb-res"></div>
+    <p class="err" id="cb-err" hidden></p>
+    <button class="btn ink wide" type="button" data-a="cb-guardar">Guardar cubetazo</button>
+    ${k ? `<button class="btn line wide" type="button" data-a="cb-borrar" style="color:var(--bad)">Eliminar este cubetazo</button>` : ""}`, "combo");
+  cbItems();
+}
+function cbItems() {
+  $("cb-items").innerHTML = cbDraft.items.map((x, i) => `<div class="cb-it"><select data-cbp="${i}" aria-label="Producto">${S.products.map(p => `<option value="${p.id}"${p.id === x.pid ? " selected" : ""}>${p.nombre}</option>`).join("")}</select>
+    <input type="number" min="1" step="1" inputmode="numeric" value="${x.und}" data-cbu="${i}" aria-label="Unidades"><button class="x" type="button" data-a="cb-quitar" data-i="${i}" aria-label="Quitar"${cbDraft.items.length < 2 ? " disabled" : ""}>×</button></div>`).join("");
+  cbRes();
+}
+function cbRes() {
+  const suelto = cbDraft.items.reduce((a, x) => a + precio(P(x.pid), "unidad") * x.und, 0), costo = cbDraft.items.reduce((a, x) => a + costoUnd(P(x.pid)) * x.und, 0), pr = +$("cb-precio").value || 0;
+  $("cb-res").innerHTML = `<div><span>Suelto costaría</span><span>${money(suelto)}</span></div><div><span>A ti te cuesta</span><span>${money(costo)}</span></div>
+    <div class="${pr >= costo ? "g" : ""}"${pr < costo ? ' style="color:var(--bad)"' : ""}><span>${pr < costo ? "Pierdes" : "Ganas"}</span><span>${money(Math.abs(pr - costo))}</span></div>`;
+}
+function cbGuardar() {
+  const nombre = $("cb-nombre").value.replace(/[<>"&]/g, "").trim(), pr = Math.round(+$("cb-precio").value || 0), err = t => { $("cb-err").textContent = t; $("cb-err").hidden = false; };
+  if (nombre.length < 2) return err("Escribe un nombre para el cubetazo.");
+  if (S.combos.some(k => k.id !== cbDraft.id && k.nombre.toLowerCase() === nombre.toLowerCase())) return err("Ya hay un cubetazo con ese nombre.");
+  if (cbDraft.items.some(x => !(x.und >= 1))) return err("Cada producto debe llevar al menos 1 unidad.");
+  if (pr <= 0) return err("Escribe el precio del cubetazo.");
+  const items = []; cbDraft.items.forEach(x => { const y = items.find(z => z.pid === x.pid); y ? y.und += x.und : items.push({ pid: x.pid, und: x.und }); });
+  let k = S.combos.find(c => c.id === cbDraft.id);
+  if (!k) { let i = 1; while (S.combos.some(c => c.id === "c" + i)) i++; k = { id: "c" + i }; S.combos.push(k); }
+  Object.assign(k, { nombre, precio: pr, items }); save(); closeSheet(); renderCombos(); toast(`Listo, ${nombre} ya sale en Vender.`);
 }
 
 /* ---------- Inventario ---------- */
@@ -1997,6 +2090,7 @@ document.addEventListener("click", e => {
   const ea = e.target.closest("[data-eact]"); if (ea) { empActivo = ea.dataset.eact === "Activo"; pressIn(ea); return; }
   const bmed = e.target.closest("[data-bmed]"); if (bmed) { buyMedio = bmed.dataset.bmed; pressIn(bmed); return; }
   const t = e.target.closest(".tile[data-pid]"); if (t) { addToCart(+t.dataset.pid); return; }
+  const tc = e.target.closest(".tile[data-cid]"); if (tc) { addCombo(tc.dataset.cid); return; }
   const inv = e.target.closest("[data-buy]"); if (inv) { buySheet(P(inv.dataset.buy)); return; }
   const m = e.target.closest("#modo [data-m]"); if (m) { modo = m.dataset.m; pressIn(m); renderVender(); return; }
   const ms = e.target.closest("#movseg [data-ms]"); if (ms) { pressIn(ms); $("tx-box").hidden = ms.dataset.ms !== "tx"; $("cierres-box").hidden = ms.dataset.ms === "tx"; if (ms.dataset.ms !== "tx") renderCierres(); return; }
@@ -2024,6 +2118,12 @@ document.addEventListener("click", e => {
   if (a === "reset-ask") $("reset-box").innerHTML = `<h2>¿Seguro?</h2><p class="hint">Se borran todas las ventas y compras. Los 10 productos se quedan, con inventario en cero.</p><div class="row2"><button class="btn" type="button" data-a="reset-yes">Sí, borrar</button><button class="btn line" type="button" data-a="reset-no">Cancelar</button></div>`;
   if (a === "reset-no") $("reset-box").innerHTML = RESET_BASE;
   if (a === "emp-add") empSheet(null);
+  if (a === "cb-new") cbSheet(null);
+  if (a === "cb-edit") cbSheet(comboDe(b.dataset.cbid));
+  if (a === "cb-add") { cbDraft.items.push({ pid: S.products.find(p => !cbDraft.items.some(x => x.pid === p.id)).id, und: 1 }); cbItems(); }
+  if (a === "cb-quitar" && cbDraft.items.length > 1) { cbDraft.items.splice(i, 1); cbItems(); }
+  if (a === "cb-guardar") cbGuardar();
+  if (a === "cb-borrar") { const n = cbDraft.nombre; S.combos = S.combos.filter(k => k.id !== cbDraft.id); cart = cart.filter(c => !(c.tipo === "combo" && c.cid === cbDraft.id)); save(); closeSheet(); renderCombos(); toast(`Se eliminó ${n}.`); }
   if (a === "emp-edit") empSheet(U(b.dataset.uid));
   if (a === "emp-guardar") empGuardar(b.dataset.uid);
   if (a === "ci-guardar") {
@@ -2040,7 +2140,14 @@ document.addEventListener("click", e => {
   }
 });
 $("q").addEventListener("input", renderVender);
-$("q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); const f = matches()[0]; if (f) { addToCart(f.id); $("q").select(); } } });
+$("sheet").addEventListener("input", e => {
+  if ($("sheet").dataset.kind !== "combo") return;
+  const sp = e.target.closest("[data-cbp]"), su = e.target.closest("[data-cbu]");
+  if (sp) cbDraft.items[+sp.dataset.cbp].pid = +sp.value;
+  if (su) cbDraft.items[+su.dataset.cbu].und = Math.max(0, Math.round(+su.value || 0));
+  cbRes();
+});
+$("q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (modo === "combo") { const k = comboMatches()[0]; if (k) { addCombo(k.id); $("q").select(); } return; } const f = matches()[0]; if (f) { addToCart(f.id); $("q").select(); } } });
 $("q2").addEventListener("input", renderComprar);
 $("s-pct").addEventListener("change", e => { const v = +e.target.value; if (v >= 0) { S.pct = v; save(); renderAjustes(); toast(`Ahora vendes con ${v}% sobre el costo.`); } });
 document.addEventListener("keydown", e => {
