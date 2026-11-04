@@ -18,7 +18,7 @@
 :root{
   --bg:#f4f5f7; --card:#ffffff; --fg:#17191c; --muted:#6b7079; --line:#e6e8ec; --soft:#f7f8fa;
   --ink:#ffc533; --ink-fg:#2a2105; --yellow:#ffc533; --yellow-soft:#fff5d6; --yellow-ink:#2a2105;
-  --good:#16834f; --good-soft:#e3f5ec; --bad:#d23c32; --bad-soft:#fde8e6; --warn:#b4540a; --warn-soft:#fdeedd;
+  --good:#16834f; --good-soft:#e3f5ec; --bad:#d23c32; --bad-soft:#fde8e6; --warn:#b4540a; --warn-soft:#fdeedd; --blue:#2f6db5; --blue-soft:#e6eefa;
   --h1:#fff8e1; --h2:#ffe9a8; --h3:#ffd766; --h4:#ffc533; --h5:#e0a400;
   --q1:#e0393e; --q2:#f57c2b; --q3:#f2b51c; --q4:#7cbf3f; --q5:#16a34a; --grid:#e3e6eb;
   color-scheme:light;
@@ -607,6 +607,125 @@ td.r,th.r{text-align:right}
 @media (min-width:1400px){ #s-panel .pg-kpis{grid-template-columns:repeat(6,minmax(0,1fr))} }
 body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9edf2; --heat-mid:#5a4712; --heat-mid-fg:#ffe39a; }
 :root{ --blue:#2f6db5; --blue-soft:#e6eefa; }
+/* ---------- Estadísticas: subpestañas ---------- */
+#s-estadisticas .es-rangebar{display:flex;gap:12px 16px;align-items:flex-end;flex-wrap:wrap}
+#s-estadisticas .range{display:grid;grid-template-columns:repeat(2,minmax(0,170px));gap:10px;min-width:0}
+#s-estadisticas .rf{display:flex;flex-direction:column;gap:5px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+#s-estadisticas .rf input{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:.95rem;font-weight:500;color:var(--fg);width:100%}
+#s-estadisticas .chips button{display:flex;gap:6px;align-items:center}
+#s-estadisticas .chips button span{color:var(--muted);font-weight:600}
+#s-estadisticas .row2{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+#s-estadisticas .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.76rem;color:var(--muted);align-items:center}
+#s-estadisticas .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+#s-estadisticas .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#s-estadisticas .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:2px}
+#s-estadisticas .kpi small{color:var(--muted);font-weight:600;font-size:.76rem}
+#s-estadisticas .kpi b{font-size:1.2rem;font-weight:800}
+#s-estadisticas .kpi em{font-style:normal;font-size:.74rem;font-weight:700}
+#s-estadisticas .more{border:1px dashed var(--line);background:none;border-radius:10px;padding:10px;font-weight:700;color:var(--muted)}
+#s-estadisticas .es-tab{display:flex;flex-direction:column;gap:16px;min-width:0}
+#s-estadisticas .card{min-width:0}
+#s-estadisticas .yr svg text{font-family:var(--font);fill:var(--muted)}
+#s-estadisticas .subtabs{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;max-width:100%}
+#s-estadisticas .subtabs button{flex:1 0 auto;border:0;background:none;border-radius:9px;padding:10px 14px;font-weight:700;color:var(--muted);white-space:nowrap;display:flex;gap:8px;align-items:center;justify-content:center}
+#s-estadisticas .subtabs button svg{width:16px;height:16px}
+#s-estadisticas .subtabs button[aria-pressed="true"]{background:var(--yellow);color:var(--yellow-ink)}
+#s-estadisticas .ins4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#s-estadisticas .ins{border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);background:var(--card);min-width:0}
+#s-estadisticas .ins small{color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+#s-estadisticas .ins b{font-weight:800;font-size:1.05rem}
+#s-estadisticas .ins span{font-size:.8rem;color:var(--muted)}
+#s-estadisticas .note{display:flex;gap:10px;align-items:flex-start;background:var(--yellow-soft);border:1px solid var(--yellow);border-radius:12px;padding:12px;font-size:.85rem}
+#s-estadisticas .note b{font-weight:800}
+#s-estadisticas .g2{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+#s-estadisticas /* barras por producto */
+.pbars{display:flex;flex-direction:column;gap:2px}
+#s-estadisticas .pbar{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 4px;border-radius:8px}
+#s-estadisticas .pbar:hover{background:var(--soft)}
+#s-estadisticas .pbar .rk{font-size:.74rem;font-weight:800;color:var(--muted);text-align:right}
+#s-estadisticas .pbar .nm{display:flex;flex-direction:column;gap:4px;min-width:0}
+#s-estadisticas .pbar .nm b{font-weight:700;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#s-estadisticas .pbar .nm small{color:var(--muted);font-size:.72rem}
+#s-estadisticas .pbar .tr{display:block;height:8px;border-radius:4px;background:var(--soft);overflow:hidden}
+#s-estadisticas .pbar .tr i{display:block;height:100%;border-radius:4px;background:var(--good)}
+#s-estadisticas .pbar .vv{text-align:right;display:flex;flex-direction:column}
+#s-estadisticas .pbar .vv b{font-weight:800}
+#s-estadisticas .pbar .vv small{color:var(--muted);font-size:.72rem}
+#s-estadisticas .catb{display:flex;flex-direction:column;gap:8px}
+#s-estadisticas .catb div{display:grid;grid-template-columns:minmax(0,110px) 1fr auto;gap:10px;align-items:center;font-size:.84rem}
+#s-estadisticas .catb .tr{display:block;height:10px;border-radius:5px;background:var(--soft);overflow:hidden}
+#s-estadisticas .catb .tr i{display:block;height:100%;border-radius:5px}
+/* anual */
+#s-estadisticas #es-a-chart{overflow-x:auto}
+#s-estadisticas .yr svg{width:100%;min-width:600px;height:auto;display:block}
+#s-estadisticas .yr .gl{stroke:var(--grid)}
+#s-estadisticas .yr .zl{stroke:var(--muted);stroke-width:1.2}
+#s-estadisticas .gfx{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+#s-estadisticas .g2b{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+@media (min-width:900px){
+#s-estadisticas .g2b{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#s-estadisticas .gfx{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+}
+#s-estadisticas .gtot{margin:0;font-size:.88rem;color:var(--muted)}
+#s-estadisticas .gtot b{color:var(--fg);font-weight:800}
+#s-estadisticas .ytab{width:100%;border-collapse:collapse;font-size:.85rem}
+#s-estadisticas .ytab th{color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
+#s-estadisticas .ytab th:first-child,#s-estadisticas .ytab td:first-child{text-align:left}
+#s-estadisticas .ytab td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+#s-estadisticas .ytab tr.proy td{color:var(--muted);font-style:italic}
+#s-estadisticas .ytab tfoot td{font-weight:800;border-bottom:0}
+#s-estadisticas .tabwrap{overflow-x:auto}
+#s-estadisticas /* temporadas */
+.months12{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#s-estadisticas .mcard{border:1px solid var(--line);border-radius:12px;padding:10px;text-align:left;background:var(--card);display:flex;flex-direction:column;gap:6px;min-width:0;color:var(--fg)}
+#s-estadisticas .mcard.on{outline:2px solid var(--fg);outline-offset:1px}
+#s-estadisticas .mcard .hd{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+#s-estadisticas .mcard .hd b{font-weight:800;text-transform:capitalize}
+#s-estadisticas .mcard .pc{font-weight:800;font-size:.84rem}
+#s-estadisticas .mcard .bar{display:block;height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+#s-estadisticas .mcard .bar i{display:block;height:100%;border-radius:3px}
+#s-estadisticas .badge{display:inline-flex;align-self:flex-start;align-items:center;gap:5px;border-radius:99px;padding:3px 9px;font-size:.7rem;font-weight:800}
+#s-estadisticas .badge i{width:7px;height:7px;border-radius:50%}
+#s-estadisticas .b-alta{background:var(--good-soft);color:var(--good)}
+#s-estadisticas .b-alta i{background:var(--good)}
+#s-estadisticas .b-buena{background:var(--yellow-soft);color:var(--yellow-ink)}
+#s-estadisticas .b-buena i{background:var(--q3)}
+body.dark #s-estadisticas .b-buena{color:var(--yellow)}
+#s-estadisticas .b-mejora{background:var(--bad-soft);color:var(--bad)}
+#s-estadisticas .b-mejora i{background:var(--bad)}
+#s-estadisticas .rules{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+#s-estadisticas .toplist{display:flex;flex-direction:column}
+#s-estadisticas .trow{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+#s-estadisticas .trow:last-child{border-bottom:0}
+#s-estadisticas .trow .rk{font-size:.74rem;font-weight:800;color:var(--muted);text-align:right}
+#s-estadisticas .trow .nm{display:flex;flex-direction:column;min-width:0}
+#s-estadisticas .trow .nm b{font-weight:700;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#s-estadisticas .trow .nm small{color:var(--muted);font-size:.72rem}
+#s-estadisticas .trow .vs{font-size:.76rem;font-weight:800;white-space:nowrap}
+#s-estadisticas .acts{display:flex;flex-direction:column;gap:8px}
+#s-estadisticas .act{display:flex;gap:10px;align-items:flex-start;border-radius:10px;padding:10px;background:var(--soft);font-size:.84rem}
+#s-estadisticas .act .ic{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:.8rem}
+#s-estadisticas .hm{overflow-x:auto}
+#s-estadisticas .hm table{border-collapse:separate;border-spacing:3px;width:100%;min-width:640px;table-layout:fixed}
+#s-estadisticas .hm th{font-size:.66rem;color:var(--muted);font-weight:700;text-transform:capitalize}
+#s-estadisticas .hm th:first-child{width:150px;text-align:left}
+#s-estadisticas .hm td.n{font-size:.76rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#s-estadisticas .hm td.c{height:24px;border-radius:5px;font-size:.62rem;font-weight:800;text-align:center;color:#fff}
+#s-estadisticas .hm td.c.on{outline:2px solid var(--fg);outline-offset:1px}
+@media (min-width:700px){
+#s-estadisticas .kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+#s-estadisticas .ins4{grid-template-columns:repeat(4,minmax(0,1fr))}
+#s-estadisticas .months12{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (min-width:1100px){
+#s-estadisticas .g2{grid-template-columns:minmax(0,1fr) 380px}
+#s-estadisticas .months12{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media (max-width:520px){
+#s-estadisticas .range{grid-template-columns:1fr 1fr;width:100%}
+#s-estadisticas .kpi b{font-size:1rem}
+#s-estadisticas .subtabs button{padding:9px 10px;font-size:.84rem}
+}
 </style>
 
 <!-- ENTRADA -->
@@ -850,10 +969,77 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
 
     <!-- ESTADÍSTICAS -->
     <main class="screen" id="s-estadisticas" hidden>
-      <div class="cols">
-        <div class="card"><h2>Ganancia por producto</h2><p class="hint">Desde que empezaste a registrar ventas.</p><div class="bars" id="st-prod"></div></div>
-        <div class="card"><h2>Ventas por persona</h2><div class="bars" id="st-user"></div><h2>Ventas por medio de pago</h2><div class="bars" id="st-medio"></div></div>
+      <div class="subtabs" id="es-subtabs">
+        <button type="button" data-t="prod" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M4 12h16M4 18h7"/></svg>Ganancia por producto</button>
+        <button type="button" data-t="anual" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Ganancias anuales</button>
+        <button type="button" data-t="temp" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Meses y temporadas</button>
+        <button type="button" data-t="pers" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 11h5M19.5 8.5v5"/></svg>Vendedores y pagos</button>
       </div>
+    <section class="es-tab" id="es-t-prod">
+      <div class="es-rangebar">
+        <div class="range">
+          <label class="rf" for="es-desde">Desde<input type="date" id="es-desde"></label>
+          <label class="rf" for="es-hasta">Hasta<input type="date" id="es-hasta"></label>
+        </div>
+        <div class="chips" id="es-rapido"></div>
+      </div>
+      <div class="kpis" id="es-p-kpis"></div>
+      <div class="g2">
+        <div class="card">
+          <div class="row2"><h2>¿Qué producto te deja más plata?</h2><div class="chips" id="es-p-orden"></div></div>
+          <div class="chips" id="es-p-cat"></div>
+          <div class="pbars" id="es-p-bars"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div class="card"><h2>Ganancia por categoría</h2><div class="catb" id="es-p-cats"></div></div>
+          <div class="card"><h2>Lo que dicen tus números</h2><div class="acts" id="es-p-ins"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · Ganancias anuales -->
+    <section class="es-tab" id="es-t-anual" hidden>
+      <div class="kpis" id="es-a-kpis"></div>
+      <div class="card yr">
+        <div class="row2"><h2>Ganancia de cada mes</h2><div class="chips" id="es-a-modo"></div></div>
+        <p class="hint" id="es-a-hint"></p>
+        <div class="legend" id="es-a-leg"></div>
+        <div id="es-a-chart"></div>
+      </div>
+      <div class="g2b">
+        <div class="card"><h2>Gastos fijos del mes</h2><p class="hint">Son los mismos de Ajustes. Si los cambias aquí, también cambian allá.</p><div class="gfx" id="es-a-gastos"></div><p class="gtot" id="es-a-gtot"></p></div>
+        <div class="card"><h2>Lo que dicen tus números</h2><div class="acts" id="es-a-ins"></div></div>
+      </div>
+      <div class="card"><h2>Mes a mes de este año</h2><p class="hint">Ganancia neta = ganancia bruta − gastos del local. Los meses que faltan son proyección.</p><div class="tabwrap"><table class="ytab" id="es-a-tab"></table></div></div>
+    </section>
+
+    <!-- 3 · Meses y temporadas -->
+    <section class="es-tab" id="es-t-temp" hidden>
+      <div class="card">
+        <div class="row2"><h2>¿Cuáles meses rotan mejor?</h2><div class="chips" id="es-m-anio"></div></div>
+        <p class="hint">La app compara cuántas unidades se venden por día en cada mes con el promedio del año y clasifica cada mes sola. Toca un mes para ver sus productos.</p>
+        <div class="rules"><span class="badge b-alta"><i></i>Temporada alta</span> 10% o más por encima del promedio
+          <span class="badge b-buena"><i></i>Mes bueno</span> cerca del promedio
+          <span class="badge b-mejora"><i></i>Por mejorar</span> 5% o más por debajo</div>
+        <div class="months12" id="es-m-cards"></div>
+      </div>
+      <div class="g2">
+        <div class="card" id="es-m-top"></div>
+        <div class="card" id="es-m-acts"></div>
+      </div>
+      <div class="card">
+        <div class="row2"><h2>Cada producto, mes por mes</h2><div class="chips" id="es-m-cat"></div></div>
+        <p class="hint">Verde: ese mes el producto se vende más de lo normal. Rojo: se vende menos. El número es cuánto se aleja de su promedio.</p>
+        <div class="hm" id="es-m-hm"></div>
+      </div>
+    </section>
+    <section class="es-tab" id="es-t-pers" hidden>
+      <div class="g2b">
+        <div class="card"><h2>Ventas por persona</h2><p class="hint">Desde que empezaste a registrar ventas.</p><div class="bars" id="st-user"></div></div>
+        <div class="card"><h2>Ventas por medio de pago</h2><p class="hint">Desde que empezaste a registrar ventas.</p><div class="bars" id="st-medio"></div></div>
+      </div>
+    </section>
+    <div class="card" id="es-vacio" hidden><h2>Todavía no hay ventas</h2><p class="hint">Cuando registres ventas, aquí vas a ver qué te deja más plata, cómo va el año y cuáles meses venden más.</p></div>
     </main>
 
     <!-- EMPLEADOS -->
@@ -2062,18 +2248,264 @@ function bars(entries, fmt, cls) {
   const max = Math.max(1, ...entries.map(e => e[1]));
   return entries.map(([l, v]) => `<div class="bar"><span class="lbl">${l}</span><span class="track"><span class="fill ${cls || ""}" style="width:${(v / max * 100).toFixed(1)}%"></span></span><b class="num">${fmt(v)}</b></div>`).join("") || `<p class="hint">Aún no hay ventas.</p>`;
 }
-function renderStats() {
-  const ventas = S.movs.filter(m => m.k === "venta"), gp = {}, gu = {}, gm = {};
-  ventas.forEach(v => {
-    v.lines.forEach(l => { const p = P(l.pid); gp[p.nombre] = (gp[p.nombre] || 0) + l.total - costoUnd(p) * l.und; });
-    gu[U(v.user).nombre] = (gu[U(v.user).nombre] || 0) + v.total;
-    gm[v.medio || "Efectivo"] = (gm[v.medio || "Efectivo"] || 0) + v.total;
-  });
+/* ---------- Estadísticas: cuatro subpestañas (ganancia por producto, ganancias anuales, meses y temporadas, vendedores y pagos) ---------- */
+// Todo sale de las ventas guardadas (S.movs) y de los gastos fijos de Ajustes (S.gastos). Se cuenta hasta ayer, para comparar días completos.
+const EST = (() => {
+const short = n => { const a = Math.abs(n), s = n < 0 ? "−" : ""; return a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1).replace(".", ",")} M` : a >= 1e3 ? `${s}$${Math.round(a / 1e3)} mil` : `${s}$${Math.round(a)}`; };
+const pct = (n, d = 0) => `${n >= 0 ? "+" : "−"}${Math.abs(n).toFixed(d).replace(".", ",")}%`;
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const cap = s => s[0].toUpperCase() + s.slice(1);
+const addD = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const CATCOL = { Cerveza: "var(--yellow)", Licores: "var(--good)", Cigarrillos: "var(--warn)", "Agua y bebidas": "var(--blue)", Otros: "var(--muted)" };
+let PR = [], NP = 0, CATS = [], DAYS = [], ANIOS = [], PCT = 10, HOY, AYER, Y1, Y0, D0, llave = "";
+// Por cada día: unidades (u), plata vendida (v) y ganancia (g) de cada producto.
+function build() {
+  const ahora = new Date(); HOY = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()); AYER = addD(HOY, -1);
+  Y1 = HOY.getFullYear(); Y0 = Y1 - 1; PCT = S.pct;
+  const ult = S.movs[S.movs.length - 1], k = `${S.movs.length}|${ult ? ult.t : 0}|${+HOY}|${S.products.length}|${S.pct}`;
+  if (k === llave) return; llave = k;
+  PR = S.products.map((p, i) => { const cu = p.costoCaja / p.porCaja, pu = precio(p, "unidad"); return { i, id: p.id, n: p.nombre, caja: p.porCaja, cat: (look(p) || [])[6] || "Otros", cu, pu, gu: pu - cu }; });
+  NP = PR.length; CATS = [...new Set(PR.map(p => p.cat))];
+  const pos = new Map(PR.map(p => [p.id, p.i])), porDia = new Map();
+  S.movs.forEach(m => { if (m.k !== "venta" || m.t >= +HOY) return;
+    const d = new Date(m.t); d.setHours(0, 0, 0, 0); const dk = +d;
+    let o = porDia.get(dk); if (!o) porDia.set(dk, o = { u: new Float64Array(NP), v: new Float64Array(NP), g: new Float64Array(NP) });
+    m.lines.forEach(l => { const i = pos.get(l.pid); if (i == null) return; o.u[i] += l.und; o.v[i] += l.total; o.g[i] += l.total - PR[i].cu * l.und; }); });
+  DAYS = [];
+  if (!porDia.size) { ANIOS = []; return; }
+  D0 = new Date(Math.min(...porDia.keys()));
+  for (let d = new Date(D0); d < HOY; d = addD(d, 1)) { const o = porDia.get(+d) || { u: new Float64Array(NP), v: new Float64Array(NP), g: new Float64Array(NP) };
+    DAYS.push({ t: +d, y: d.getFullYear(), m: d.getMonth(), wd: d.getDay(), u: o.u, v: o.v, g: o.g }); }
+  ANIOS = [...new Set(DAYS.map(d => d.y))];
+}
+const sumU = list => { const o = { u: new Float64Array(NP), v: new Float64Array(NP), g: new Float64Array(NP) };
+  list.forEach(d => { for (let i = 0; i < NP; i++) { o.u[i] += d.u[i]; o.v[i] += d.v[i]; o.g[i] += d.g[i]; } }); return o; };
+const tot = a => a.reduce((x, y) => x + y, 0), gan = s => tot(s.g), ven = s => tot(s.v);
+
+/* ---------- Subpestañas ---------- */
+let tab = "prod";
+try { tab = localStorage.getItem("pininos-est-tab") || "prod"; } catch (e) {}
+$("es-subtabs").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (!b) return; tab = b.dataset.t; try { localStorage.setItem("pininos-est-tab", tab); } catch (er) {} render(); });
+function render() {
+  build();
+  if (!["prod", "anual", "temp", "pers"].includes(tab)) tab = "prod";
+  document.querySelectorAll("#es-subtabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === tab));
+  const vacio = !DAYS.length && tab !== "pers";
+  $("es-vacio").hidden = !vacio;
+  ["prod", "anual", "temp", "pers"].forEach(t => $("es-t-" + t).hidden = vacio || t !== tab);
+  if (!vacio) ({ prod: renderProd, anual: renderAnual, temp: renderTemp, pers: renderPers })[tab]();
+}
+
+/* ---------- 1 · Ganancia por producto ---------- */
+const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const fecha = v => { const [y, m, d] = v.split("-").map(Number); return new Date(y, m - 1, d); };
+const RAP = {
+  "Este mes": () => [new Date(Y1, HOY.getMonth(), 1), AYER], "Mes pasado": () => [new Date(Y1, HOY.getMonth() - 1, 1), new Date(Y1, HOY.getMonth(), 0)],
+  "Últimos 3 meses": () => [addD(AYER, -89), AYER], "Este año": () => [new Date(Y1, 0, 1), AYER], "Año pasado": () => [new Date(Y0, 0, 1), new Date(Y0, 11, 31)] };
+let P0, P1, orden = "g", pcat = "Todas", pTodos = false;
+const enRango = (a, b) => DAYS.filter(d => d.t >= +a && d.t <= +b);
+const act = (c, ic, t) => `<div class="act"><span class="ic" style="background:var(--${c}-soft);color:var(--${c})">${ic}</span><span>${t}</span></div>`;
+function renderProd() {
+  if (!P0) [P0, P1] = RAP["Este año"]();
+  const [a, b] = P0 <= P1 ? [P0, P1] : [P1, P0];
+  $("es-desde").value = iso(a); $("es-hasta").value = iso(b); $("es-desde").max = $("es-hasta").max = iso(AYER); $("es-desde").min = $("es-hasta").min = iso(D0);
+  const lab = Object.keys(RAP).find(k => { const [x, y] = RAP[k](); return iso(x) === iso(a) && iso(y) === iso(b); });
+  $("es-rapido").innerHTML = Object.keys(RAP).map(k => `<button type="button" data-rap="${k}" aria-pressed="${k === lab}">${k}</button>`).join("");
+  const L = enRango(a, b), n = L.length, prev = enRango(addD(a, -n), addD(a, -1)), U = sumU(L), Up = sumU(prev);
+  const G = gan(U), V = ven(U), Gp = gan(Up), uds = U.u.reduce((x, y) => x + y, 0);
+  const rows = PR.map(p => ({ p, u: U.u[p.i], g: U.g[p.i], v: U.v[p.i], gp: Up.g[p.i] })).filter(r => pcat === "Todas" || r.p.cat === pcat);
+  const top = [...rows].sort((x, y) => y.g - x.g)[0];
+  const dl = d => d == null || !isFinite(d) ? `<em style="color:var(--muted)">Sin datos antes</em>` : `<em style="color:${d >= 0 ? "var(--good)" : "var(--bad)"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(Math.round(d))}% vs. periodo anterior</em>`;
+  $("es-p-kpis").innerHTML = `<div class="kpi"><small>Ganancia bruta (antes de gastos)</small><b class="num" style="color:var(--good)">${short(G)}</b>${dl(Gp ? (G / Gp - 1) * 100 : null)}</div>
+    <div class="kpi"><small>Vendido</small><b class="num">${short(V)}</b><em style="color:var(--muted)">${n} días</em></div>
+    <div class="kpi"><small>Unidades vendidas</small><b class="num">${Math.round(uds).toLocaleString("es-CO")}</b><em style="color:var(--muted)">${Math.round(uds / Math.max(1, n))} por día</em></div>
+    <div class="kpi"><small>El que más deja</small><b style="font-size:1rem">${top ? top.p.n : "—"}</b><em style="color:var(--good)">${top ? short(top.g) : ""}</em></div>`;
+  $("es-p-orden").innerHTML = [["g", "Ganancia"], ["u", "Unidades"], ["gu", "Ganancia por unidad"]].map(([v, l]) => `<button type="button" data-po="${v}" aria-pressed="${v === orden}">${l}</button>`).join("");
+  $("es-p-cat").innerHTML = ["Todas", ...CATS].map(c => `<button type="button" data-pc="${c}" aria-pressed="${c === pcat}">${c}</button>`).join("");
+  const key = r => orden === "u" ? r.u : orden === "gu" ? r.p.gu : r.g, sorted = rows.sort((x, y) => key(y) - key(x)), mx = Math.max(1, ...sorted.map(key));
+  const Gs = rows.reduce((x, r) => x + r.g, 0) || 1;
+  $("es-p-bars").innerHTML = sorted.slice(0, pTodos ? 99 : 12).map((r, i) => { const d = r.gp ? Math.round((r.g / r.gp - 1) * 100) : null;
+    return `<div class="pbar"><span class="rk">${i + 1}</span><span class="nm"><b>${r.p.n}</b><span class="tr"><i style="width:${key(r) / mx * 100}%;background:${CATCOL[r.p.cat]}"></i></span>
+      <small>${Math.round(r.u).toLocaleString("es-CO")} und. · ${money(r.p.gu)} por unidad · ${(r.g / Gs * 100).toFixed(1).replace(".", ",")}% de la ganancia</small></span>
+      <span class="vv"><b class="num" style="color:var(--good)">${orden === "u" ? Math.round(r.u).toLocaleString("es-CO") + " und." : orden === "gu" ? money(r.p.gu) : money(r.g)}</b>
+      ${d == null ? "" : `<small style="color:${d >= 0 ? "var(--good)" : "var(--bad)"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d)}%</small>`}</span></div>`; }).join("")
+    + (sorted.length > 12 ? `<button type="button" class="more" data-ptodos>${pTodos ? "Ver solo los 12 primeros" : `Ver los ${sorted.length} productos`}</button>` : "");
+  const gc = CATS.map(c => [c, PR.filter(p => p.cat === c).reduce((x, p) => x + U.g[p.i], 0)]), gm = Math.max(1, ...gc.map(x => x[1]));
+  $("es-p-cats").innerHTML = gc.map(([c, g]) => `<div><span>${c}</span><span class="tr"><i style="width:${g / gm * 100}%;background:${CATCOL[c]}"></i></span><b class="num">${short(g)} · ${Math.round(g / (G || 1) * 100)}%</b></div>`).join("");
+  // Lecturas automáticas
+  const all = PR.map(p => ({ p, u: U.u[p.i], g: U.g[p.i] })), byG = [...all].sort((x, y) => y.g - x.g), byU = [...all].sort((x, y) => y.u - x.u);
+  const hi = [...PR].sort((x, y) => y.gu - x.gu)[0], lo = [...PR].sort((x, y) => x.gu - y.gu)[0];
+  const top3 = byG.slice(0, 3).reduce((x, r) => x + r.g, 0);
+  const cg = CATS.map(c => { const g = PR.filter(p => p.cat === c).reduce((x, p) => x + U.g[p.i], 0), gp = PR.filter(p => p.cat === c).reduce((x, p) => x + Up.g[p.i], 0); return [c, gp ? (g / gp - 1) * 100 : 0]; }).sort((x, y) => y[1] - x[1]);
+  $("es-p-ins").innerHTML = [
+    act("good", "★", `<b>${byG[0].p.n}</b>, <b>${byG[1].p.n}</b> y <b>${byG[2].p.n}</b> dejan el ${Math.round(top3 / (G || 1) * 100)}% de toda tu ganancia. Que nunca te falten.`),
+    act("blue", "$", `Cada <b>${hi.n}</b> te deja ${money(hi.gu)}; cada <b>${lo.n}</b>, ${money(lo.gu)}. Vender uno de los primeros es como vender ${Math.round(hi.gu / lo.gu)} de los segundos.`),
+    act("warn", "%", `Todos tus productos dejan el mismo margen (${(PCT / (100 + PCT) * 100).toFixed(1).replace(".", ",")}% de lo que cobras) porque vendes con ${PCT}% sobre el costo. Más adelante podemos ponerle a cada producto su propio porcentaje.`),
+    Up.u.some(Boolean) ? act(cg[0][1] >= 0 ? "good" : "bad", cg[0][1] >= 0 ? "▲" : "▼", `La categoría que más creció frente al periodo anterior es <b>${cg[0][0]}</b> (${pct(cg[0][1])}).`) : ""
+  ].join("");
+}
+$("es-t-prod").addEventListener("click", e => { let b;
+  if ((b = e.target.closest("[data-rap]"))) { [P0, P1] = RAP[b.dataset.rap](); renderProd(); }
+  else if ((b = e.target.closest("[data-po]"))) { orden = b.dataset.po; renderProd(); }
+  else if ((b = e.target.closest("[data-pc]"))) { pcat = b.dataset.pc; renderProd(); }
+  else if ((b = e.target.closest("[data-ptodos]"))) { pTodos = !pTodos; renderProd(); } });
+["desde", "hasta"].forEach(id => $("es-" + id).addEventListener("change", () => { if ($("es-desde").value && $("es-hasta").value) { P0 = fecha($("es-desde").value); P1 = fecha($("es-hasta").value); renderProd(); } }));
+
+/* ---------- 2 · Ganancias anuales ---------- */
+
+// Gastos fijos del local: los mismos de ejemplo que trae la app en Ajustes.
+let aModo = "neta";
+const nice = x => { const p = 10 ** Math.floor(Math.log10(x)); return [1, 2, 2.5, 5, 10].map(f => f * p).find(v => v >= x); };
+const flecha = (d, txt) => `<span style="color:${d >= 0 ? "var(--good)" : "var(--bad)"}">${d >= 0 ? "▲" : "▼"} ${txt}</span>`;
+function renderAnual() {
+  const mes = (y, m) => DAYS.filter(d => d.y === y && d.m === m), cm = HOY.getMonth();
+  const F = Object.values(S.gastos).reduce((a, b) => a + (+b || 0), 0);
+  const G0 = MESES.map((_, m) => gan(sumU(mes(Y0, m)))), V0 = MESES.map((_, m) => ven(sumU(mes(Y0, m))));
+  const G1 = MESES.map((_, m) => m <= cm ? gan(sumU(mes(Y1, m))) : null), V1 = MESES.map((_, m) => m <= cm ? ven(sumU(mes(Y1, m))) : null);
+  const dim = new Date(Y1, cm + 1, 0).getDate(), corrido = (HOY.getDate() - 1) / dim, fal = 1 - corrido;
+  // Gastos: meses cerrados completos; el mes en curso solo hasta ayer, para comparar parejo con lo vendido.
+  // Los gastos solo se cuentan desde el mes en que hay ventas registradas.
+  const activo = (y, m) => +new Date(y, m + 1, 1) > +D0, F0 = MESES.map((_, m) => activo(Y0, m) ? F : 0);
+  const F1 = MESES.map((_, m) => !activo(Y1, m) ? 0 : m < cm ? F : m === cm ? F * corrido : null);
+  // Mismo tramo del año pasado (1 de enero hasta el mismo día) para comparar parejo.
+  const lim = +new Date(Y0, cm, HOY.getDate());
+  const b1 = G1.reduce((a, x) => a + (x || 0), 0), b0 = gan(sumU(DAYS.filter(d => d.y === Y0 && d.t < lim)));
+  const f1 = F1.reduce((a, x) => a + (x || 0), 0), n1 = b1 - f1, n0 = b0 - (F0.slice(0, cm).reduce((x, y) => x + y, 0) + F0[cm] * corrido);
+  const r = b0 ? b1 / b0 : 1;
+  const PJ = MESES.map((_, m) => m < cm ? null : m === cm ? G1[m] + G0[m] * fal * r : G0[m] * r);
+  const brutaAnio = G1.reduce((a, x, m) => a + (m < cm ? x : PJ[m]), 0), netaAnio = brutaAnio - MESES.reduce((a, _, m) => a + (activo(Y1, m) ? F : 0), 0);
+  const TODO = sumU(DAYS), margen = gan(TODO) / (ven(TODO) || 1);
+  const equilibrio = F / margen;
+  const neta = aModo === "neta", val = (g, f) => g == null ? null : neta ? g - f : g;
+  const A0 = G0.map((g, m) => val(g, F0[m])), A1 = G1.map((g, m) => val(g, F1[m])), AP = PJ.map((g, m) => val(g, activo(Y1, m) ? F : 0));
+  const col = v => v < 0 ? "var(--bad)" : "var(--good)";
+
+  $("es-a-kpis").innerHTML = `<div class="kpi"><small>Ganancia bruta ${Y1}</small><b class="num">${short(b1)}</b><em>${flecha(r - 1, `${Math.abs(Math.round((r - 1) * 100))}% vs. ${Y0}`)}</em></div>
+    <div class="kpi"><small>Gastos del local ${Y1}</small><b class="num" style="color:var(--bad)">−${short(f1)}</b><em style="color:var(--muted)">${short(F)} al mes</em></div>
+    <div class="kpi"><small>Ganancia neta ${Y1}</small><b class="num" style="color:${col(n1)}">${short(n1)}</b><em style="color:var(--muted)">${Y0} a la misma fecha: ${short(n0)}</em></div>
+    <div class="kpi"><small>Si sigue así, ${Y1} cierra en</small><b class="num" style="color:${col(netaAnio)}">${short(netaAnio)}</b><em style="color:var(--muted)">neta · ${short(brutaAnio)} bruta</em></div>`;
+  $("es-a-modo").innerHTML = [["neta", "Ganancia neta"], ["bruta", "Ganancia bruta"]].map(([v, l]) => `<button type="button" data-am="${v}" aria-pressed="${v === aModo}">${l}</button>`).join("");
+  $("es-a-hint").textContent = neta
+    ? "Lo que de verdad te queda: ganancia de las ventas menos los gastos del local. Rojo: ese mes no alcanzó para cubrir los gastos. Las barras punteadas son la proyección de los meses que faltan."
+    : "Lo que te dejan las ventas antes de pagar los gastos del local. Las barras punteadas son la proyección de los meses que faltan.";
+  $("es-a-leg").innerHTML = `<span><i style="background:var(--h2)"></i>${Y0}</span><span><i style="background:var(--good)"></i>${Y1}</span>${neta ? `<span><i style="background:var(--bad)"></i>Pérdida</span>` : ""}<span><i style="border:2px dashed var(--good);background:none;width:12px;height:12px"></i>Proyección</span>`;
+
+  // Gráfica: admite barras negativas (meses en pérdida) con la línea de cero marcada.
+  const todos = [...A0, ...A1, ...AP].filter(x => x != null);
+  const W = 760, H = 230, L = 52, bw = (W - L) / 12, step = nice((Math.max(0, ...todos) - Math.min(0, ...todos)) / 4 || 1);
+  const top = Math.ceil(Math.max(0, ...todos) / step) * step, bot = Math.floor(Math.min(0, ...todos) / step) * step;
+  const Y = v => (top - v) / ((top - bot) || 1) * H, bar = v => `y="${Math.min(Y(v), Y(0))}" height="${Math.abs(Y(v) - Y(0))}"`;
+  let grid = "";
+  for (let v = bot; v <= top + 1; v += step) grid += `<line class="${Math.abs(v) < 1 ? "zl" : "gl"}" x1="${L}" x2="${W}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 6}" y="${Y(v) + 4}" font-size="11" text-anchor="end">${Math.abs(v) < 1 ? "0" : short(v).replace(" mil", "k").replace(" M", "M")}</text>`;
+  const bars = MESES.map((n, m) => { const x = L + m * bw, w = (bw - 14) / 2, x1 = x + 7 + w;
+    return `<rect x="${x + 5}" ${bar(A0[m])} width="${w}" rx="3" fill="var(--h2)"><title>${cap(n)} ${Y0}: ${money(A0[m])}</title></rect>
+      ${AP[m] != null ? `<rect x="${x1}" ${bar(AP[m])} width="${w}" rx="3" fill="none" stroke="${col(AP[m])}" stroke-width="1.5" stroke-dasharray="4 3"><title>${cap(n)} ${Y1} proyectado: ${money(AP[m])}</title></rect>` : ""}
+      ${A1[m] != null ? `<rect x="${x1}" ${bar(A1[m])} width="${w}" rx="3" fill="${col(A1[m])}"><title>${cap(n)} ${Y1}${m === cm ? " hasta ayer" : ""}: ${money(A1[m])}</title></rect>` : ""}
+      <text x="${x + bw / 2}" y="${H + 16}" font-size="11" text-anchor="middle">${n.slice(0, 3)}</text>`; }).join("");
+  $("es-a-chart").innerHTML = `<svg viewBox="0 -14 ${W} ${H + 36}" role="img" aria-label="Ganancia ${neta ? "neta" : "bruta"} por mes, ${Y0} contra ${Y1}">${grid}${bars}</svg>`;
+
+  // Tabla del año en curso: bruta, gastos y neta; la última columna compara la neta con el año pasado.
+  let tv = 0, tb = 0, tf = 0, tn = 0, t0 = 0;
+  $("es-a-tab").innerHTML = `<thead><tr><th>Mes</th><th>Vendido</th><th>Ganancia bruta</th><th>Gastos</th><th>Ganancia neta</th><th>Neta ${Y0}</th><th>Diferencia</th></tr></thead><tbody>` +
+    MESES.map((n, m) => { const pr = m >= cm, b = pr ? PJ[m] : G1[m], f = activo(Y1, m) ? F : 0, nn = b - f, n0m = G0[m] - F0[m], v = m < cm ? V1[m] : m === cm ? V1[m] + V0[m] * fal * r : V0[m] * r;
+      tv += v; tb += b; tf += f; tn += nn; t0 += n0m;
+      return `<tr${pr ? ' class="proy"' : ""}><td>${cap(n)}${m === cm ? " (va en curso)" : pr ? " (proyección)" : ""}</td><td class="num">${short(v)}</td><td class="num">${short(b)}</td><td class="num">−${short(f)}</td>
+        <td class="num" style="color:${col(nn)};font-weight:700">${short(nn)}</td><td class="num">${short(n0m)}</td><td class="num">${flecha(nn - n0m, short(Math.abs(nn - n0m)))}</td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><td>Total del año</td><td class="num">${short(tv)}</td><td class="num">${short(tb)}</td><td class="num">−${short(tf)}</td><td class="num" style="color:${col(tn)}">${short(tn)}</td><td class="num">${short(t0)}</td><td class="num">${flecha(tn - t0, short(Math.abs(tn - t0)))}</td></tr></tfoot>`;
+
+  // Gastos editables para probar.
+  if (!$("es-a-gastos").dataset.ok) {
+    // Los campos se arman una sola vez por visita, para no perder el cursor mientras se escribe.
+    $("es-a-gastos").innerHTML = Object.entries(S.gastos).map(([k, v]) => `<label class="rf">${k}<input type="number" min="0" step="10000" inputmode="numeric" data-ag="${k}" value="${v}"></label>`).join("");
+    $("es-a-gastos").dataset.ok = 1;
+  }
+  $("es-a-gtot").innerHTML = `Total al mes: <b class="num">${money(F)}</b>`;
+
+  const buenos = MESES.filter((_, m) => m < cm && activo(Y1, m) && G1[m] - F >= 0).length, cerrados = MESES.filter((_, m) => m < cm && activo(Y1, m)).length;
+  const mejor = MESES.map((_, m) => m).filter(m => m < cm && activo(Y1, m)).sort((a, b) => G1[b] - G1[a])[0];
+  const grande = Object.entries(S.gastos).sort((a, b) => b[1] - a[1])[0];
+  $("es-a-ins").innerHTML = [
+    act(n1 >= 0 ? "good" : "bad", n1 >= 0 ? "▲" : "!", n1 >= 0 ? `En ${Y1} llevas <b>${short(n1)}</b> limpios después de pagar los gastos del local.` : `En ${Y1} los gastos del local se han llevado más de lo que dejaron las ventas: vas <b>${short(n1)}</b>.`),
+    act("blue", "$", `Para no perder plata necesitas vender al menos <b>${short(equilibrio)}</b> al mes. En ${Y1}, ${buenos} de ${cerrados} meses cerrados lo lograron${buenos ? `; el mejor fue ${MESES[mejor]}` : ""}.`),
+    act("warn", "%", `Hoy vendes con ${PCT}% sobre el costo. Con 15% necesitarías vender ${short(F / (15 / 115))} al mes para cubrir gastos, y con 20%, ${short(F / (20 / 120))}.`),
+    act("warn", "★", `Tu gasto más grande es <b>${grande[0].toLowerCase()}</b>: ${Math.round(grande[1] / F * 100)}% de los gastos del local.`)
+  ].join("");
+}
+$("es-t-anual").addEventListener("click", e => { const b = e.target.closest("[data-am]"); if (b) { aModo = b.dataset.am; renderAnual(); } });
+$("es-t-anual").addEventListener("input", e => { const i = e.target.closest("[data-ag]"); if (i && +i.value >= 0) { S.gastos[i.dataset.ag] = +i.value; save(); renderAnual(); } });
+
+/* ---------- 3 · Meses y temporadas ---------- */
+// Rotación: unidades por día de cada mes, comparadas con el promedio de los 12 meses.
+let base = "prom", mSel = new Date().getMonth(), mcat = "Todas";
+const CL = { alta: ["Temporada alta", "b-alta", "var(--good)"], buena: ["Mes bueno", "b-buena", "var(--q3)"], mejora: ["Por mejorar", "b-mejora", "var(--bad)"] };
+const clase = x => { const d = Math.round((x - 1) * 100); return d >= 10 ? "alta" : d <= -5 ? "mejora" : "buena"; };
+function rotacion() {
+  const sel = base === "prom" ? DAYS : DAYS.filter(d => d.y === +base);
+  return MESES.map((_, m) => { const L = sel.filter(d => d.m === m); return L.length ? { n: L.length, s: sumU(L) } : null; });
+}
+function renderTemp() {
+  if (base !== "prom" && !ANIOS.includes(+base)) base = "prom";
+  $("es-m-anio").innerHTML = [["prom", "Promedio de todos los años"], ...ANIOS.map(y => [String(y), String(y)])].map(([v, l]) => `<button type="button" data-ma="${v}" aria-pressed="${v === base}">${l}</button>`).join("");
+  const R = rotacion(), rate = R.map(x => x ? x.s.u.reduce((a, b) => a + b, 0) / x.n : null), ok = rate.filter(x => x != null), avg = ok.reduce((a, b) => a + b, 0) / ok.length;
+  const idx = rate.map(x => x == null ? null : x / avg), mxi = Math.max(...idx.filter(x => x != null));
+  if (idx[mSel] == null) mSel = idx.findIndex(x => x != null);
+  $("es-m-cards").innerHTML = MESES.map((n, m) => { if (idx[m] == null) return `<div class="mcard" style="opacity:.5"><span class="hd"><b>${n}</b></span><span class="hint">Sin datos aún</span></div>`;
+    const c = CL[clase(idx[m])], p = (idx[m] - 1) * 100;
+    return `<button type="button" class="mcard${m === mSel ? " on" : ""}" data-mm="${m}"><span class="hd"><b>${n}</b><span class="pc num" style="color:${c[2] === "var(--q3)" ? "var(--fg)" : c[2]}">${pct(p)}</span></span>
+      <span class="bar"><i style="width:${idx[m] / mxi * 100}%;background:${c[2]}"></i></span><span class="badge ${c[1]}"><i></i>${c[0]}</span>
+      <span class="hint">${Math.round(rate[m])} und. por día</span></button>`; }).join("");
+  // Productos del mes elegido
+  const x = R[mSel], k = clase(idx[mSel]), c = CL[k], prodAvg = PR.map(p => { const t = R.filter(Boolean); return t.reduce((a, r) => a + r.s.u[p.i] / r.n, 0) / t.length; });
+  const rows = PR.map(p => ({ p, d: x.s.u[p.i] / x.n, vs: (x.s.u[p.i] / x.n) / (prodAvg[p.i] || 1) })), top = [...rows].sort((a, b) => b.d * b.p.pu - a.d * a.p.pu).slice(0, 10);
+  const suben = [...rows].filter(r => r.d > 0.3).sort((a, b) => b.vs - a.vs).slice(0, 3), bajan = [...rows].filter(r => r.d > 0.3).sort((a, b) => a.vs - b.vs).slice(0, 3);
+  $("es-m-top").innerHTML = `<div class="row2"><h2>Lo más vendido en ${MESES[mSel]}</h2><span class="badge ${c[1]}"><i></i>${c[0]}</span></div>
+    <p class="hint">Ordenado por lo que se vende en plata. La flecha compara con un mes normal de ese producto.</p>
+    <div class="toplist">${top.map((r, i) => { const d = (r.vs - 1) * 100;
+      return `<div class="trow"><span class="rk">${i + 1}</span><span class="nm"><b>${r.p.n}</b><small>${(r.d * 30).toFixed(0)} und. al mes · ${Math.ceil(r.d * 30 / r.p.caja)} ${Math.ceil(r.d * 30 / r.p.caja) === 1 ? "caja" : "cajas"} · ${short(r.d * 30 * r.p.pu)}</small></span>
+        <span class="vs" style="color:${d >= 3 ? "var(--good)" : d <= -3 ? "var(--bad)" : "var(--muted)"}">${Math.abs(d) < 3 ? "= normal" : `${d > 0 ? "▲" : "▼"} ${Math.abs(Math.round(d))}%`}</span></div>`; }).join("")}</div>`;
+  const we = (() => { const L = (base === "prom" ? DAYS : DAYS.filter(d => d.y === +base)).filter(d => d.m === mSel), w = Array(7).fill(0), n = Array(7).fill(0);
+    L.forEach(d => { w[d.wd] += d.u.reduce((a, b) => a + b, 0); n[d.wd]++; }); const r = w.map((v, i) => n[i] ? v / n[i] : 0); return { sab: r[6], lun: r[1] }; })();
+  const t1 = top[0], t2 = top[1] || top[0], pIdx = Math.round(Math.abs(idx[mSel] - 1) * 100);
+  const A = k === "alta" ? [
+      act("good", "▲", `Es <b>temporada alta</b>: se vende ${pIdx}% más que en un mes promedio.`),
+      act("blue", "▦", `Compra con tiempo. En ${MESES[mSel]} se van unas <b>${Math.ceil(t1.d * 30 / t1.p.caja)} cajas de ${t1.p.n}</b> y <b>${Math.ceil(t2.d * 30 / t2.p.caja)} de ${t2.p.n}</b>.`),
+      act("warn", "★", `Lo que más sube este mes: ${suben.map(r => `<b>${r.p.n}</b> (${pct((r.vs - 1) * 100)})`).join(", ")}. Ponlos a la vista y arma cubetazos con ellos.`)]
+    : k === "mejora" ? [
+      act("bad", "▼", `Es un mes <b>por mejorar</b>: se vende ${pIdx}% menos que en un mes promedio.`),
+      act("blue", "▦", `Compra menos para no quedarte con plata quieta: bastan unas <b>${Math.ceil(t1.d * 30 / t1.p.caja)} cajas de ${t1.p.n}</b>.`),
+      act("warn", "%", `Haz promociones en lo que más baja: ${bajan.map(r => `<b>${r.p.n}</b> (${pct((r.vs - 1) * 100)})`).join(", ")}. Un cubetazo con descuento ayuda a mover inventario.`),
+      act("good", "★", `Aprovecha los fines de semana: un sábado de ${MESES[mSel]} vende ${(we.sab / (we.lun || 1)).toFixed(1).replace(".", ",")} veces lo de un lunes.`)]
+    : [
+      act("warn", "=", `Es un <b>mes bueno</b>: se vende cerca del promedio (${pct((idx[mSel] - 1) * 100)}).`),
+      act("blue", "▦", `Mantén tu compra normal: unas <b>${Math.ceil(t1.d * 30 / t1.p.caja)} cajas de ${t1.p.n}</b> al mes.`),
+      act("good", "★", `Lo que más sube este mes: ${suben.map(r => `<b>${r.p.n}</b> (${pct((r.vs - 1) * 100)})`).join(", ")}.`)];
+  $("es-m-acts").innerHTML = `<h2>Qué hacer en ${MESES[mSel]}</h2><div class="acts">${A.join("")}</div>`;
+  // Mapa producto × mes
+  $("es-m-cat").innerHTML = ["Todas", ...CATS].map(cc => `<button type="button" data-mc="${cc}" aria-pressed="${cc === mcat}">${cc}</button>`).join("");
+  const QC = v => v >= 1.10 ? "var(--q5)" : v >= 1.03 ? "var(--q4)" : v > 0.97 ? "var(--q3)" : v > 0.9 ? "var(--q2)" : "var(--q1)";
+  const prods = PR.filter(p => mcat === "Todas" || p.cat === mcat).sort((a, b) => prodAvg[b.i] * b.pu - prodAvg[a.i] * a.pu).slice(0, mcat === "Todas" ? 15 : 25);
+  $("es-m-hm").innerHTML = `<table><thead><tr><th>Producto</th>${MESES.map((n, m) => `<th>${n.slice(0, 3)}</th>`).join("")}</tr></thead><tbody>` +
+    prods.map(p => `<tr><td class="n" title="${p.n}">${p.n}</td>${MESES.map((_, m) => { const r = R[m]; if (!r) return `<td class="c" style="background:var(--soft)"></td>`;
+      const v = (r.s.u[p.i] / r.n) / (prodAvg[p.i] || 1), d = Math.round((v - 1) * 100);
+      return `<td class="c${m === mSel ? " on" : ""}" style="background:${QC(v)};color:${v > 0.97 && v < 1.03 ? "#2a2105" : "#fff"}" title="${p.n} en ${MESES[m]}: ${pct(d)} frente a su promedio">${d > 0 ? "+" : ""}${d}</td>`; }).join("")}</tr>`).join("") + `</tbody></table>`;
+}
+$("es-t-temp").addEventListener("click", e => { let b;
+  if ((b = e.target.closest("[data-ma]"))) { base = b.dataset.ma; renderTemp(); }
+  else if ((b = e.target.closest("[data-mm]"))) { mSel = +b.dataset.mm; renderTemp(); }
+  else if ((b = e.target.closest("[data-mc]"))) { mcat = b.dataset.mc; renderTemp(); } });
+/* ---------- 4 · Vendedores y pagos ---------- */
+function renderPers() {
+  if (!MA) maIndex();
+  const ventas = maSueltas(S.movs.filter(m => m.k === "venta")), gu = {}, gm = {};
+  ventas.forEach(v => { gu[U(v.user).nombre] = (gu[U(v.user).nombre] || 0) + v.total; gm[v.medio || "Efectivo"] = (gm[v.medio || "Efectivo"] || 0) + v.total; });
   const sort = o => Object.entries(o).sort((a, b) => b[1] - a[1]);
-  $("st-prod").innerHTML = bars(sort(gp), money, "g");
   $("st-user").innerHTML = bars(sort(gu), money);
   $("st-medio").innerHTML = bars(sort(gm), money);
 }
+const nuevo = () => { $("es-a-gastos").dataset.ok = ""; };
+return { render, nuevo };
+})();
+function renderStats() { EST.nuevo(); EST.render(); }
 
 /* ---------- Empleados ---------- */
 function renderEmpleados() {
