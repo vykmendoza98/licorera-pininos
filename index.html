@@ -726,6 +726,17 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
 #s-estadisticas .kpi b{font-size:1rem}
 #s-estadisticas .subtabs button{padding:9px 10px;font-size:.84rem}
 }
+/* ---------- Códigos de barras ---------- */
+.codbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:5px 9px;font-weight:600;font-size:.78rem;white-space:nowrap}
+.codbtn svg{width:15px;height:15px;color:var(--muted)}
+.codbtn.vacio{border-style:dashed;color:var(--muted)}
+.cod-list{display:flex;flex-direction:column;max-height:50vh;overflow:auto}
+.cod-it{display:flex;align-items:center;gap:10px;border:0;border-bottom:1px solid var(--line);background:none;padding:9px 2px;text-align:left;color:var(--fg)}
+.cod-it .t{display:flex;flex-direction:column;min-width:0}
+.cod-it .t small{color:var(--muted);font-size:.76rem}
+.cam-man{display:flex;gap:8px;align-items:flex-end}
+.cam-man .field{flex:1;min-width:0}
+.sheet[data-kind="cam"],.sheet[data-kind="cod"]{max-width:520px;margin:0 auto}
 </style>
 
 <!-- ENTRADA -->
@@ -839,12 +850,12 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
         <div class="col">
           <div class="tools">
             <label class="search" for="q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-              <input id="q" type="search" placeholder="Buscar producto" autocomplete="off"></label>
+              <input id="q" type="search" placeholder="Buscar o escanear código" autocomplete="off"></label>
             <div class="seg" id="modo"><button type="button" data-m="unidad" aria-pressed="true">Unidad</button><button type="button" data-m="sixpack" aria-pressed="false">Sixpack</button><button type="button" data-m="media" aria-pressed="false">Media caja</button><button type="button" data-m="caja" aria-pressed="false">Caja</button><button type="button" data-m="combo" aria-pressed="false">Cubetazo</button></div>
           </div>
           <div class="chips" id="cats"></div>
           <div class="grid" id="grid"></div>
-          <p class="hint">Toca un producto para agregarlo. En el computador: <kbd>F2</kbd> buscar, <kbd>Enter</kbd> agregar el primero, <kbd>F12</kbd> cobrar.</p>
+          <p class="hint">Toca un producto para agregarlo. En el computador: <kbd>F2</kbd> buscar, <kbd>Enter</kbd> agregar el primero, <kbd>F12</kbd> cobrar. Con la pistola lectora, escanea y el producto entra solo.</p>
         </div>
         <aside class="ticket"><div class="cart" id="ticket"></div></aside>
       </div>
@@ -853,14 +864,14 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
     <!-- COMPRAR -->
     <main class="screen" id="s-comprar" hidden>
       <div class="row"><label class="search" for="q2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="q2" type="search" placeholder="Buscar producto" autocomplete="off"></label></div>
+        <input id="q2" type="search" placeholder="Buscar o escanear código" autocomplete="off"></label></div>
       <div class="panel">
         <div class="tablebox"><table>
           <thead><tr><th>Producto</th><th>Presentación</th><th class="r">Costo caja</th><th class="r">Costo und.</th><th class="r">Venta und.</th><th class="r">Existencias</th><th></th></tr></thead>
           <tbody id="inv"></tbody>
         </table></div>
       </div>
-      <p class="hint">Toca un producto para registrar la compra al proveedor.</p>
+      <p class="hint">Toca un producto o escanea su código para registrar la compra al proveedor.</p>
     </main>
 
     <!-- INICIO DEL ADMINISTRADOR: movimientos -->
@@ -962,7 +973,7 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
     <main class="screen" id="s-inventario" hidden>
       <div class="kpis" id="inv-kpis"></div>
       <div class="panel"><div class="tablebox"><table>
-        <thead><tr><th>Producto</th><th class="r">Existencias</th><th class="r">Cajas</th><th class="r">Valor al costo</th><th class="r">Valor a la venta</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Producto</th><th class="r">Existencias</th><th class="r">Cajas</th><th class="r">Valor al costo</th><th class="r">Valor a la venta</th><th>Estado</th><th>Código de barras</th></tr></thead>
         <tbody id="inv2"></tbody>
       </table></div></div>
     </main>
@@ -1595,7 +1606,7 @@ function cartHtml(inSheet) {
     <div class="sum num">${isAdmin() ? `<div><span>Te costó</span><span>${money(t.costo)}</span></div><div class="g"${t.gan < 0 ? ' style="color:var(--bad)"' : ""}><span>${t.gan < 0 ? "Pierdes" : "Ganancia"}</span><span>${money(Math.abs(t.gan))}</span></div>` : ""}<div class="tot"><span>Total</span><span>${money(t.total)}</span></div></div>
     <button class="btn wide" data-a="cobrar">Cobrar ${money(t.total)} <kbd>F12</kbd></button><button class="btn line wide" data-a="vaciar">Vaciar venta</button>`;
 }
-const matches = () => { const q = $("q").value.trim().toLowerCase(); return S.products.filter(p => p.nombre.toLowerCase().includes(q) && (q || cat === "Todos" || look(p)[6] === cat) && (modo === "combo" || PRES[modo].ok(p))); };
+const matches = () => { const q = $("q").value.trim().toLowerCase(); return S.products.filter(p => (p.nombre.toLowerCase().includes(q) || (p.cod && q.length >= 4 && p.cod.includes(q))) && (q || cat === "Todos" || look(p)[6] === cat) && (modo === "combo" || PRES[modo].ok(p))); };
 const comboMatches = () => { const q = $("q").value.trim().toLowerCase(); return S.combos.filter(c => c.items.length && (`${c.nombre} ${c.items.map(x => P(x.pid).nombre).join(" ")}`.toLowerCase().includes(q)) && (q || cat === "Todos" || c.items.some(x => look(P(x.pid))[6] === cat))); };
 function addToCart(pid) { const c = cart.find(x => x.pid === pid && x.tipo === modo); c ? c.cant++ : cart.push({ pid, tipo: modo, cant: 1 }); renderVender(); }
 function addCombo(cid) { const c = cart.find(x => x.tipo === "combo" && x.cid === cid); c ? c.cant++ : cart.push({ cid, tipo: "combo", cant: 1 }); renderVender(); }
@@ -1633,7 +1644,7 @@ function cobrar() {
 /* ---------- Compras e inventario ---------- */
 function renderComprar() {
   const q = $("q2").value.trim().toLowerCase();
-  $("inv").innerHTML = S.products.filter(p => p.nombre.toLowerCase().includes(q)).map(p => {
+  $("inv").innerHTML = S.products.filter(p => p.nombre.toLowerCase().includes(q) || (p.cod && q.length >= 4 && p.cod.includes(q))).map(p => {
     const st = Math.max(p.stock, 0), low = p.stock < p.porCaja;
     return `<tr class="clickrow" data-buy="${p.id}"><td><div class="concept">${avatar(p, true)}<span class="t"><b>${p.nombre}</b></span></div></td>
       <td>${p.tam} · caja x${p.porCaja}</td><td class="r">${money(p.costoCaja)}</td><td class="r">${money(costoUnd(p))}</td><td class="r">${money(precio(p, "unidad"))}</td>
@@ -2239,7 +2250,8 @@ function renderInventario() {
     return `<tr><td><div class="concept">${avatar(p, true)}<span class="t"><b>${p.nombre}</b><small>${p.tam}</small></span></div></td>
       <td class="r"><b>${st}</b> und.</td><td class="r">${Math.floor(st / p.porCaja)} cj + ${st % p.porCaja}</td>
       <td class="r">${money(st * costoUnd(p))}</td><td class="r">${money(st * precio(p, "unidad"))}</td>
-      <td><span class="pill${l ? " low" : ""}">${l ? "Por acabarse" : "Bien"}</span></td></tr>`;
+      <td><span class="pill${l ? " low" : ""}">${l ? "Por acabarse" : "Bien"}</span></td>
+      <td><button class="codbtn${p.cod ? "" : " vacio"}" type="button" data-a="scan" data-donde="p:${p.id}">${SCAN_SVG}<span class="num">${p.cod || "Agregar"}</span></button></td></tr>`;
   }).join("");
 }
 
@@ -2507,6 +2519,72 @@ return { render, nuevo };
 })();
 function renderStats() { EST.nuevo(); EST.render(); }
 
+/* ---------- Códigos de barras ---------- */
+// Cada producto puede guardar su código (p.cod). Funciona con una pistola lectora (escribe el código y Enter, como un teclado)
+// Un código que la app no conoce se asigna una vez y queda guardado.
+const SCAN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M10.5 8v8M14 8v8M17 8v8"/></svg>';
+const codDe = t => String(t || "").replace(/\D/g, "");
+const pareceCodigo = q => /^\d{6,14}$/.test(q);
+const porCodigo = c => S.products.find(p => p.cod && p.cod === c);
+let codPend = null;
+// donde: "vender" (agrega a la venta), "comprar" (abre la compra) o "p:<id>" (guarda el código en ese producto).
+function usarCodigo(cod, donde) {
+  cod = codDe(cod);
+  if (!cod) return;
+  if (donde.startsWith("p:")) return asignarCodigo(cod, +donde.slice(2), null);
+  const p = porCodigo(cod);
+  if (!p) return codSheet(cod, donde);
+  if (navigator.vibrate) try { navigator.vibrate(60); } catch (e) {}
+  if (donde === "comprar") { if (view !== "comprar") go("comprar"); buySheet(p); return; }
+  if (view !== "vender") go("vender");
+  if (modo === "combo" || !PRES[modo].ok(p)) { modo = "unidad"; document.querySelectorAll("#modo [data-m]").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === "unidad")); }
+  addToCart(p.id); toast(`${p.nombre} agregado a la venta.`);
+}
+function asignarCodigo(cod, pid, donde) {
+  const p = P(pid), antes = porCodigo(cod);
+  if (antes && antes.id !== pid) delete antes.cod;
+  p.cod = cod; save(); closeSheet();
+  toast(`Código guardado en ${p.nombre}.`);
+  if (view === "inventario") renderInventario();
+  if (donde) usarCodigo(cod, donde);
+}
+// Código que la app no conoce: se elige a qué producto pertenece.
+function codSheet(cod, donde) {
+  codPend = { cod, donde };
+  openSheet(`<div class="cart-h"><h2>Código nuevo</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <p class="hint">La app todavía no conoce el código <b class="num" style="color:var(--fg)">${cod}</b>. Elige a qué producto pertenece y la próxima vez lo reconoce sola.</p>
+    <label class="search" for="cs-q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="cs-q" type="search" placeholder="Buscar producto" autocomplete="off"></label>
+    <div class="cod-list" id="cs-list"></div>`, "cod");
+  renderCodList(); $("cs-q").addEventListener("input", renderCodList);
+  if (matchMedia("(min-width:900px)").matches) $("cs-q").focus();
+}
+function renderCodList() {
+  const sin = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""), q = sin($("cs-q").value.trim());
+  $("cs-list").innerHTML = S.products.filter(p => sin(p.nombre).includes(q)).map(p => `<button type="button" class="cod-it" data-a="cod-asignar" data-pid="${p.id}">${avatar(p, true)}<span class="t"><b>${esc(p.nombre)}</b><small>${p.tam}${p.cod ? ` · ya tiene el código ${p.cod}` : ""}</small></span></button>`).join("")
+    || `<p class="hint">No hay productos con ese nombre.</p>`;
+}
+// Código de un producto (desde Inventario): se escanea con la pistola dentro del campo o se escribe a mano.
+function camSheet(donde) {
+  const p = P(+donde.slice(2));
+  openSheet(`<div class="cart-h"><h2>Código de ${esc(p.nombre)}</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <p class="hint" id="cam-msg">Escanea el código con la pistola lectora o escríbelo y presiona Enter.</p>
+    <div class="cam-man"><label class="field" for="cam-cod">Código de barras${p.cod ? ` (ahora: ${p.cod})` : ""}<input id="cam-cod" inputmode="numeric" autocomplete="off" placeholder="Ejemplo: 7702004003508"></label>
+      <button class="btn ink" type="button" data-a="cam-ok" data-donde="${donde}">Guardar</button></div>
+    ${p.cod ? `<button class="btn line" type="button" data-a="cod-quitar" data-pid="${p.id}">Quitar el código</button>` : ""}`, "cam");
+  $("cam-cod").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); camUsar(donde); } });
+  $("cam-cod").focus();
+}
+function camUsar(donde) { const c = codDe($("cam-cod").value); if (!pareceCodigo(c)) { $("cam-msg").textContent = "El código debe tener entre 6 y 14 números."; return; } closeSheet(); usarCodigo(c, donde); }
+// Pistola lectora: escribe los números muy rápido y termina con Enter. Si cae fuera de un campo de texto, igual se reconoce.
+let pistola = { t: 0, s: "" };
+document.addEventListener("keydown", e => {
+  if (!me || e.target.closest("input,textarea,select") || !$("sheet").hidden) return;
+  const now = performance.now();
+  if (/^\d$/.test(e.key)) { pistola.s = now - pistola.t < 80 ? pistola.s + e.key : e.key; pistola.t = now; return; }
+  if (e.key === "Enter" && pareceCodigo(pistola.s) && now - pistola.t < 120) { e.preventDefault(); const c = pistola.s; pistola.s = ""; usarCodigo(c, view === "comprar" ? "comprar" : "vender"); }
+});
+
 /* ---------- Empleados ---------- */
 function renderEmpleados() {
   const hv = hoyVentas();
@@ -2608,6 +2686,10 @@ document.addEventListener("click", e => {
   const a = b.dataset.a, i = +b.dataset.i;
   if (a === "salir") logout();
   if (a === "close") closeSheet();
+  if (a === "scan") camSheet(b.dataset.donde);
+  if (a === "cod-quitar") { const p = P(+b.dataset.pid); delete p.cod; save(); closeSheet(); renderInventario(); toast(`Se quitó el código de ${p.nombre}.`); }
+  if (a === "cam-ok") camUsar(b.dataset.donde);
+  if (a === "cod-asignar" && codPend) asignarCodigo(codPend.cod, +b.dataset.pid, codPend.donde);
   if (a === "opencart") openSheet(cartHtml(true), "cart");
   if (a === "more") openSheet(`<div class="cart-h"><h2>Más opciones</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div><div class="morelist">${navItems().slice(4).map(navBtn).join("")}</div>`, "more");
   if (a === "plus") { cart[i].cant++; renderVender(); }
@@ -2656,8 +2738,11 @@ $("sheet").addEventListener("input", e => {
   if (su) cbDraft.items[+su.dataset.cbu].und = Math.max(0, Math.round(+su.value || 0));
   cbRes();
 });
-$("q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (modo === "combo") { const k = comboMatches()[0]; if (k) { addCombo(k.id); $("q").select(); } return; } const f = matches()[0]; if (f) { addToCart(f.id); $("q").select(); } } });
+$("q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); const raw = codDe($("q").value); if (pareceCodigo(raw) && raw === $("q").value.trim()) { $("q").value = ""; renderVender(); usarCodigo(raw, "vender"); return; } if (modo === "combo") { const k = comboMatches()[0]; if (k) { addCombo(k.id); $("q").select(); } return; } const f = matches()[0]; if (f) { addToCart(f.id); $("q").select(); } } });
 $("q2").addEventListener("input", renderComprar);
+$("q2").addEventListener("keydown", e => { if (e.key !== "Enter") return; e.preventDefault(); const raw = $("q2").value.trim();
+  if (pareceCodigo(raw)) { $("q2").value = ""; renderComprar(); usarCodigo(raw, "comprar"); return; }
+  const q = raw.toLowerCase(), f = S.products.find(p => p.nombre.toLowerCase().includes(q)); if (q && f) buySheet(f); });
 $("s-pct").addEventListener("change", e => { const v = +e.target.value; if (v >= 0) { S.pct = v; save(); renderAjustes(); toast(`Ahora vendes con ${v}% sobre el costo.`); } });
 document.addEventListener("keydown", e => {
   if (!me) return;
