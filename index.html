@@ -408,6 +408,12 @@ td.r,th.r{text-align:right}
 #tx-box .ma-mrow .t{flex:1;min-width:0;display:flex;flex-direction:column}
 #tx-box .ma-mrow .t b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #tx-box .ma-mrow .t small{color:var(--muted);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tx-box .ma-mrow .t small .fh{color:var(--fg);font-weight:700}
+#tx-box .ma-quien{align-items:center;flex-wrap:wrap}
+@media (max-width:600px){ #tx-box .ma-quien .ma-ql{flex:1 1 100%} #tx-box .ma-mrow .t small{white-space:normal} }
+#tx-box .ma-quien .ma-ql{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+#tx-box .ma-quien button span{opacity:.7;font-weight:600;margin-left:2px}
+#tx-box .ma-quien button:disabled{opacity:.45}
 #tx-box .ma-mrow .t small.ex{color:var(--warn);font-size:.62rem}
 #tx-box .ma-mrow .v{font-weight:800;white-space:nowrap}
 #tx-box .ma-mrow .v.in{color:var(--good)}
@@ -773,10 +779,10 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
             <div class="ma-fil">
               <div class="chips" id="ma-tipo"></div>
               <select id="ma-medio" aria-label="Medio de pago"><option value="">Todos los medios</option><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select>
-              <select id="ma-user" aria-label="Responsable"></select>
               <select id="ma-ord" aria-label="Ordenar"><option value="rec">Más recientes</option><option value="ant">Más antiguos</option><option value="may">Mayor valor</option></select>
               <span id="ma-hrchip"></span>
             </div>
+            <div class="chips ma-quien" id="ma-quien"></div>
             <div class="ma-tot" id="ma-tot"></div>
             <div id="ma-list"></div>
           </div>
@@ -1490,13 +1496,13 @@ const MA_Q = ["var(--q1)", "var(--q2)", "var(--q3)", "var(--q4)", "var(--q5)"];
 const MA_FORMA = [[0.5, 0.7, 0.9, 1, 1.1, 1.2], [1, 0.9, 0.9, 1, 1.2, 1.4], [1.6, 1.5, 1.3, 1, 0.6, 0.3]];
 const maHh = h => new Date(2000, 0, 1, h % 24).toLocaleTimeString("es-CO", { hour: "numeric" });
 const maK = n => ciShort(n).replace(" mil", "k").replace(" M", "M");
-let maDay = null, maTipo = "todo", maOpen = false, maScope = "dia", maHr = null, maMax = 40, maSel = null, MA = null;
+let maQuien = "", maDay = null, maTipo = "todo", maOpen = false, maScope = "dia", maHr = null, maMax = 40, maSel = null, MA = null;
 try { maOpen = localStorage.getItem("pininos-mov-lista") === "1"; } catch (e) {}
 
 function maIndex() {
   const idx = new Map(), pos = new Map();
   S.movs.forEach((m, i) => { const d = new Date(m.t); d.setHours(0, 0, 0, 0); const k = +d; if (!idx.has(k)) idx.set(k, []); idx.get(k).push(m); pos.set(m, i); });
-  MA = { idx, pos, horas: new Map(), est: new Map() };
+  MA = { idx, pos, horas: new Map(), est: new Map(), tk: new Map(), lst: [] };
 }
 const maDia = k => MA.idx.get(k) || [];
 const maVentas = k => maSum(maDia(k).filter(m => m.k === "venta"), m => m.total);
@@ -1507,16 +1513,46 @@ function maPagos(l) {
   l.filter(m => m.k === "venta").forEach(m => { if (m.dia && m.turnos) m.turnos.forEach(x => { o.Efectivo += x[3]; o.Transferencia += x[4]; o.Tarjeta += x[5]; }); else o[medioDe(m)] += m.total; });
   return o;
 }
+// Los días de ejemplo guardan solo el total de cada turno. Para ver cada venta con su fecha, hora, vendedor y medio,
+// se reparten en ventas sueltas: siempre las mismas para ese día, y con las unidades que se vendieron ese día.
+function maTickets(m) {
+  if (MA.tk.has(m)) return MA.tk.get(m);
+  const d0 = new Date(m.t); d0.setHours(0, 0, 0, 0); const k = +d0;
+  let x = (Math.floor(k / 864e5) * 31 + 5) % 2147483647 || 1; const r = () => (x = x * 16807 % 2147483647) / 2147483647; r(); r(); r();
+  const packs = [];
+  m.lines.forEach(l => { const p = P(l.pid), pu = l.total / l.und, cu = p.costoCaja / p.porCaja, mx = (look(p) || [])[6] === "Cerveza" ? 6 : 2; let rest = l.und;
+    while (rest > 0) { const n = Math.min(rest, 1 + Math.floor(r() * mx)); packs.push({ pid: l.pid, n, pu, cu }); rest -= n; } });
+  for (let i = packs.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [packs[i], packs[j]] = [packs[j], packs[i]]; }
+  // Cada paquete va al turno al que más le falta, así lo de cada vendedor cuadra con su cierre de caja.
+  const out = [], falta = m.turnos.map(tt => tt[0]), deTurno = m.turnos.map(() => []);
+  packs.sort((a, b) => b.n * b.pu - a.n * a.pu).forEach(pk => { const i = falta.indexOf(Math.max(...falta)); deTurno[i].push(pk); falta[i] -= pk.n * pk.pu; });
+  m.turnos.forEach((tt, ti) => {
+    const T = TURNOS[ti] || TURNOS[0], mine = deTurno[ti];
+    for (let i = mine.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [mine[i], mine[j]] = [mine[j], mine[i]]; }
+    const n = Math.min(Math.max(1, tt[2]), mine.length); if (!n) return;
+    const tks = Array.from({ length: n }, () => []);
+    mine.forEach((pk, i) => tks[i < n ? i : Math.floor(r() * n)].push(pk));
+    const forma = MA_FORMA[ti] || MA_FORMA[0], sf = forma.reduce((a, b) => a + b, 0);
+    const lista = tks.map(ps => {
+      let u = r() * sf, slot = 0; while (slot < 5 && u > forma[slot]) u -= forma[slot++];
+      const lines = []; ps.forEach(pk => { const l = lines.find(z => z.pid === pk.pid); if (l) { l.cant += pk.n; l.und += pk.n; l.total += pk.n * pk.pu; } else lines.push({ pid: pk.pid, cant: pk.n, tipo: "unidad", und: pk.n, total: pk.n * pk.pu }); });
+      lines.forEach(l => l.total = Math.round(l.total));
+      const total = lines.reduce((a, l) => a + l.total, 0), costo = ps.reduce((a, pk) => a + pk.n * pk.cu, 0);
+      return { k: "venta", t: k + (T.ini + slot + r()) * 36e5, lines, total, ganancia: Math.round(total - costo), user: T.user, ejemplo: true, suelta: 1, dk: k };
+    });
+    // Medios de pago: cada venta va al medio al que más le falta para llegar a lo que dice el turno.
+    const meta = { Efectivo: tt[3], Transferencia: tt[4], Tarjeta: tt[5] };
+    lista.forEach(v => { const md = Object.keys(meta).sort((a, b) => meta[b] - meta[a])[0]; v.medio = md; meta[md] -= v.total; });
+    out.push(...lista);
+  });
+  out.sort((a, b) => a.t - b.t);
+  MA.tk.set(m, out); return out;
+}
+const maSueltas = l => l.flatMap(m => m.dia && m.turnos ? maTickets(m) : [m]);
 function maHoras(k) {
   if (MA.horas.has(k)) return MA.horas.get(k);
   const h = Array(MA_NH).fill(0);
-  maDia(k).filter(m => m.k === "venta").forEach(m => {
-    if (m.dia && m.turnos) {
-      let x = (Math.floor(k / 864e5) * 13 + 7) % 2147483647 || 1; const r = () => (x = x * 16807 % 2147483647) / 2147483647; r(); r(); r();
-      m.turnos.forEach((tt, i) => { const w = MA_FORMA[i].map(v => v * (0.7 + r() * 0.6)), sw = w.reduce((a, b) => a + b, 0); let rest = tt[0];
-        w.forEach((v, j) => { const val = j === 5 ? rest : Math.round(tt[0] * v / sw); rest -= val; h[i * 6 + j] += val; }); });
-    } else { const hr = new Date(m.t).getHours(), i = (hr < 2 ? hr + 24 : hr) - MA_H0; if (i >= 0 && i < MA_NH) h[i] += m.total; }
-  });
+  maSueltas(maDia(k).filter(m => m.k === "venta")).forEach(m => { const hr = new Date(m.t).getHours(), i = (hr < 2 ? hr + 24 : hr) - MA_H0; if (i >= 0 && i < MA_NH) h[i] += m.total; });
   MA.horas.set(k, h); return h;
 }
 // Venta estimada del día: promedio de los últimos 4 días iguales (por ejemplo, los 4 sábados anteriores).
@@ -1616,29 +1652,35 @@ function maHorasSvg(k, hrs) {
 }
 
 // Lista de todos los movimientos: se despliega u oculta, y se filtra por tipo, medio, responsable, hora y texto.
-function maRow(m) {
-  const c = concepto(m), on = maSel === m, d = new Date(m.t), venta = m.k === "venta";
-  const sub = m.dia ? `Día completo · ${m.turnos ? m.turnos.reduce((a, x) => a + x[2], 0) + " clientes" : ""}` : `${d.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })} · ${venta ? "Venta" : "Compra"} · ${U(m.user).nombre} · ${medioDe(m)}`;
+const maFH = t => { const d = new Date(t); return `${CI_DIAS[d.getDay()].slice(0, 3)} ${d.getDate()} ${CI_MESES[d.getMonth()].slice(0, 3)} · ${d.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}`; };
+function maRow(m, ix) {
+  const c = concepto(m), on = maSel === m, venta = m.k === "venta";
+  const sub = m.dia ? `Día completo · ${m.turnos ? m.turnos.reduce((a, x) => a + x[2], 0) + " clientes" : ""}` : `<span class="fh">${maFH(m.t)}</span> · ${venta ? "Venta" : "Compra"} · ${esc(U(m.user).nombre)} · ${medioDe(m)}`;
   let det = "";
   if (on) det = m.k === "compra"
     ? `<div class="ma-lines"><div><span>Unidades que entraron</span><b class="num">${m.und}</b></div><div><span>Costo por unidad</span><span class="num">${money(m.total / m.und)}</span></div><div><span>Pagado por ${medioDe(m).toLowerCase()} · ${U(m.user).nombre}</span></div></div>`
     : `<div class="ma-lines">${m.lines.map(l => `<div><span>${lineaTxt(l)}</span><span class="num">${money(l.total)}</span></div>`).join("")}
       <div class="g"><span>Ganancia · margen ${(m.ganancia / (m.total || 1) * 100).toFixed(1).replace(".", ",")}%</span><b class="num">+${money(m.ganancia)}</b></div></div>`;
-  return `<button type="button" class="ma-mrow${on ? " on" : ""}" data-mam="${MA.pos.get(m)}">${avatar(c.p, true)}
+  return `<button type="button" class="ma-mrow${on ? " on" : ""}" data-mam="${ix}">${avatar(c.p, true)}
     <span class="t"><b>${c.txt}${m.ejemplo ? ' <small class="ex">ejemplo</small>' : ""}</b><small>${sub}</small></span><span class="v num${venta ? " in" : ""}">${venta ? "+" : "−"}${money(m.total)}</span></button>${det}`;
 }
 function renderMaList() {
   const [d0, d1] = mvRango(), fin = +masD(d1, 1), all = S.movs.filter(m => m.t >= +d0 && m.t < fin);
   const vin = maSum(all.filter(m => m.k === "venta"), m => m.total), vout = maSum(all.filter(m => m.k !== "venta"), m => m.total);
-  $("ma-sum").textContent = `${all.length.toLocaleString("es-CO")} en el periodo · entró ${ciShort(vin)} · salió ${ciShort(vout)}`;
+  $("ma-sum").textContent = `${maSueltas(all).length.toLocaleString("es-CO")} en el periodo · entró ${ciShort(vin)} · salió ${ciShort(vout)}`;
   $("ma-head").setAttribute("aria-expanded", maOpen); $("ma-body").hidden = !maOpen; $("ma-lbl").textContent = maOpen ? "Ocultar" : "Ver lista";
   if (!maOpen) return;
-  const uv = $("ma-user").value; $("ma-user").innerHTML = `<option value="">Todos los responsables</option>` + USERS.map(u => `<option value="${u.id}">${esc(u.nombre)}</option>`).join(""); $("ma-user").value = uv;
-  const q = $("ma-q").value.trim().toLowerCase(), md = $("ma-medio").value, us = $("ma-user").value, ord = $("ma-ord").value;
-  const base = maScope === "dia" ? maDia(maDay) : all;
-  const enHora = m => { if (maHr == null) return true; if (m.dia || m.k !== "venta") return false; const hr = new Date(m.t).getHours(); return (hr < 2 ? hr + 24 : hr) === maHr; };
-  const pre = base.filter(m => (!md || medioDe(m) === md) && (!us || m.user === us) && enHora(m)
+  const q = $("ma-q").value.trim().toLowerCase(), md = $("ma-medio").value, ord = $("ma-ord").value;
+  const base = maSueltas(maScope === "dia" ? maDia(maDay) : all);
+  const enHora = m => { if (maHr == null) return true; if (m.k !== "venta") return false; const hr = new Date(m.t).getHours(); return (hr < 2 ? hr + 24 : hr) === maHr; };
+  const deQuien = (m, w) => !w || (w === "rol:vendedor" ? U(m.user).rol !== "admin" : m.user === w);
+  const sinQuien = base.filter(m => (!md || medioDe(m) === md) && enHora(m)
     && (!q || `${concepto(m).txt} ${U(m.user).nombre} ${m.lines ? m.lines.map(l => P(l.pid).nombre).join(" ") : P(m.pid).nombre}`.toLowerCase().includes(q)));
+  const quien = [["", "Todos"], ...USERS.filter(u => u.rol === "admin").map(u => [u.id, u.nombre]), ["rol:vendedor", "Todos los vendedores"], ...USERS.filter(u => u.rol !== "admin").map(u => [u.id, u.nombre])];
+  if (!quien.some(([v]) => v === maQuien)) maQuien = "";
+  $("ma-quien").innerHTML = `<span class="ma-ql">Quién lo hizo</span>` + quien.map(([v, l]) => { const n = sinQuien.filter(m => deQuien(m, v)).length;
+    return `<button type="button" data-maq="${v}" aria-pressed="${v === maQuien}"${n || v === maQuien ? "" : " disabled"}>${esc(l)} <span>${n.toLocaleString("es-CO")}</span></button>`; }).join("");
+  const pre = sinQuien.filter(m => deQuien(m, maQuien));
   const lst = pre.filter(m => maTipo === "todo" || m.k === maTipo).sort((a, b) => ord === "may" ? b.total - a.total : ord === "ant" ? a.t - b.t : b.t - a.t);
   document.querySelectorAll("#ma-scope button").forEach(b => b.setAttribute("aria-pressed", b.dataset.masc === maScope));
   $("ma-scope").querySelector('[data-masc="dia"]').textContent = `Día ${new Date(maDay).getDate()} ${CI_MESES[new Date(maDay).getMonth()].slice(0, 3)}`;
@@ -1648,21 +1690,20 @@ function renderMaList() {
   $("ma-tot").innerHTML = `<div><small>Movimientos</small><b class="num">${lst.length.toLocaleString("es-CO")}</b></div><div><small>Entró</small><b class="num" style="color:var(--good)">${money(vi)}</b></div>
     <div><small>Salió</small><b class="num" style="color:var(--bad)">${money(vo)}</b></div><div><small>Quedó</small><b class="num">${money(vi - vo)}</b></div>`;
   let html = "", last = null;
-  lst.slice(0, maMax).forEach(m => {
-    const d = new Date(m.t); d.setHours(0, 0, 0, 0); const k = +d;
-    if (maScope === "per" && ord !== "may" && k !== last) { last = k; const dd = lst.filter(x => x.t >= k && x.t < +masD(d, 1)); html += `<div class="ma-dgrp"><span>${ciDiaLargo(k)}</span><span class="num">${dd.length} · ${ciShort(maSum(dd.filter(x => x.k === "venta"), x => x.total))}</span></div>`; }
-    html += maRow(m);
+  MA.lst = lst;
+  lst.slice(0, maMax).forEach((m, ix) => {
+    const d = new Date(m.dk || m.t); d.setHours(0, 0, 0, 0); const k = +d;
+    if (maScope === "per" && ord !== "may" && k !== last) { last = k; const dd = lst.filter(x => (x.dk || x.t) >= k && (x.dk || x.t) < +masD(d, 1)); html += `<div class="ma-dgrp"><span>${ciDiaLargo(k)}</span><span class="num">${dd.length} · ${ciShort(maSum(dd.filter(x => x.k === "venta"), x => x.total))}</span></div>`; }
+    html += maRow(m, ix);
   });
-  const ocultos = maHr != null && base.some(m => m.dia);
-  $("ma-list").innerHTML = (ocultos ? `<p class="hint">Los días de ejemplo guardan solo el total del día, por eso no salen al filtrar por hora.</p>` : "")
-    + (html || `<p class="hint">No hay movimientos con esos filtros.</p>`)
+  $("ma-list").innerHTML = (html || `<p class="hint">No hay movimientos con esos filtros.</p>`)
     + (lst.length > maMax ? `<button type="button" class="mv-more" data-mamore>Ver ${Math.min(40, lst.length - maMax)} más (quedan ${lst.length - maMax})</button>` : "");
 }
 $("mv-rap").addEventListener("click", e => { const b = e.target.closest("[data-mvr]"); if (b) { [mvD0, mvD1] = MV_RAP[b.dataset.mvr](); maDay = null; maSel = null; maMax = 40; renderMovs(); } });
 ["mv-desde", "mv-hasta"].forEach(id => $(id).addEventListener("change", () => { if (!$("mv-desde").value || !$("mv-hasta").value) return;
   const f = v => { const [y, m, d] = v.split("-").map(Number); return new Date(y, m - 1, d); }; mvD0 = f($("mv-desde").value); mvD1 = f($("mv-hasta").value); maDay = null; maSel = null; maMax = 40; renderMovs(); }));
 $("ma-head").addEventListener("click", () => { maOpen = !maOpen; try { localStorage.setItem("pininos-mov-lista", maOpen ? "1" : "0"); } catch (e) {} renderMaList(); });
-["ma-q", "ma-medio", "ma-user", "ma-ord"].forEach(id => $(id).addEventListener("input", () => { maMax = 40; maSel = null; renderMaList(); }));
+["ma-q", "ma-medio", "ma-ord"].forEach(id => $(id).addEventListener("input", () => { maMax = 40; maSel = null; renderMaList(); }));
 $("tx-box").addEventListener("click", e => {
   let b;
   if ((b = e.target.closest("[data-maday]"))) { maDay = +b.dataset.maday; maSel = null; maMax = 40; renderMovs(); if (innerWidth < 1180) $("ma-side").scrollIntoView({ behavior: "smooth", block: "start" }); }
@@ -1672,7 +1713,8 @@ $("tx-box").addEventListener("click", e => {
   else if ((b = e.target.closest("[data-mahr]"))) { const h = b.dataset.mahr === "" ? null : +b.dataset.mahr; maHr = h === maHr ? null : h; maMax = 40; maSel = null;
     if (maHr != null) { maOpen = true; try { localStorage.setItem("pininos-mov-lista", "1"); } catch (e) {} }
     renderMovs(); if (maHr != null && b.closest("svg")) $("ma-mv").scrollIntoView({ behavior: "smooth", block: "start" }); }
-  else if ((b = e.target.closest("[data-mam]"))) { const m = S.movs[+b.dataset.mam]; maSel = maSel === m ? null : m; renderMaList(); }
+  else if ((b = e.target.closest("[data-maq]"))) { maQuien = b.dataset.maq; maMax = 40; maSel = null; renderMaList(); }
+  else if ((b = e.target.closest("[data-mam]"))) { const m = MA.lst[+b.dataset.mam]; maSel = maSel === m ? null : m; renderMaList(); }
 });
 
 /* ---------- Ajustes ---------- */
