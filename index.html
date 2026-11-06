@@ -956,6 +956,7 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
           <label class="field" for="s-pct">Ganancia sobre el costo (%)<input id="s-pct" type="number" min="0" step="1" inputmode="numeric"></label>
           <p class="hint" id="pct-help"></p>
         </div>
+        <div class="card" id="copia-box"></div>
         <div class="card" id="reset-box"></div>
         <div class="card">
           <h2>Gastos fijos del mes</h2>
@@ -2169,6 +2170,7 @@ function renderAjustes() {
   renderGastosF();
   $("pct-help").textContent = `Si una cerveza te cuesta $2.000, la vendes a ${money(2000 * (1 + S.pct / 100))}. Tu margen sobre lo que cobras es ${(S.pct / (100 + S.pct) * 100).toFixed(1)}%.`;
   if (!$("reset-box").innerHTML) $("reset-box").innerHTML = RESET_BASE;
+  renderCopia();
   renderCombos();
 }
 function renderCombos() {
@@ -2585,6 +2587,53 @@ document.addEventListener("keydown", e => {
   if (e.key === "Enter" && pareceCodigo(pistola.s) && now - pistola.t < 120) { e.preventDefault(); const c = pistola.s; pistola.s = ""; usarCodigo(c, view === "comprar" ? "comprar" : "vender"); }
 });
 
+/* ---------- Copia de seguridad ---------- */
+// Los datos viven en el navegador de cada aparato. Esta copia es un archivo con todo (ventas, compras, productos, gastos, vendedores y códigos)
+// que se puede guardar aparte y recuperar en este u otro aparato.
+let copiaNueva = null;
+const fechaCorta = t => new Date(t).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
+function renderCopia() {
+  const ult = S.ultimaCopia, dias = ult ? Math.floor((Date.now() - ult) / 864e5) : null;
+  const aviso = ult == null ? `<p class="hint" style="color:var(--warn);font-weight:700">Todavía no has descargado ninguna copia.</p>`
+    : `<p class="hint"${dias >= 7 ? ' style="color:var(--warn);font-weight:700"' : ""}>Última copia: ${fechaCorta(ult)}${dias >= 7 ? `, hace ${dias} días. Descarga una nueva.` : "."}</p>`;
+  const ven = S.movs.filter(m => m.k === "venta").length, com = S.movs.filter(m => m.k === "compra").length;
+  $("copia-box").innerHTML = copiaNueva ? `<h2>¿Recuperar esta copia?</h2>
+      <p class="hint">Copia del <b style="color:var(--fg)">${fechaCorta(copiaNueva.fecha)}</b> con ${copiaNueva.datos.products.length} productos, ${copiaNueva.ventas.toLocaleString("es-CO")} registros de ventas y ${copiaNueva.compras.toLocaleString("es-CO")} compras.</p>
+      <p class="hint" style="color:var(--bad);font-weight:700">Esto reemplaza todo lo que hay ahora en este aparato. Si tienes ventas nuevas aquí, descarga primero una copia de lo actual.</p>
+      <div class="row"><button class="btn ink" type="button" data-a="copia-si">Sí, recuperar</button><button class="btn line" type="button" data-a="copia-no">Cancelar</button></div>`
+    : `<h2>Copia de seguridad</h2>
+      <p class="hint">Tus datos se guardan solo en este aparato. Descarga una copia cada semana y guárdala en tu correo, en Google Drive o en una memoria. Con la copia también puedes pasar tus datos a otro aparato.</p>
+      ${aviso}
+      <p class="hint">Ahora hay ${S.products.length} productos, ${ven.toLocaleString("es-CO")} registros de ventas y ${com.toLocaleString("es-CO")} compras.</p>
+      <div class="row"><button class="btn" type="button" data-a="copia-bajar">Descargar copia</button>
+        <label class="btn line" for="copia-file" style="cursor:pointer">Recuperar una copia<input id="copia-file" type="file" accept=".json,application/json" hidden></label></div>
+      <p class="hint">Dentro de Claude no se pueden descargar archivos: usa la app instalada desde vykmendoza98.github.io/licorera-pininos.</p>
+      <p class="err" id="copia-err" hidden></p>`;
+}
+function bajarCopia() {
+  const fecha = Date.now(); S.ultimaCopia = fecha;
+  const datos = JSON.stringify({ app: "licorera-pininos", version: 1, fecha, datos: S });
+  const a = document.createElement("a"), url = URL.createObjectURL(new Blob([datos], { type: "application/json" }));
+  a.href = url; a.download = `pininos-copia-${isoD(new Date(fecha))}.json`; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  save(); renderCopia(); toast("Copia descargada. Guárdala en un lugar seguro.");
+}
+document.addEventListener("change", e => {
+  if (e.target.id !== "copia-file" || !e.target.files[0]) return;
+  const f = e.target.files[0], r = new FileReader(), err = t => { $("copia-err").textContent = t; $("copia-err").hidden = false; };
+  r.onload = () => { try {
+      const o = JSON.parse(r.result);
+      if (o.app !== "licorera-pininos" || !o.datos || !Array.isArray(o.datos.products) || !Array.isArray(o.datos.movs)) return err("Ese archivo no es una copia de Licorera Pininos.");
+      copiaNueva = { fecha: o.fecha || Date.now(), datos: o.datos, ventas: o.datos.movs.filter(m => m.k === "venta").length, compras: o.datos.movs.filter(m => m.k === "compra").length }; renderCopia();
+    } catch (x) { err("No pude leer ese archivo. Revisa que sea la copia que descargaste de la app."); } };
+  r.onerror = () => err("No pude abrir ese archivo."); r.readAsText(f);
+});
+function recuperarCopia() {
+  const d = copiaNueva.datos; copiaNueva = null;
+  try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { toast("No se pudo recuperar la copia en este aparato."); return; }
+  location.reload();
+}
+
 /* ---------- Empleados ---------- */
 function renderEmpleados() {
   const hv = hoyVentas();
@@ -2686,6 +2735,9 @@ document.addEventListener("click", e => {
   const a = b.dataset.a, i = +b.dataset.i;
   if (a === "salir") logout();
   if (a === "close") closeSheet();
+  if (a === "copia-bajar") bajarCopia();
+  if (a === "copia-no") { copiaNueva = null; renderCopia(); }
+  if (a === "copia-si" && copiaNueva) recuperarCopia();
   if (a === "scan") camSheet(b.dataset.donde);
   if (a === "cod-quitar") { const p = P(+b.dataset.pid); delete p.cod; save(); closeSheet(); renderInventario(); toast(`Se quitó el código de ${p.nombre}.`); }
   if (a === "cam-ok") camUsar(b.dataset.donde);
