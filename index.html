@@ -2834,7 +2834,9 @@ function buyPreview(p) {
   const tipo = document.querySelector('#b-tipo [aria-pressed="true"]').dataset.bt;
   const cant = Math.max(1, +$("b-cant").value || 1), total = +$("b-total").value || 0;
   const und = tipo === "caja" ? cant * p.porCaja : cant, cu = total / und;
-  $("b-res").innerHTML = `<div><span>Entran</span><span>${und} unidades</span></div><div><span>Costo por unidad</span><span>${money(cu)}</span></div><div class="g"><span>Nuevo precio de venta</span><span>${money(cu * (1 + S.pct / 100))} und.</span></div>`;
+  $("b-res").innerHTML = `<div><span>Entran</span><span>${und} unidades</span></div><div><span>Costo por unidad</span><span>${money(cu)}</span></div><div class="g"><span>Nuevo precio de venta</span><span>${money(cu * (1 + S.pct / 100))} und.</span></div>
+    <div class="g"><span>Porcentaje de ganancia</span><span>${String(S.pct).replace(".", ",")}% · ${money(cu * S.pct / 100)} und.</span></div>
+    <div><small class="hint" style="margin:0">Es ${String(S.pct).replace(".", ",")}% sobre lo que te costó. De lo que cobras, te queda ${margenPct().toFixed(1).replace(".", ",")}%.</small></div>`;
 }
 $("sheet").addEventListener("input", () => { const b = $("sheet").querySelector('[data-a="comprar"]'); if (b) buyPreview(P(b.dataset.pid)); });
 
