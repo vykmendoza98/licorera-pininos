@@ -77,6 +77,15 @@ kbd{font-family:var(--font);font-size:.7rem;font-weight:700;border:1px solid var
 .user[aria-pressed="true"]{border-color:var(--yellow);background:var(--yellow-soft)}
 .user[aria-pressed="true"] .ini{background:var(--yellow);color:var(--yellow-ink)}
 .err{color:var(--bad);font-size:.85rem;font-weight:600;margin:0}
+.sedes .user{padding:10px 6px;text-align:center}
+.sedes .user .ini svg{width:18px;height:18px}
+.ttl{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sede-tag{display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden}
+.sede-tag span{overflow:hidden;text-overflow:ellipsis}
+.sede-tag svg{width:13px;height:13px;flex:none}
+.sd-row{display:flex;gap:8px;align-items:center}
+.sd-row input{flex:1;min-width:0}
+.sd-row .btn{padding:8px 12px;flex:none}
 .demo{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:.78rem;color:var(--muted)}
 .demo b{color:var(--fg)}
 
@@ -752,6 +761,7 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
       <span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v4l2 3v12a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9l2-3z"/><path d="M8 13h8"/></svg></span>
       <span><b>Licorera Pininos</b><small>Ingresa para empezar</small></span>
     </div>
+    <div class="field" id="sede-f">¿En qué sede?<div class="users sedes" id="sedes"></div></div>
     <div class="field">¿Quién eres?<div class="users" id="users"></div></div>
     <label class="field" for="clave">Contraseña<input id="clave" type="password" inputmode="numeric" placeholder="••••"></label>
     <p class="err" id="err" hidden></p>
@@ -779,7 +789,7 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
 
   <div class="main">
     <header class="top">
-      <h1 id="title">Inicio</h1>
+      <div class="ttl"><h1 id="title">Inicio</h1><span class="sede-tag" id="sede-tag" hidden></span></div>
       <div class="top-actions">
         <button class="themebtn" type="button" aria-label="Cambiar entre modo diurno y nocturno"></button>
         <button class="btn line" type="button" data-go="comprar">Nueva compra</button>
@@ -962,6 +972,7 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
           <label class="field" for="s-pct">Ganancia sobre el costo (%)<input id="s-pct" type="number" min="0" step="1" inputmode="numeric"></label>
           <p class="hint" id="pct-help"></p>
         </div>
+        <div class="card" id="sedes-box"></div>
         <div class="card" id="copia-box"></div>
         <div class="card" id="reset-box"></div>
         <div class="card">
@@ -1237,8 +1248,20 @@ function seed() {
   sellItems(s, [{ pid: 8, cant: 4, tipo: "unidad" }, { pid: 2, cant: 2, tipo: "unidad" }], now - 36e5, "v1", "Efectivo", true);
   return s;
 }
-try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-if (!S || !S.products) S = seed();
+// Sedes: cada sede guarda aparte su inventario, precios, ventas, compras, cierres y gastos (la primera sigue en KEY).
+// La lista de sedes, los empleados, los clientes y los proveedores son de todas las sedes (GKEY).
+const GKEY = KEY + "-sedes", keyDe = id => id === "s1" ? KEY : KEY + "-" + id;
+let G = null, SEDE = "s1";
+try { G = JSON.parse(localStorage.getItem(GKEY)); } catch (e) {}
+if (!G || !Array.isArray(G.sedes) || !G.sedes.length) G = null;
+try { SEDE = localStorage.getItem("pininos-sede") || "s1"; } catch (e) {}
+if (G && !G.sedes.some(x => x.id === SEDE)) SEDE = G.sedes[0].id;
+// Una sede nueva arranca con los mismos productos y precios, pero con inventario en cero y sin ventas.
+const sedeVacia = b => ({ pct: b.pct, products: b.products.map(p => ({ ...p, stock: 0 })), movs: [], cierres: [], real: true, hist: 3,
+  gastos: b.gastos ? { ...b.gastos } : undefined, combos: b.combos ? JSON.parse(JSON.stringify(b.combos)) : undefined });
+try { S = JSON.parse(localStorage.getItem(keyDe(SEDE))); } catch (e) {}
+if (!S || !S.products) { let base = null; if (SEDE !== "s1") try { base = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} S = SEDE === "s1" ? seed() : sedeVacia(base && base.products ? base : seed()); }
+if (G) ["users", "clientes", "proveedores"].forEach(k => { if (G[k]) S[k] = G[k]; });
 
 // Ventas ficticias desde el 1 de enero del año pasado hasta ayer, para probar el panel. Se borran con "Empezar de cero".
 // Reparte un día de ejemplo entre los tres turnos: [total, ganancia, ventas, efectivo, transferencia, tarjeta].
@@ -1296,7 +1319,8 @@ const redondeo500 = n => Math.ceil(n / 500) * 500;
 if (!S.combos) S.combos = [["Cubetazo Águila", [[1, 6]]], ["Cubetazo Poker", [[7, 6]]], ["Cubetazo Club Colombia", [[3, 6]]], ["Cubetazo mixto", [[1, 3], [7, 3]]]]
   .map(([nombre, its], i) => { const items = its.map(([pid, und]) => ({ pid, und })); return { id: "c" + (i + 1), nombre, items, precio: redondeo500(items.reduce((a, x) => a + precio(P(x.pid), "unidad") * x.und, 0)) }; });
 USERS = S.users;
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { console.warn("No se pudo guardar", e); } };
+const save = () => { try { localStorage.setItem(keyDe(SEDE), JSON.stringify(S));
+  if (G) { G.users = S.users; G.clientes = S.clientes; G.proveedores = S.proveedores; localStorage.setItem(GKEY, JSON.stringify(G)); } } catch (e) { console.warn("No se pudo guardar", e); } };
 save();
 
 /* ---------- Panel gerencial (administrador) ---------- */
@@ -1306,6 +1330,12 @@ if (!S.gastos) { S.gastos = { ...GASTOS_BASE }; save(); }
 if (!S.clientes) { S.clientes = [{ id: "c1", nombre: "Tienda Don Pedro", tel: "", desc: 5, nota: "Compra por mayor", ejemplo: true }, { id: "c2", nombre: "Bar La Esquina", tel: "", desc: 3, nota: "Pide cerveza los viernes", ejemplo: true }]; save(); }
 if (!S.proveedores) { S.proveedores = [{ id: "pr1", nombre: "Distribuidora de cerveza", tel: "", nota: "Viene los lunes", ejemplo: true }, { id: "pr2", nombre: "Distribuidora de licores", tel: "", nota: "Aguardiente, ron, whisky y vodka", ejemplo: true }, { id: "pr3", nombre: "Distribuidora de bebidas", tel: "", nota: "Agua, gaseosas y cigarrillos", ejemplo: true }];
   S.products.forEach(p => { if (!p.prov) { const c = (look(p) || [])[6]; p.prov = c === "Cerveza" ? "pr1" : c === "Licores" ? "pr2" : "pr3"; } }); save(); }
+if (!G) { G = { sedes: [{ id: "s1", nombre: "Sede principal" }, { id: "s2", nombre: "Sede 2", ejemplo: true }, { id: "s3", nombre: "Sede 3", ejemplo: true }] }; }
+S.users.forEach(u => { if (u.rol !== "admin" && !Array.isArray(u.sedes)) u.sedes = [G.sedes[0].id]; });
+save();
+const SD = id => G.sedes.find(x => x.id === id);
+const varias = () => G.sedes.length > 1;
+const puedeEntrar = (u, sid) => u.rol === "admin" || !Array.isArray(u.sedes) || u.sedes.includes(sid);
 const renderPanel = (() => {
   const short = n => { const a = Math.abs(n), s = n < 0 ? "−" : ""; return a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1).replace(".", ",")} M` : `${s}$${Math.round(a / 1e3)} mil`; };
   const pct = n => isFinite(n) ? (n * 100).toFixed(1).replace(".", ",") + "%" : "0%";
@@ -1550,24 +1580,36 @@ const kpi = (cls, ic, label, val) => `<div class="kpi ${cls}"><span class="kic">
 const segHtml = (id, opts, cur, attr) => `<div class="seg" id="${id}">${opts.map(o => `<button type="button" data-${attr}="${o}" aria-pressed="${o === cur}">${o}</button>`).join("")}</div>`;
 
 /* ---------- Entrada ---------- */
+const TIENDA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v8h14v-8"/><path d="M10 21v-5h4v5"/></svg>';
+let pickSede = SEDE;
 function renderUsers() {
-  if (U(pick).activo === false || !USERS.some(u => u.id === pick)) pick = "admin";
-  $("users").innerHTML = USERS.filter(u => u.activo !== false).map(u => `<button type="button" class="user" data-u="${u.id}" aria-pressed="${u.id === pick}"><span class="ini">${esc(u.ini)}</span>${esc(u.nombre)}</button>`).join("");
+  if (!SD(pickSede)) pickSede = SEDE;
+  $("sede-f").hidden = !varias();
+  $("sedes").innerHTML = G.sedes.map(x => `<button type="button" class="user" data-sd="${x.id}" aria-pressed="${x.id === pickSede}"><span class="ini">${TIENDA_SVG}</span>${esc(x.nombre)}</button>`).join("");
+  if (U(pick).activo === false || !USERS.some(u => u.id === pick) || !puedeEntrar(U(pick), pickSede)) pick = "admin";
+  $("users").innerHTML = USERS.filter(u => u.activo !== false && puedeEntrar(u, pickSede)).map(u => `<button type="button" class="user" data-u="${u.id}" aria-pressed="${u.id === pick}"><span class="ini">${esc(u.ini)}</span>${esc(u.nombre)}</button>`).join("");
   // Las claves de prueba solo se muestran mientras no se hayan cambiado.
   const demo = USERS.filter(u => u.activo !== false && { admin: "1234", v1: "1111", v2: "2222" }[u.id] === u.clave);
   $("demo").innerHTML = demo.length ? "Claves de prueba: " + demo.map(u => `${esc(u.nombre)} <b>${u.clave}</b>`).join(" · ") : ""; $("demo").hidden = !demo.length;
 }
 $("cats").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (b) { cat = b.dataset.cat; renderVender(); } });
+$("sedes").addEventListener("click", e => { const b = e.target.closest("[data-sd]"); if (!b) return; pickSede = b.dataset.sd; renderUsers(); $("err").hidden = true; });
 $("users").addEventListener("click", e => { const b = e.target.closest("[data-u]"); if (!b) return; pick = b.dataset.u; renderUsers(); $("err").hidden = true; $("clave").focus(); });
 $("f-login").addEventListener("submit", e => {
   e.preventDefault();
   const u = U(pick);
   if (u.activo === false) return;
   if ($("clave").value !== u.clave) { $("err").textContent = "Contraseña incorrecta. Intenta de nuevo."; $("err").hidden = false; $("clave").select(); return; }
+  if (!puedeEntrar(u, pickSede)) { $("err").textContent = `${u.nombre} no tiene acceso a ${SD(pickSede).nombre}.`; $("err").hidden = false; return; }
+  // Otra sede: se guarda cuál es, se recarga la app con los datos de esa sede y se entra solo.
+  if (pickSede !== SEDE) { try { localStorage.setItem("pininos-sede", pickSede); sessionStorage.setItem("pininos-entrar", u.id); } catch (er) {} location.reload(); return; }
+  entrar(u);
+});
+function entrar(u) {
   me = u; $("clave").value = ""; $("err").hidden = true;
   $("login").hidden = true; $("shell").hidden = false; document.body.classList.add("in");
   buildNav(); go("inicio");
-});
+}
 function logout() {
   me = null; cart = []; closeSheet();
   $("shell").hidden = true; $("login").hidden = false; document.body.classList.remove("in");
@@ -1585,6 +1627,7 @@ function buildNav() {
   $("who-ini").textContent = me.ini; $("chip-ini").textContent = me.ini;
   $("who-n").textContent = me.nombre; $("chip-n").textContent = me.nombre;
   $("who-r").textContent = isAdmin() ? "Acceso completo" : "Ventas y compras";
+  $("sede-tag").hidden = !varias(); $("sede-tag").innerHTML = `${TIENDA_SVG}<span>${esc(SD(SEDE).nombre)}</span>`; $("sede-tag").title = "Sede en la que estás";
 }
 function go(v) {
   if (!navItems().includes(v)) v = "inicio";
@@ -2208,6 +2251,7 @@ function renderAjustes() {
   $("pct-help").textContent = `Si una cerveza te cuesta $2.000, la vendes a ${money(2000 * (1 + S.pct / 100))}. Tu margen sobre lo que cobras es ${(S.pct / (100 + S.pct) * 100).toFixed(1)}%.`;
   if (!$("reset-box").innerHTML) $("reset-box").innerHTML = RESET_BASE;
   renderCopia();
+  renderSedes();
   renderCombos();
 }
 function renderCombos() {
@@ -2635,11 +2679,11 @@ function renderCopia() {
     : `<p class="hint"${dias >= 7 ? ' style="color:var(--warn);font-weight:700"' : ""}>Última copia: ${fechaCorta(ult)}${dias >= 7 ? `, hace ${dias} días. Descarga una nueva.` : "."}</p>`;
   const ven = S.movs.filter(m => m.k === "venta").length, com = S.movs.filter(m => m.k === "compra").length;
   $("copia-box").innerHTML = copiaNueva ? `<h2>¿Recuperar esta copia?</h2>
-      <p class="hint">Copia del <b style="color:var(--fg)">${fechaCorta(copiaNueva.fecha)}</b> con ${copiaNueva.datos.products.length} productos, ${copiaNueva.ventas.toLocaleString("es-CO")} registros de ventas y ${copiaNueva.compras.toLocaleString("es-CO")} compras.</p>
+      <p class="hint">Copia del <b style="color:var(--fg)">${fechaCorta(copiaNueva.fecha)}</b>${copiaNueva.general ? ` con ${copiaNueva.general.sedes.length} sede${copiaNueva.general.sedes.length > 1 ? "s" : ""}. En la sede donde se hizo hay` : " con"} ${copiaNueva.datos.products.length} productos, ${copiaNueva.ventas.toLocaleString("es-CO")} registros de ventas y ${copiaNueva.compras.toLocaleString("es-CO")} compras.</p>
       <p class="hint" style="color:var(--bad);font-weight:700">Esto reemplaza todo lo que hay ahora en este aparato. Si tienes ventas nuevas aquí, descarga primero una copia de lo actual.</p>
       <div class="row"><button class="btn ink" type="button" data-a="copia-si">Sí, recuperar</button><button class="btn line" type="button" data-a="copia-no">Cancelar</button></div>`
     : `<h2>Copia de seguridad</h2>
-      <p class="hint">Tus datos se guardan solo en este aparato. Descarga una copia cada semana y guárdala en tu correo, en Google Drive o en una memoria. Con la copia también puedes pasar tus datos a otro aparato.</p>
+      <p class="hint">Tus datos se guardan solo en este aparato. La copia incluye todas las sedes. Descarga una copia cada semana y guárdala en tu correo, en Google Drive o en una memoria. Con la copia también puedes pasar tus datos a otro aparato.</p>
       ${aviso}
       <p class="hint">Ahora hay ${S.products.length} productos, ${ven.toLocaleString("es-CO")} registros de ventas y ${com.toLocaleString("es-CO")} compras.</p>
       <div class="row"><button class="btn" type="button" data-a="copia-bajar">Descargar copia</button>
@@ -2649,7 +2693,9 @@ function renderCopia() {
 }
 function bajarCopia() {
   const fecha = Date.now(); S.ultimaCopia = fecha;
-  const datos = JSON.stringify({ app: "licorera-pininos", version: 1, fecha, datos: S });
+  save();
+  const todas = {}; G.sedes.forEach(x => { if (x.id === SEDE) todas[x.id] = S; else try { const d = JSON.parse(localStorage.getItem(keyDe(x.id))); if (d) todas[x.id] = d; } catch (e) {} });
+  const datos = JSON.stringify({ app: "licorera-pininos", version: 2, fecha, datos: S, sede: SEDE, general: G, sedes: todas });
   const a = document.createElement("a"), url = URL.createObjectURL(new Blob([datos], { type: "application/json" }));
   a.href = url; a.download = `pininos-copia-${isoD(new Date(fecha))}.json`; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
@@ -2661,14 +2707,59 @@ document.addEventListener("change", e => {
   r.onload = () => { try {
       const o = JSON.parse(r.result);
       if (o.app !== "licorera-pininos" || !o.datos || !Array.isArray(o.datos.products) || !Array.isArray(o.datos.movs)) return err("Ese archivo no es una copia de Licorera Pininos.");
-      copiaNueva = { fecha: o.fecha || Date.now(), datos: o.datos, ventas: o.datos.movs.filter(m => m.k === "venta").length, compras: o.datos.movs.filter(m => m.k === "compra").length }; renderCopia();
+      copiaNueva = { fecha: o.fecha || Date.now(), datos: o.datos, general: o.general && Array.isArray(o.general.sedes) ? o.general : null, sedes: o.sedes || null, ventas: o.datos.movs.filter(m => m.k === "venta").length, compras: o.datos.movs.filter(m => m.k === "compra").length }; renderCopia();
     } catch (x) { err("No pude leer ese archivo. Revisa que sea la copia que descargaste de la app."); } };
   r.onerror = () => err("No pude abrir ese archivo."); r.readAsText(f);
 });
 function recuperarCopia() {
-  const d = copiaNueva.datos; copiaNueva = null;
-  try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { toast("No se pudo recuperar la copia en este aparato."); return; }
+  const c = copiaNueva; copiaNueva = null;
+  try {
+    if (c.general && c.sedes) {
+      G.sedes.forEach(x => localStorage.removeItem(keyDe(x.id)));
+      Object.entries(c.sedes).forEach(([id, d]) => localStorage.setItem(keyDe(id), JSON.stringify(d)));
+      localStorage.setItem(GKEY, JSON.stringify(c.general));
+    } else localStorage.setItem(keyDe(SEDE), JSON.stringify(c.datos));
+  } catch (e) { toast("No se pudo recuperar la copia en este aparato."); return; }
   location.reload();
+}
+
+/* ---------- Sedes ---------- */
+// El administrador agrega, cambia el nombre o elimina sedes. Cada sede tiene su propio inventario y sus propias ventas.
+let sdBorrar = null;
+function renderSedes() {
+  const box = $("sedes-box");
+  if (sdBorrar && SD(sdBorrar)) { const x = SD(sdBorrar);
+    box.innerHTML = `<h2>¿Eliminar ${esc(x.nombre)}?</h2><p class="hint" style="color:var(--bad);font-weight:700">Se borran para siempre su inventario, sus ventas, compras y cierres de caja. Si quieres guardarlos, descarga primero una copia de seguridad.</p>
+      <div class="row"><button class="btn ink" type="button" data-a="sd-si" data-id="${x.id}">Sí, eliminar</button><button class="btn line" type="button" data-a="sd-no">Cancelar</button></div>`; return; }
+  sdBorrar = null;
+  box.innerHTML = `<h2>Sedes</h2><p class="hint">Cada sede lleva su propio inventario, ventas, compras, cierres y gastos. Los empleados, clientes y proveedores son de todas. Al entrar se elige la sede.</p>
+    ${G.sedes.map(x => `<div class="sd-row"><input id="sd-n-${x.id}" maxlength="30" autocomplete="off" value="${esc(x.nombre)}" aria-label="Nombre de la sede">
+      ${x.id === SEDE ? '<span class="pill">Estás aquí</span>' : `<button class="btn line" type="button" data-a="sd-borrar" data-id="${x.id}" style="color:var(--bad)">Eliminar</button>`}
+      <button class="btn line" type="button" data-a="sd-guardar" data-id="${x.id}">Guardar</button></div>${x.ejemplo ? '<small class="hint" style="margin-top:-4px">Sede de ejemplo: cámbiale el nombre o elimínala.</small>' : ""}`).join("")}
+    <div class="row"><button class="btn" type="button" data-a="sd-agregar">+ Agregar sede</button>${varias() ? '<button class="btn line" type="button" data-a="sd-ir">Cambiar de sede</button>' : ""}</div>
+    <p class="hint">Una sede nueva empieza con los mismos productos y precios de esta, con inventario en cero.</p>`;
+}
+function sedeAgregar() {
+  let i = 1; while (G.sedes.some(x => x.id === "s" + i)) i++;
+  let n = G.sedes.length + 1; while (G.sedes.some(x => x.nombre === `Sede ${n}`)) n++;
+  const x = { id: "s" + i, nombre: `Sede ${n}` };
+  try { localStorage.setItem(keyDe(x.id), JSON.stringify(sedeVacia(S))); } catch (e) { toast("No se pudo crear la sede en este aparato."); return; }
+  G.sedes.push(x); save(); renderSedes(); buildNav(); renderUsers();
+  const inp = $("sd-n-" + x.id); if (inp) { inp.focus(); inp.select(); }
+  toast(`Se creó ${x.nombre}. Cámbiale el nombre y asígnale vendedores en Empleados.`);
+}
+function sedeRenombrar(id) {
+  const x = SD(id), nombre = $("sd-n-" + id).value.replace(/[<>"&]/g, "").trim().replace(/\s+/g, " ");
+  if (nombre.length < 2) return toast("Escribe un nombre de al menos 2 letras.");
+  if (G.sedes.some(y => y.id !== id && y.nombre.toLowerCase() === nombre.toLowerCase())) return toast("Ya hay una sede con ese nombre.");
+  x.nombre = nombre; x.ejemplo = false; save(); renderSedes(); buildNav(); renderUsers(); toast(`Sede guardada: ${nombre}.`);
+}
+function sedeEliminar(id) {
+  const x = SD(id); if (!x || id === SEDE) return;
+  G.sedes = G.sedes.filter(y => y.id !== id);
+  try { localStorage.removeItem(keyDe(id)); } catch (e) {}
+  S.users.forEach(u => { if (Array.isArray(u.sedes)) { u.sedes = u.sedes.filter(s => s !== id); if (u.rol !== "admin" && !u.sedes.length) u.sedes = [SEDE]; } });
+  sdBorrar = null; save(); renderSedes(); buildNav(); renderUsers(); toast(`Se eliminó ${x.nombre}.`);
 }
 
 /* ---------- Clientes y proveedores ---------- */
@@ -2766,21 +2857,23 @@ function renderEmpleados() {
   const hv = hoyVentas();
   $("emp").innerHTML = USERS.map(u => { const mine = hv.filter(v => v.user === u.id), off = u.activo === false;
     return `<tr${off ? ' class="off"' : ""}><td><div class="concept"><span class="av-u">${esc(u.ini)}</span><span class="t"><b>${esc(u.nombre)}</b>${off ? '<span class="pill low">Desactivado</span>' : ""}</span></div></td>
-      <td>${u.rol === "admin" ? "Acceso completo" : "Ventas, compras e inventario"}</td><td class="r">${mine.length}</td><td class="r">${money(mine.reduce((a, v) => a + v.total, 0))}</td>
+      <td>${u.rol === "admin" ? "Acceso completo" + (varias() ? " · todas las sedes" : "") : "Ventas, compras e inventario" + (varias() ? ` · ${(u.sedes || []).map(id => SD(id) ? esc(SD(id).nombre) : "").filter(Boolean).join(", ") || "sin sede"}` : "")}</td><td class="r">${mine.length}</td><td class="r">${money(mine.reduce((a, v) => a + v.total, 0))}</td>
       <td class="r"><button class="btn line" type="button" data-a="emp-edit" data-uid="${u.id}" style="padding:7px 12px">Editar</button></td></tr>`; }).join("");
 }
 // Iniciales para el círculo: "Vendedor 3" → "V3", "Ana María" → "AM", "Carlos" → "CA".
 const iniDe = n => { const w = n.trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[1][0] : w[0].slice(0, 2)).toUpperCase(); };
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-let empActivo = true;
+let empActivo = true, empSedes = [];
 function empSheet(u) {
   const nuevo = !u, n = USERS.filter(x => x.rol === "vendedor").length + 1;
   empActivo = u ? u.activo !== false : true;
+  empSedes = u && Array.isArray(u.sedes) ? [...u.sedes] : [SEDE];
   openSheet(`<div class="cart-h"><h2>${nuevo ? "Agregar vendedor" : `Editar ${esc(u.nombre)}`}</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
     <label class="field" for="e-nombre">Nombre para entrar<input id="e-nombre" maxlength="30" autocomplete="off" value="${nuevo ? `Vendedor ${n}` : esc(u.nombre)}"></label>
     <label class="field" for="e-clave">Contraseña (4 a 8 números)<input id="e-clave" inputmode="numeric" maxlength="8" autocomplete="off" value="${nuevo ? "" : esc(u.clave)}" placeholder="Ejemplo: 3333"></label>
     ${u && u.rol === "admin" ? `<p class="hint">El administrador siempre tiene acceso completo y no se puede desactivar.</p>`
-      : `<div class="field">¿Puede entrar a la app?${segHtml("e-act", ["Activo", "Desactivado"], empActivo ? "Activo" : "Desactivado", "eact")}</div>`}
+      : `<div class="field">¿Puede entrar a la app?${segHtml("e-act", ["Activo", "Desactivado"], empActivo ? "Activo" : "Desactivado", "eact")}</div>
+        ${varias() ? `<div class="field">¿En qué sedes trabaja?<div class="chips" id="e-sedes" style="flex-wrap:wrap">${G.sedes.map(x => `<button type="button" data-esd="${x.id}" aria-pressed="${empSedes.includes(x.id)}">${esc(x.nombre)}</button>`).join("")}</div></div>` : ""}`}
     <p class="err" id="e-err" hidden></p>
     <button class="btn ink wide" type="button" data-a="emp-guardar" data-uid="${nuevo ? "" : u.id}">${nuevo ? "Agregar vendedor" : "Guardar cambios"}</button>`, "emp");
   $("e-nombre").focus();
@@ -2790,10 +2883,11 @@ function empGuardar(uid) {
   if (nombre.length < 2) return err("Escribe un nombre de al menos 2 letras.");
   if (USERS.some(x => x.id !== uid && x.nombre.toLowerCase() === nombre.toLowerCase())) return err("Ya hay alguien con ese nombre. Usa otro para no confundirlos.");
   if (!/^\d{4,8}$/.test(clave)) return err("La contraseña debe tener de 4 a 8 números.");
+  if ($("e-sedes") && !empSedes.length) return err("Elige al menos una sede donde trabaja.");
   let u = USERS.find(x => x.id === uid);
   if (!u) { let i = 1; while (USERS.some(x => x.id === "v" + i)) i++; u = { id: "v" + i, rol: "vendedor" }; USERS.push(u); }
   u.nombre = nombre; u.ini = iniDe(nombre); u.clave = clave;
-  if (u.rol !== "admin") u.activo = empActivo;
+  if (u.rol !== "admin") { u.activo = empActivo; u.sedes = G.sedes.filter(x => empSedes.includes(x.id)).map(x => x.id); }
   save(); closeSheet(); renderEmpleados(); renderUsers();
   if (me && me.id === u.id) { $("who-ini").textContent = $("chip-ini").textContent = u.ini; $("who-n").textContent = $("chip-n").textContent = u.nombre; }
   toast(uid ? `Listo, se guardaron los cambios de ${nombre}.` : `Listo, ${nombre} ya puede entrar con su contraseña.`);
@@ -2853,6 +2947,7 @@ document.addEventListener("click", e => {
   }
   const med = e.target.closest("[data-med]"); if (med) { medio = med.dataset.med; document.querySelectorAll("[data-med]").forEach(x => x.setAttribute("aria-pressed", x.dataset.med === medio)); return; }
   const cm = e.target.closest("[data-cbm]"); if (cm) { cbModo(cm.dataset.cbm); return; }
+  const esd = e.target.closest("[data-esd]"); if (esd) { const id = esd.dataset.esd; empSedes = empSedes.includes(id) ? empSedes.filter(x => x !== id) : [...empSedes, id]; esd.setAttribute("aria-pressed", empSedes.includes(id)); return; }
   const ea = e.target.closest("[data-eact]"); if (ea) { empActivo = ea.dataset.eact === "Activo"; pressIn(ea); return; }
   const bmed = e.target.closest("[data-bmed]"); if (bmed) { buyMedio = bmed.dataset.bmed; pressIn(bmed); return; }
   const t = e.target.closest(".tile[data-pid]"); if (t) { addToCart(+t.dataset.pid); return; }
@@ -2866,6 +2961,12 @@ document.addEventListener("click", e => {
   if (a === "salir") logout();
   if (a === "close") closeSheet();
   if (a === "copia-bajar") bajarCopia();
+  if (a === "sd-agregar") sedeAgregar();
+  if (a === "sd-guardar") sedeRenombrar(b.dataset.id);
+  if (a === "sd-borrar") { sdBorrar = b.dataset.id; renderSedes(); }
+  if (a === "sd-no") { sdBorrar = null; renderSedes(); }
+  if (a === "sd-si") sedeEliminar(b.dataset.id);
+  if (a === "sd-ir") logout();
   if (a === "copia-no") { copiaNueva = null; renderCopia(); }
   if (a === "copia-si" && copiaNueva) recuperarCopia();
   if (a === "scan") camSheet(b.dataset.donde);
@@ -2942,6 +3043,8 @@ document.addEventListener("keydown", e => {
 
 $("today2").textContent = new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
 save(); renderUsers();
+{ let id = null; try { id = sessionStorage.getItem("pininos-entrar"); sessionStorage.removeItem("pininos-entrar"); } catch (e) {}
+  const u = id && USERS.find(x => x.id === id && x.activo !== false && puedeEntrar(x, SEDE)); if (u) { pick = u.id; entrar(u); } }
 
 /* ---------- Modo diurno / nocturno ---------- */
 const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
