@@ -635,6 +635,45 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
 #s-estadisticas .es-tab{display:flex;flex-direction:column;gap:16px;min-width:0}
 #s-estadisticas .card{min-width:0}
 #s-estadisticas .yr svg text{font-family:var(--font);fill:var(--muted)}
+#s-asistente{display:flex;flex-direction:column;gap:14px}
+.ai-body{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ai-sedes{flex-wrap:wrap}
+.ai-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ai-kpis .kpi{flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px}
+.ai-kpis .kpi b{font-size:1.1rem}
+.ai-kpis .kpi em{font-style:normal;font-size:.75rem;color:var(--muted);font-weight:600}
+.ai-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.ai-grid>*{min-width:0}
+.ai-bars{display:flex;flex-direction:column;gap:8px}
+.ai-bar{display:grid;grid-template-columns:84px 1fr 76px;gap:10px;align-items:center;font-size:.85rem}
+.ai-bar .tr{height:12px;background:var(--soft);border-radius:99px;overflow:hidden}
+.ai-bar .tr span{display:block;height:100%;background:var(--yellow);border-radius:99px}
+.ai-bar.bad .tr span{background:var(--bad)} .ai-bar.good .tr span{background:var(--good)}
+.ai-bar.bad>span:first-child{color:var(--bad);font-weight:700} .ai-bar.good>span:first-child{color:var(--good);font-weight:700}
+.ai-bar b{text-align:right}
+.tablebox table.ai-heat,.ai-heat{min-width:0;width:100%;border-collapse:separate;border-spacing:4px;font-size:.8rem}
+.ai-heat th{font-weight:700;color:var(--muted);text-align:center;padding:2px}
+.ai-heat tbody th{text-align:left}
+.ai-heat td{text-align:center;padding:9px 4px;border-radius:8px;font-weight:700;color:var(--fg);white-space:nowrap}
+.ai-heat td.min{outline:2px solid var(--bad);outline-offset:-2px;color:var(--bad)}
+.ai-ideas,.ai-plan ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:12px}
+.ai-ideas li,.ai-plan li{display:flex;flex-direction:column;gap:3px;font-size:.88rem;line-height:1.45}
+.ai-ideas li small,.ai-plan li small{color:var(--muted);font-size:.8rem}
+.ai-ideas li small{color:var(--good);font-weight:600}
+.ai-plan{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--soft)}
+.ai-plan p{margin:0;font-weight:600;line-height:1.45}
+.ai-plan small.when{color:var(--fg);font-weight:700}
+.ai-plan small.meta{color:var(--good);font-weight:700}
+.ai-h{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.ai-think{color:var(--muted);font-style:italic}
+.ai-chat{display:flex;flex-direction:column;gap:8px}
+.ai-chat:empty{display:none}
+.ai-chat .msg{max-width:88%;padding:10px 12px;border-radius:12px;font-size:.88rem;line-height:1.45;overflow-wrap:anywhere}
+.ai-chat .yo{align-self:flex-end;background:var(--yellow-soft);border:1px solid var(--yellow)}
+.ai-chat .ia{align-self:flex-start;background:var(--soft);border:1px solid var(--line)}
+.ai-ask{display:flex;gap:8px}
+.ai-ask input{flex:1;min-width:0;font-weight:500;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+@media (min-width:900px){ .ai-kpis{grid-template-columns:repeat(4,minmax(0,1fr))} .ai-grid{grid-template-columns:1fr 1fr} }
 #s-estadisticas .es-sedes{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;margin-bottom:14px}
 #s-estadisticas .es-sedes button{flex:1 0 180px;text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 #s-estadisticas .es-sedes button[aria-pressed="true"]{border-color:var(--yellow);background:var(--yellow-soft)}
@@ -1008,6 +1047,12 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
       </table></div></div>
     </main>
 
+    <!-- ASISTENTE IA (admin) -->
+    <main class="screen" id="s-asistente" hidden>
+      <div class="chips ai-sedes" id="ai-sedes" hidden></div>
+      <div class="ai-body" id="ai-body"></div>
+    </main>
+
     <!-- ESTADÍSTICAS -->
     <main class="screen" id="s-estadisticas" hidden>
       <div class="es-sedes" id="es-sedes" hidden></div>
@@ -1151,6 +1196,7 @@ const ICONS = {
   box: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/>',
   inventario: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>',
   estadisticas: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  asistente: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.7 1.8 1.8.7-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"/>',
   clientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M22 20c0-2.6-1.9-4.8-4.5-5.6"/>',
   proveedores: '<path d="M1 6h13v10H1zM14 10h4l4 4v2h-8"/><circle cx="5.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/>',
   gastos: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
@@ -1158,13 +1204,13 @@ const ICONS = {
   mas: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
   star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
 };
-const LABELS = { inicio: "Inicio", vender: "Vender", comprar: "Compras", movs: "Movimientos", inventario: "Inventario", estadisticas: "Estadísticas",
+const LABELS = { inicio: "Inicio", vender: "Vender", comprar: "Compras", movs: "Movimientos", inventario: "Inventario", estadisticas: "Estadísticas", asistente: "Asistente IA",
   clientes: "Clientes", proveedores: "Proveedores", gastos: "Gastos", empleados: "Empleados", ajustes: "Ajustes" };
 const TITLES = { ...LABELS, vender: "Nueva venta", comprar: "Registrar compra" };
 const SOON = {
   gastos: ["Gastos del negocio", "Aquí vas a registrar arriendo, servicios, sueldos y otros gastos para ver tu ganancia real.", ["Registrar gastos fijos y del día", "Ganancia neta del mes: ventas menos costos menos gastos", "Cierre de caja al final del día"]],
 };
-const GROUPS = [["", ["inicio", "movs", "vender", "comprar"]], ["Análisis", ["inventario", "estadisticas"]], ["Gestiona tus contactos", ["clientes", "proveedores"]], ["Tu negocio", ["gastos", "empleados", "ajustes"]]];
+const GROUPS = [["", ["inicio", "movs", "vender", "comprar"]], ["Análisis", ["inventario", "estadisticas", "asistente"]], ["Gestiona tus contactos", ["clientes", "proveedores"]], ["Tu negocio", ["gastos", "empleados", "ajustes"]]];
 const SELLER = ["inicio", "vender", "comprar", "inventario"];
 const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 
@@ -2662,6 +2708,216 @@ $("es-sedes").addEventListener("click", e => { const b = e.target.closest("[data
 return { render, nuevo };
 })();
 function renderStats() { EST.nuevo(); EST.render(); }
+/* ---------- Asistente IA ---------- */
+// Analiza las ventas de las últimas 12 semanas (de esta sede, otra o todas), encuentra los días y turnos con menos movimiento
+// y propone ideas para vender más. El análisis lo hace la app sola; con la IA de Claude (al abrir la app desde Claude)
+// se pide un plan a la medida y se le pueden hacer preguntas.
+const ASIS = (() => {
+  const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"], ORDEN = [1, 2, 3, 4, 5, 6, 0];
+  const MESES_A = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  const TURN = ["mañana", "tarde", "noche"];
+  const cap = t => t[0].toUpperCase() + t.slice(1);
+  const plural = d => d === "sábado" || d === "domingo" ? d + "s" : d;
+  const corto = n => { const a = Math.abs(n), s = n < 0 ? "−" : ""; return a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1).replace(".", ",")} M` : a >= 1e3 ? `${s}$${Math.round(a / 1e3)} mil` : `${s}$${Math.round(a)}`; };
+  const pct1 = n => (Math.round(n * 10) / 10).toString().replace(".", ",");
+  let sede = null, R = null, llave = "", sampleFn, iaEstado = window.claude && typeof window.claude.use === "function" ? "cargando" : "no";
+  let plan = null, planErr = "", chat = [], ctl = null, ocupado = false;
+
+  if (iaEstado === "cargando") window.claude.use("sample").then(s => { sampleFn = s; iaEstado = s ? "si" : "no"; if (view === "asistente") renderIA(); }).catch(() => { iaEstado = "no"; if (view === "asistente") renderIA(); });
+
+  function datos() {
+    const cur = !sede || sede === SEDE;
+    if (cur) return { movs: S.movs, products: S.products, pct: S.pct, gastos: S.gastos, nombre: varias() ? SD(SEDE).nombre : "tu licorera", stock: true };
+    if (sede === "todas") { const sts = G.sedes.map(x => estadoSede(x.id)), gastos = {};
+      sts.forEach(st => Object.entries(st.gastos || {}).forEach(([k, v]) => { gastos[k] = (gastos[k] || 0) + (+v || 0); }));
+      return { movs: sts.flatMap(st => st.movs), products: S.products, pct: S.pct, gastos, nombre: "todas las sedes", stock: false }; }
+    const st = estadoSede(sede); return { movs: st.movs, products: st.products, pct: st.pct, gastos: st.gastos || {}, nombre: SD(sede).nombre, stock: true };
+  }
+
+  function analizar() {
+    const d = datos(), hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const fin = +hoy, ventas = d.movs.filter(m => m.k === "venta" && m.t < fin);
+    const k = `${sede}|${fin}|${ventas.length}|${ventas.length ? ventas[ventas.length - 1].t : 0}`;
+    if (k === llave && R) return R; llave = k;
+    const primero = ventas.length ? Math.min(...ventas.map(m => m.t)) : fin, d0 = new Date(Math.max(fin - 84 * 864e5, primero)); d0.setHours(0, 0, 0, 0);
+    const porDia = new Map(), und = new Map(), undDia = Array.from({ length: 7 }, () => new Map()), ini30 = fin - 30 * 864e5;
+    ventas.forEach(m => {
+      if (m.t < +d0) return;
+      const x = new Date(m.t); x.setHours(0, 0, 0, 0);
+      let o = porDia.get(+x); if (!o) porDia.set(+x, o = { v: 0, g: 0, n: 0, t: [0, 0, 0] });
+      o.v += m.total; o.g += m.ganancia || 0;
+      if (m.dia && m.turnos) m.turnos.forEach((tt, i) => { o.t[i] += tt[0]; o.n += tt[2]; });
+      else { const h = new Date(m.t).getHours(); o.t[h >= 8 && h < 14 ? 0 : h >= 14 && h < 20 ? 1 : 2] += m.total; o.n += 1; }
+      (m.lines || []).forEach(l => { undDia[x.getDay()].set(l.pid, (undDia[x.getDay()].get(l.pid) || 0) + l.und); if (m.t >= ini30) und.set(l.pid, (und.get(l.pid) || 0) + l.und); });
+    });
+    const W = Array.from({ length: 7 }, () => ({ v: 0, g: 0, n: 0, t: [0, 0, 0], c: 0 }));
+    let nDias = 0, V = 0, Gn = 0;
+    for (let x = new Date(d0); +x < fin; x.setDate(x.getDate() + 1)) {
+      const o = porDia.get(+x) || { v: 0, g: 0, n: 0, t: [0, 0, 0] }, w = W[x.getDay()];
+      w.v += o.v; w.g += o.g; w.n += o.n; o.t.forEach((t, i) => w.t[i] += t); w.c++; nDias++; V += o.v; Gn += o.g;
+    }
+    const prom = W.map((w, i) => ({ i, dia: DIAS[i], v: w.c ? w.v / w.c : 0, g: w.c ? w.g / w.c : 0, n: w.c ? w.n / w.c : 0, t: w.t.map(t => w.c ? t / w.c : 0), c: w.c }));
+    const conDatos = prom.filter(p => p.c), orden = [...conDatos].sort((a, b) => a.v - b.v);
+    const promDia = nDias ? V / nDias : 0, margen = V ? Gn / V : d.pct / (100 + d.pct);
+    let celda = null; conDatos.forEach(p => p.t.forEach((v, i) => { if (!celda || v < celda.v) celda = { dia: p.dia, i: p.i, t: i, v }; }));
+    const turnos = [0, 1, 2].map(i => conDatos.reduce((a, p) => a + p.t[i], 0) / (conDatos.length || 1));
+    // Meses del año (con toda la historia): cuánto se vende por día en cada mes frente al promedio.
+    const mesV = Array(12).fill(0), mesD = Array(12).fill(0), diasVistos = new Set();
+    ventas.forEach(m => { const x = new Date(m.t), kd = x.toDateString(); mesV[x.getMonth()] += m.total; if (!diasVistos.has(kd)) { diasVistos.add(kd); mesD[x.getMonth()]++; } });
+    const mesP = mesV.map((v, i) => mesD[i] ? v / mesD[i] : null), conMes = mesP.filter(v => v != null), mesProm = conMes.reduce((a, b) => a + b, 0) / (conMes.length || 1);
+    const meses = mesP.map((v, i) => v == null ? null : { mes: MESES_A[i], vs: (v / mesProm - 1) * 100 });
+    const prods = d.products.map(p => ({ p, u: und.get(p.id) || 0, stock: d.stock ? Math.max(0, p.stock) : null }));
+    const top = [...prods].sort((a, b) => b.u - a.u).slice(0, 5), quietos = [...prods].filter(x => !d.stock || x.stock > 0).sort((a, b) => a.u - b.u).slice(0, 3);
+    const flojo = orden[0], fuerte = orden[orden.length - 1];
+    const topFlojo = flojo ? [...undDia[flojo.i].entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([pid]) => d.products.find(p => p.id === pid)).filter(Boolean) : [];
+    const F = Object.values(d.gastos || {}).reduce((a, b) => a + (+b || 0), 0);
+    return R = { d, nDias, promDia, margen, prom, orden, flojo, fuerte, celda, turnos, meses, top, quietos, topFlojo, F, V, Gn };
+  }
+
+  // Ideas que la app saca sola de los números.
+  function ideas(r) {
+    const out = [], m = r.margen, M = pct1(m * 100);
+    if (r.flojo && r.promDia) {
+      const gap = r.promDia - r.flojo.v, extra = gap * 0.5 * 4.3, f = plural(r.flojo.dia), prods = r.topFlojo.map(p => p.nombre);
+      out.push(["Dale nombre propio al día más flojo", `Los ${f} vendes en promedio ${money(r.flojo.v)}, ${Math.round(gap / r.promDia * 100)}% menos que un día normal (${money(r.promDia)}). Haz "${cap(f)} de cubetazo"${prods.length ? ` con ${prods.slice(0, 2).join(" y ")}, lo que más sale ese día` : ""}, y avísalo por WhatsApp desde la tarde anterior.`,
+        `Si los ${f} recuperas la mitad de lo que les falta, son ${corto(extra)} más en ventas al mes y unos ${money(extra * m)} de ganancia.`]);
+    }
+    if (r.celda) {
+      const t = TURN[r.celda.t];
+      out.push([`Aprovecha la ${t} del ${r.celda.dia}`, `Es el turno más quieto de la semana: vende en promedio ${money(r.celda.v)}. Úsalo para tomar pedidos a domicilio, escribirles a tus clientes frecuentes o surtir la nevera para la hora fuerte.`,
+        r.celda.v < r.F / 30 / 6 ? `Ese turno vende menos de lo que cuesta tener abierto. Si en un mes no sube, piensa en abrir más tarde ese día.` : `Mide cuánto vende ese turno la semana que viene y compáralo con ${money(r.celda.v)}.`]);
+    }
+    const cl = (S.clientes || []).slice(0, 3);
+    if (cl.length && r.flojo) out.push(["Llama a tus clientes frecuentes", `${cl.map(c => c.nombre).join(", ")} ya te compran. Ofréceles pedido con entrega los ${plural(r.flojo.dia)}, cuando hay menos gente y puedes atenderlos mejor.`, `Una sola compra por mayor a la semana puede llenar el día flojo.`]);
+    else if (r.flojo) out.push(["Arma tu lista de clientes", "Registra en Clientes a los que te compran seguido (tiendas, bares, vecinos). Así puedes escribirles en los días flojos y darles un precio especial.", ""]);
+    if (r.quietos.length) {
+      const q = r.quietos.map(x => x.p.nombre), tp = r.top[0] && r.top[0].p.nombre;
+      out.push(["Mueve lo que no rota", `${q.join(", ")} casi no se venden (${r.quietos.map(x => x.u).join(", ")} unidades en 30 días). Ponlos junto a la caja o en un combo con ${tp || "lo que más vendes"}.`, r.d.stock ? "No compres más de esos hasta que se muevan: es plata quieta." : ""]);
+    }
+    const prox = r.meses[(new Date().getMonth() + 1) % 12];
+    if (prox && Math.abs(prox.vs) >= 5) out.push(prox.vs > 0
+      ? [`Prepárate para ${prox.mes}`, `${cap(prox.mes)} suele vender ${Math.round(prox.vs)}% más que un mes normal. Compra con tiempo lo que más sale (${r.top.slice(0, 3).map(x => x.p.nombre).join(", ")}) para no quedarte sin inventario los días fuertes.`, ""]
+      : [`${cap(prox.mes)} viene flojo`, `${cap(prox.mes)} suele vender ${Math.round(-prox.vs)}% menos que un mes normal. Planea desde ya una promoción para ese mes.`, ""]);
+    out.push(["Cuida tu margen al promocionar", `De lo que cobras, te queda ${M}% de ganancia. Un descuento de 5% se lleva más de la mitad. Mejor regala hielo, vende por combo o cobra el domicilio aparte.`, ""]);
+    return out;
+  }
+
+  function render() {
+    const r = analizar();
+    $("ai-sedes").hidden = !varias();
+    if (varias()) { const cur = sede || SEDE;
+      $("ai-sedes").innerHTML = [["todas", "Todas las sedes"], ...G.sedes.map(x => [x.id, x.nombre + (x.id === SEDE ? " (aquí)" : "")])].map(([id, n]) => `<button type="button" data-ais="${id}" aria-pressed="${id === cur}">${esc(n)}</button>`).join(""); }
+    if (r.nDias < 14) {
+      $("ai-body").innerHTML = `<div class="card"><h2>Todavía no hay suficientes ventas</h2><p class="hint">Necesito al menos 2 semanas de ventas de ${esc(r.d.nombre)} para encontrar los días flojos. Llevas ${r.nDias} día${r.nDias === 1 ? "" : "s"}.</p></div>`;
+      return renderIA();
+    }
+    const max = Math.max(...r.prom.map(p => p.v), 1), cells = r.prom.flatMap(p => p.t), cmax = Math.max(...cells, 1), cmin = Math.min(...cells.filter(v => v > 0), cmax);
+    const id = ideas(r);
+    $("ai-body").innerHTML = `
+      <p class="hint">Analicé ${r.nDias} días de ventas de <b>${esc(r.d.nombre)}</b> (hasta ayer).</p>
+      <div class="ai-kpis">
+        <div class="kpi"><small>Día más flojo</small><b class="num" style="color:var(--bad)">${cap(r.flojo.dia)}</b><em>${money(r.flojo.v)} por día · ${Math.round((1 - r.flojo.v / r.promDia) * 100)}% menos que el promedio</em></div>
+        <div class="kpi"><small>Día más fuerte</small><b class="num" style="color:var(--good)">${cap(r.fuerte.dia)}</b><em>${money(r.fuerte.v)} por día · ${Math.round((r.fuerte.v / r.promDia - 1) * 100)}% más que el promedio</em></div>
+        <div class="kpi"><small>Turno más quieto</small><b class="num">${cap(TURN[r.celda.t])} del ${r.celda.dia}</b><em>${money(r.celda.v)} en promedio</em></div>
+        <div class="kpi"><small>Venta promedio por día</small><b class="num">${money(r.promDia)}</b><em>Ganancia ${pct1(r.margen * 100)}% de lo que cobras</em></div>
+      </div>
+      <div class="ai-grid">
+        <div class="card"><h2>¿Qué día se vende menos?</h2><p class="hint">Venta promedio de cada día de la semana.</p>
+          <div class="ai-bars">${ORDEN.map(i => { const p = r.prom[i], cls = p === r.flojo ? " bad" : p === r.fuerte ? " good" : "";
+            return `<div class="ai-bar${cls}"><span>${cap(p.dia)}</span><span class="tr"><span style="width:${(p.v / max * 100).toFixed(1)}%"></span></span><b class="num">${corto(p.v)}</b></div>`; }).join("")}</div></div>
+        <div class="card"><h2>Día y turno</h2><p class="hint">Venta promedio de cada turno. Mañana 8 a 2, tarde 2 a 8, noche 8 a 2 a. m. El recuadro rojo es el más quieto.</p>
+          <div class="tablebox"><table class="ai-heat"><thead><tr><th></th>${TURN.map(t => `<th>${cap(t)}</th>`).join("")}</tr></thead><tbody>
+          ${ORDEN.map(i => { const p = r.prom[i]; return `<tr><th>${cap(p.dia).slice(0, 3)}</th>${p.t.map((v, t) => { const k = cmax > cmin ? (v - cmin) / (cmax - cmin) : 0;
+            return `<td class="${r.celda.i === i && r.celda.t === t ? "min" : ""}" style="background:color-mix(in srgb, var(--yellow) ${Math.round(8 + k * 62)}%, var(--card))">${corto(v)}</td>`; }).join("")}</tr>`; }).join("")}
+          </tbody></table></div></div>
+      </div>
+      <div class="card"><h2>Ideas para vender más</h2><p class="hint">Las saqué de tus números. Prueba una por semana y mira si sube la venta de ese día.</p>
+        <ol class="ai-ideas">${id.map(([t, d, g]) => `<li><b>${esc(t)}</b><span>${esc(d)}</span>${g ? `<small>${esc(g)}</small>` : ""}</li>`).join("")}</ol></div>
+      <div class="card" id="ai-ia"></div>`;
+    renderIA();
+  }
+
+  // Resumen de los números para la IA (sin nombres de empleados).
+  function resumenIA(r) {
+    return JSON.stringify({
+      negocio: "Licorera pequeña en Colombia (cerveza, licores, cigarrillos, bebidas). Atiende de 8 a. m. a 2 a. m. en tres turnos.",
+      sede: r.d.nombre, dias_analizados: r.nDias, venta_promedio_dia: Math.round(r.promDia), ganancia_pct_de_lo_que_cobra: +pct1(r.margen * 100).replace(",", "."),
+      gastos_fijos_mes: Math.round(r.F),
+      por_dia_semana: ORDEN.map(i => { const p = r.prom[i]; return { dia: p.dia, venta_prom: Math.round(p.v), ganancia_prom: Math.round(p.g), clientes_prom: Math.round(p.n), manana: Math.round(p.t[0]), tarde: Math.round(p.t[1]), noche: Math.round(p.t[2]) }; }),
+      meses_vs_promedio_pct: r.meses.filter(Boolean).map(x => ({ mes: x.mes, pct: Math.round(x.vs) })),
+      mes_actual: MESES_A[new Date().getMonth()],
+      mas_vendidos_30_dias: r.top.map(x => ({ producto: `${x.p.nombre} ${x.p.tam}`, unidades: x.u, precio: Math.round(precioUnd(x.p)) })),
+      menos_vendidos_30_dias: r.quietos.map(x => ({ producto: `${x.p.nombre} ${x.p.tam}`, unidades: x.u, inventario: x.stock })),
+      mas_vendidos_dia_flojo: r.topFlojo.map(p => p.nombre),
+      combos: (S.combos || []).map(c => ({ nombre: c.nombre, precio: Math.round(comboPrecio(c)) })),
+      clientes_frecuentes: (S.clientes || []).map(c => ({ nombre: c.nombre, descuento_pct: +c.desc || 0 })),
+    });
+  }
+  const REGLAS = r => `Eres asesor comercial de una licorera pequeña en Colombia. La dueña está aprendiendo a manejar su negocio y quiere vender más en los días y turnos con menos movimiento, o generar ventas nuevas.
+Usa SOLO estos datos reales de sus ventas (no inventes cifras que no estén aquí):
+${resumenIA(r)}
+Reglas: escribe en español sencillo de Colombia, con cifras en pesos con punto de miles ($1.250.000). Su ganancia es solo ${pct1(r.margen * 100)}% de lo que cobra: ningún descuento puede ser mayor que eso; prefiere combos, regalos baratos (hielo, vasos), domicilios, alianzas con negocios vecinos, WhatsApp y redes, eventos (partidos de fútbol, quincena). Cada idea debe ser concreta para una licorera de barrio.`;
+
+  async function pedirPlan(nuevo) {
+    if (!sampleFn || ocupado) return;
+    const r = analizar(); ocupado = true; plan = null; planErr = ""; ctl = new AbortController(); renderIA();
+    try {
+      const j = await sampleFn.json(`${REGLAS(r)}
+Tarea: encuentra los días y turnos con menos movimiento y propone 5 estrategias para aumentar las ventas en esos momentos o generar ventas nuevas.
+Responde solo JSON con esta forma: {"resumen": "2 frases sobre dónde está el problema", "estrategias": [{"titulo": "máx. 8 palabras", "cuando": "día y turno", "que_hacer": "2 o 3 frases con pasos concretos", "por_que": "1 frase con el dato que la justifica", "meta": "meta medible para la próxima semana, en pesos o unidades"}]}`,
+        { signal: ctl.signal, ...(nuevo ? { cache: false } : {}) });
+      if (!j || !Array.isArray(j.estrategias)) throw { code: "invalid_json" };
+      plan = j;
+    } catch (e) { planErr = msgErr(e); }
+    ocupado = false; ctl = null; renderIA();
+  }
+  async function preguntar() {
+    const q = $("ai-q").value.trim(); if (!q || !sampleFn || ocupado) return;
+    const r = analizar(); chat.push({ role: "user", content: q }); chat.push({ role: "assistant", content: "" }); $("ai-q").value = "";
+    ocupado = true; ctl = new AbortController(); renderIA();
+    const turns = [{ role: "user", content: REGLAS(r) + "\nResponde la pregunta de la dueña en máximo 150 palabras, sin títulos ni tablas." }, ...chat.slice(0, -1).filter(t => t.content).slice(-8)];
+    try {
+      const { text } = await sampleFn(turns, { cache: false, signal: ctl.signal, onText: ({ text }) => { chat[chat.length - 1].content = text; const b = $("ai-last"); if (b) b.innerHTML = fmt(text); } });
+      chat[chat.length - 1].content = text;
+    } catch (e) { chat[chat.length - 1].content = (e.text ? e.text + "\n\n" : "") + msgErr(e); }
+    ocupado = false; ctl = null; renderIA();
+  }
+  function msgErr(e) {
+    const c = e && e.code;
+    if (c === "cancelled") return "Lo detuviste.";
+    if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(c)) { iaEstado = "negado"; return "La IA no tiene permiso en esta app. Puedes darle permiso desde el menú de la página en Claude."; }
+    if (c === "rate_limited") return "Has usado mucho la IA en poco tiempo. Intenta de nuevo más tarde.";
+    if (c === "invalid_json") return "La IA respondió algo que no pude leer. Toca «Pedir otro plan».";
+    return "No pude terminar la respuesta. Intenta de nuevo.";
+  }
+  const fmt = t => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+
+  function renderIA() {
+    const box = $("ai-ia"); if (!box) return;
+    if (iaEstado === "no") { box.innerHTML = `<h2>Pregúntale a la IA</h2><p class="hint">La IA de Claude funciona cuando abres la app desde Claude. En la app instalada ves el análisis y las ideas de arriba, que se hacen sin internet.</p>`; return; }
+    if (iaEstado === "cargando") { box.innerHTML = `<h2>Pregúntale a la IA</h2><p class="hint">Conectando con la IA…</p>`; return; }
+    if (iaEstado === "negado") { box.innerHTML = `<h2>Pregúntale a la IA</h2><p class="hint">La IA no tiene permiso en esta app. Las ideas de arriba siguen funcionando.</p>`; return; }
+    box.innerHTML = `<div class="ai-h"><h2>Pregúntale a la IA</h2><span class="pill">Claude</span></div>
+      <p class="hint">La IA lee el resumen de arriba (ventas por día, turno, mes y productos) y te arma un plan. Usa tu cuenta de Claude; la primera vez te pide permiso.</p>
+      <div class="row"><button class="btn" type="button" data-a="ai-plan"${ocupado ? " disabled" : ""}>${plan ? "Pedir otro plan" : "Pedirle un plan a la IA"}</button>${ocupado ? '<button class="btn line" type="button" data-a="ai-stop">Detener</button>' : ""}</div>
+      ${ocupado && !plan && !chat.length ? '<p class="hint ai-think">La IA está pensando… puede tardar hasta un minuto.</p>' : ""}
+      ${planErr ? `<p class="err">${esc(planErr)}</p>` : ""}
+      ${plan ? `<div class="ai-plan">${plan.resumen ? `<p>${esc(String(plan.resumen))}</p>` : ""}<ol>${plan.estrategias.slice(0, 6).map(s => `<li><b>${esc(String(s.titulo || ""))}</b>${s.cuando ? `<small class="when">${esc(String(s.cuando))}</small>` : ""}<span>${esc(String(s.que_hacer || ""))}</span>${s.por_que ? `<small>Por qué: ${esc(String(s.por_que))}</small>` : ""}${s.meta ? `<small class="meta">Meta: ${esc(String(s.meta))}</small>` : ""}</li>`).join("")}</ol></div>` : ""}
+      <div class="ai-chat">${chat.map((t, i) => `<div class="msg ${t.role === "user" ? "yo" : "ia"}"${i === chat.length - 1 && t.role === "assistant" ? ' id="ai-last"' : ""}>${t.content ? fmt(t.content) : '<span class="ai-think">Pensando…</span>'}</div>`).join("")}</div>
+      <form class="ai-ask" id="ai-form"><input id="ai-q" maxlength="300" autocomplete="off" placeholder="Ejemplo: ¿qué promoción hago el martes en la mañana?"${ocupado ? " disabled" : ""}><button class="btn ink" type="submit"${ocupado ? " disabled" : ""}>Preguntar</button></form>`;
+    $("ai-form").addEventListener("submit", e => { e.preventDefault(); preguntar(); });
+  }
+
+  document.addEventListener("click", e => {
+    const s = e.target.closest("[data-ais]"); if (s) { sede = s.dataset.ais === SEDE ? null : s.dataset.ais; plan = null; planErr = ""; chat = []; render(); return; }
+    const b = e.target.closest("[data-a]"); if (!b) return;
+    if (b.dataset.a === "ai-plan") pedirPlan(!!plan);
+    if (b.dataset.a === "ai-stop" && ctl) ctl.abort();
+  });
+  return { render };
+})();
+function renderAsistente() { ASIS.render(); }
+
 
 /* ---------- Códigos de barras ---------- */
 // Cada producto puede guardar su código (p.cod). Funciona con una pistola lectora (escribe el código y Enter, como un teclado)
@@ -3008,7 +3264,7 @@ function renderAll() {
   if (!me) return;
   if (SOON[view]) return renderPronto();
   if (view === "inicio" && isAdmin()) return renderPanel();
-  ({ inicio: renderInicio, vender: renderVender, comprar: renderComprar, movs: () => { renderMovs(); if (!$("cierres-box").hidden) renderCierres(); }, ajustes: renderAjustes, inventario: renderInventario, estadisticas: renderStats, empleados: renderEmpleados, clientes: renderClientes, proveedores: renderProveedores })[view]();
+  ({ inicio: renderInicio, vender: renderVender, comprar: renderComprar, movs: () => { renderMovs(); if (!$("cierres-box").hidden) renderCierres(); }, ajustes: renderAjustes, inventario: renderInventario, estadisticas: renderStats, asistente: renderAsistente, empleados: renderEmpleados, clientes: renderClientes, proveedores: renderProveedores })[view]();
 }
 
 /* ---------- Hoja inferior ---------- */
