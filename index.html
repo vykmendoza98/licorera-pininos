@@ -1368,7 +1368,8 @@ function estadoSede(id) {
   return st;
 }
 const varias = () => G.sedes.length > 1;
-const puedeEntrar = (u, sid) => u.rol === "admin" || !Array.isArray(u.sedes) || u.sedes.includes(sid);
+// Cualquier vendedor activo puede atender en cualquier sede (decisión de la dueña, 12 nov 2026).
+const puedeEntrar = (u, sid) => true;
 const renderPanel = (() => {
   const short = n => { const a = Math.abs(n), s = n < 0 ? "−" : ""; return a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1).replace(".", ",")} M` : `${s}$${Math.round(a / 1e3)} mil`; };
   const pct = n => isFinite(n) ? (n * 100).toFixed(1).replace(".", ",") + "%" : "0%";
@@ -2851,7 +2852,7 @@ function sedeAgregar() {
   try { localStorage.setItem(keyDe(x.id), JSON.stringify(sedeVacia(S))); } catch (e) { toast("No se pudo crear la sede en este aparato."); return; }
   G.sedes.push(x); save(); renderSedes(); buildNav(); renderUsers();
   const inp = $("sd-n-" + x.id); if (inp) { inp.focus(); inp.select(); }
-  toast(`Se creó ${x.nombre}. Cámbiale el nombre y asígnale vendedores en Empleados.`);
+  toast(`Se creó ${x.nombre}. Cámbiale el nombre si quieres.`);
 }
 function sedeRenombrar(id) {
   const x = SD(id), nombre = $("sd-n-" + id).value.replace(/[<>"&]/g, "").trim().replace(/\s+/g, " ");
@@ -2962,7 +2963,7 @@ function renderEmpleados() {
   const hv = hoyVentas();
   $("emp").innerHTML = USERS.map(u => { const mine = hv.filter(v => v.user === u.id), off = u.activo === false;
     return `<tr${off ? ' class="off"' : ""}><td><div class="concept"><span class="av-u">${esc(u.ini)}</span><span class="t"><b>${esc(u.nombre)}</b>${off ? '<span class="pill low">Desactivado</span>' : ""}</span></div></td>
-      <td>${u.rol === "admin" ? "Acceso completo" + (varias() ? " · todas las sedes" : "") : "Ventas, compras e inventario" + (varias() ? ` · ${(u.sedes || []).map(id => SD(id) ? esc(SD(id).nombre) : "").filter(Boolean).join(", ") || "sin sede"}` : "")}</td><td class="r">${mine.length}</td><td class="r">${money(mine.reduce((a, v) => a + v.total, 0))}</td>
+      <td>${u.rol === "admin" ? "Acceso completo" + (varias() ? " · todas las sedes" : "") : "Ventas, compras e inventario" + (varias() ? " · todas las sedes" : "")}</td><td class="r">${mine.length}</td><td class="r">${money(mine.reduce((a, v) => a + v.total, 0))}</td>
       <td class="r"><button class="btn line" type="button" data-a="emp-edit" data-uid="${u.id}" style="padding:7px 12px">Editar</button></td></tr>`; }).join("");
 }
 // Iniciales para el círculo: "Vendedor 3" → "V3", "Ana María" → "AM", "Carlos" → "CA".
@@ -2977,8 +2978,7 @@ function empSheet(u) {
     <label class="field" for="e-nombre">Nombre para entrar<input id="e-nombre" maxlength="30" autocomplete="off" value="${nuevo ? `Vendedor ${n}` : esc(u.nombre)}"></label>
     <label class="field" for="e-clave">Contraseña (4 a 8 números)<input id="e-clave" inputmode="numeric" maxlength="8" autocomplete="off" value="${nuevo ? "" : esc(u.clave)}" placeholder="Ejemplo: 3333"></label>
     ${u && u.rol === "admin" ? `<p class="hint">El administrador siempre tiene acceso completo y no se puede desactivar.</p>`
-      : `<div class="field">¿Puede entrar a la app?${segHtml("e-act", ["Activo", "Desactivado"], empActivo ? "Activo" : "Desactivado", "eact")}</div>
-        ${varias() ? `<div class="field">¿En qué sedes trabaja?<div class="chips" id="e-sedes" style="flex-wrap:wrap">${G.sedes.map(x => `<button type="button" data-esd="${x.id}" aria-pressed="${empSedes.includes(x.id)}">${esc(x.nombre)}</button>`).join("")}</div></div>` : ""}`}
+      : `<div class="field">¿Puede entrar a la app?${segHtml("e-act", ["Activo", "Desactivado"], empActivo ? "Activo" : "Desactivado", "eact")}</div>`}
     <p class="err" id="e-err" hidden></p>
     <button class="btn ink wide" type="button" data-a="emp-guardar" data-uid="${nuevo ? "" : u.id}">${nuevo ? "Agregar vendedor" : "Guardar cambios"}</button>`, "emp");
   $("e-nombre").focus();
