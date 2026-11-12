@@ -635,6 +635,13 @@ body.dark{ --blue:#7fa8ff; --blue-soft:#1a2740; --split:#3a414b; --split-fg:#e9e
 #s-estadisticas .es-tab{display:flex;flex-direction:column;gap:16px;min-width:0}
 #s-estadisticas .card{min-width:0}
 #s-estadisticas .yr svg text{font-family:var(--font);fill:var(--muted)}
+#s-estadisticas .es-sedes{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;margin-bottom:14px}
+#s-estadisticas .es-sedes button{flex:1 0 180px;text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+#s-estadisticas .es-sedes button[aria-pressed="true"]{border-color:var(--yellow);background:var(--yellow-soft)}
+#s-estadisticas .es-sedes .n{display:flex;align-items:center;gap:6px;font-weight:700;font-size:.82rem}
+#s-estadisticas .es-sedes .n svg{width:14px;height:14px;color:var(--muted);flex:none}
+#s-estadisticas .es-sedes .v{font-weight:800;font-size:1.05rem}
+#s-estadisticas .es-sedes small{color:var(--muted);font-size:.72rem;font-weight:600}
 #s-estadisticas .subtabs{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;max-width:100%}
 #s-estadisticas .subtabs button{flex:1 0 auto;border:0;background:none;border-radius:9px;padding:10px 14px;font-weight:700;color:var(--muted);white-space:nowrap;display:flex;gap:8px;align-items:center;justify-content:center}
 #s-estadisticas .subtabs button svg{width:16px;height:16px}
@@ -1003,6 +1010,7 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
 
     <!-- ESTADÍSTICAS -->
     <main class="screen" id="s-estadisticas" hidden>
+      <div class="es-sedes" id="es-sedes" hidden></div>
       <div class="subtabs" id="es-subtabs">
         <button type="button" data-t="prod" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M4 12h16M4 18h7"/></svg>Ganancia por producto</button>
         <button type="button" data-t="anual" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Ganancias anuales</button>
@@ -1281,21 +1289,21 @@ function partirDia(total, ganancia, t) {
   return w.map((v, i) => { const tt = i === 2 ? restT : Math.round(total * v / sw), gg = i === 2 ? restG : Math.round(ganancia * v / sw); restT -= tt; restG -= gg;
     const ef = Math.round(tt * (0.5 + r() * 0.12)), tr = Math.round(tt * (0.25 + r() * 0.1)); return [tt, gg, Math.max(1, Math.round(tt / (24000 + r() * 10000))), ef, tr, tt - ef - tr]; });
 }
-function genHistory(s) {
-  let n = 11; const rnd = () => (n = n * 16807 % 2147483647) / 2147483647;
+function genHistory(s, semilla = 11, escala = 1, anio0 = null) {
+  let n = semilla; const rnd = () => (n = n * 16807 % 2147483647) / 2147483647;
   const SEASON = [1.12, 0.84, 0.9, 0.96, 0.95, 1.12, 1.05, 0.94, 1.16, 1.04, 0.98, 1.48], WEEK = [1.15, 0.6, 0.65, 0.75, 0.9, 1.45, 1.75];
   const SHARE = { "Cerveza": 0.55, "Licores": 0.3, "Cigarrillos": 0.07, "Agua y bebidas": 0.08 };
   const PESO = [3, 2.5, 1.5, 1.2, 1, 0.8, 1.8, 0.8, 0.6, 0.5, 3, 2.5, 2, 1.5, 0.8, 0.5, 0.6, 1, 2, 1, 2, 1.5, 1.5, 2, 1];
   const tot = {}; s.products.forEach(p => { const c = SEED[p.id - 1][6]; tot[c] = (tot[c] || 0) + PESO[p.id - 1]; });
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-  const d = new Date(hoy.getFullYear() - 1, 0, 1), vendido = {}, sobra = {}, out = [];
+  const d = new Date(anio0 == null ? hoy.getFullYear() - 1 : anio0, 0, 1), vendido = {}, sobra = {}, out = [];
   for (; d < hoy; d.setDate(d.getDate() + 1)) {
     const m = d.getMonth(), wd = d.getDay(), dd = d.getDate();
     // Cada lunes se compran las cajas que hagan falta para reponer lo vendido, usando lo que sobró de la semana anterior.
     if (wd === 1) Object.entries(vendido).forEach(([pid, u]) => { const p = s.products.find(x => x.id === +pid), falta = u - (sobra[pid] || 0), cj = Math.max(0, Math.ceil(falta / p.porCaja));
       sobra[pid] = cj * p.porCaja - falta; delete vendido[pid];
       if (cj) out.push({ k: "compra", t: +d + 10 * 36e5, pid: p.id, und: cj * p.porCaja, total: cj * p.costoCaja, user: "admin", medio: "Transferencia", ejemplo: true, gen: 1 }); });
-    const dia = 1400000 * SEASON[m] * WEEK[wd] * ([1, 15, 16, 30, 31].includes(dd) ? 1.25 : 1) * (d.getFullYear() < hoy.getFullYear() ? 0.92 : 1) * (0.85 + rnd() * 0.3);
+    const dia = 1400000 * escala * SEASON[m] * WEEK[wd] * ([1, 15, 16, 30, 31].includes(dd) ? 1.25 : 1) * (d.getFullYear() < hoy.getFullYear() ? 0.92 : 1) * (0.85 + rnd() * 0.3);
     let total = 0, costo = 0; const lines = [];
     s.products.forEach(p => { const c = SEED[p.id - 1][6], pu = precio(p, "unidad", s);
       const u = Math.floor(dia * SHARE[c] * PESO[p.id - 1] / tot[c] / pu * (0.7 + rnd() * 0.6) + rnd());
@@ -1343,6 +1351,22 @@ if (!G) { G = { sedes: [{ id: "s1", nombre: "Sede principal" }, { id: "s2", nomb
 S.users.forEach(u => { if (u.rol !== "admin" && !Array.isArray(u.sedes)) u.sedes = [G.sedes[0].id]; });
 save();
 const SD = id => G.sedes.find(x => x.id === id);
+// Las sedes de ejemplo traen ventas ficticias desde enero de este año, más pequeñas que la principal, para probar la comparación.
+function ejemploSede(st, id) {
+  const x = G.sedes.find(y => y.id === id), i = G.sedes.indexOf(x);
+  if (!x || !x.ejemplo || st.histEj || st.movs.length) return false;
+  genHistory(st, 11 + i * 12, [1, 0.65, 0.45][i] || 0.5, new Date().getFullYear()); st.histEj = 1; return true;
+}
+if (ejemploSede(S, SEDE)) save();
+// Datos de otra sede guardados en este aparato (si nunca se abrió, se crea).
+function estadoSede(id) {
+  if (id === SEDE) return S;
+  let st = null, nuevo = false; try { st = JSON.parse(localStorage.getItem(keyDe(id))); } catch (e) {}
+  if (!st || !st.products) { st = sedeVacia(S); nuevo = true; }
+  if (!st.gastos) st.gastos = { ...S.gastos };
+  if (ejemploSede(st, id) || nuevo) try { localStorage.setItem(keyDe(id), JSON.stringify(st)); } catch (e) {}
+  return st;
+}
 const varias = () => G.sedes.length > 1;
 const puedeEntrar = (u, sid) => u.rol === "admin" || !Array.isArray(u.sedes) || u.sedes.includes(sid);
 const renderPanel = (() => {
@@ -2363,17 +2387,36 @@ const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "
 const cap = s => s[0].toUpperCase() + s.slice(1);
 const addD = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const CATCOL = { Cerveza: "var(--yellow)", Licores: "var(--good)", Cigarrillos: "var(--warn)", "Agua y bebidas": "var(--blue)", Otros: "var(--muted)" };
+// Sede que se está mirando: null = la sede donde estás, "todas" = todas juntas, o el id de otra sede.
+let estSede = null, X = null;
+const D = () => X || S;
+function juntarSedes() {
+  const sts = G.sedes.map(x => estadoSede(x.id)), gastos = {};
+  sts.forEach(st => Object.entries(st.gastos || {}).forEach(([k, v]) => { gastos[k] = (gastos[k] || 0) + (+v || 0); }));
+  // Los gastos de cada sede cuentan desde el mes de su primera venta.
+  const inicios = sts.map(st => ({ t0: Math.min(Infinity, ...st.movs.filter(m => m.k === "venta").map(m => m.t)), F: Object.values(st.gastos || {}).reduce((a, b) => a + (+b || 0), 0) }));
+  return { todas: true, pct: S.pct, products: S.products, gastos, inicios, movs: sts.flatMap(st => st.movs).sort((a, b) => a.t - b.t) };
+}
+function fijarSede(id) { estSede = !id || id === SEDE ? null : id; X = !estSede ? null : estSede === "todas" ? juntarSedes() : estadoSede(estSede); $("es-a-gastos").dataset.ok = ""; MA = null; }
+// Tarjetas de arriba: sirven para elegir la sede y comparan lo que va del año.
+function renderSedesEst() {
+  $("es-sedes").hidden = !varias(); if (!varias()) { estSede = null; X = null; return; }
+  const y0 = +new Date(new Date().getFullYear(), 0, 1), res = st => st.movs.reduce((o, m) => { if (m.k === "venta" && m.t >= y0) { o.v += m.total; o.g += m.ganancia || 0; } return o; }, { v: 0, g: 0 });
+  const R = G.sedes.map(x => [x, res(estadoSede(x.id))]), tot = R.reduce((o, [, r]) => ({ v: o.v + r.v, g: o.g + r.g }), { v: 0, g: 0 }), cur = estSede || SEDE;
+  $("es-sedes").innerHTML = `<button type="button" data-es="todas" aria-pressed="${cur === "todas"}"><span class="n">Todas las sedes</span><span class="v num">${short(tot.v)}</span><small>Ventas del año · ganancia ${short(tot.g)}</small></button>` +
+    R.map(([x, r]) => `<button type="button" data-es="${x.id}" aria-pressed="${cur === x.id}"><span class="n">${TIENDA_SVG}${esc(x.nombre)}${x.id === SEDE ? " (aquí)" : ""}</span><span class="v num">${short(r.v)}</span><small>${tot.v ? Math.round(r.v / tot.v * 100) : 0}% de las ventas · ganancia ${short(r.g)}</small></button>`).join("");
+}
 let PR = [], NP = 0, CATS = [], DAYS = [], ANIOS = [], PCT = 10, HOY, AYER, Y1, Y0, D0, llave = "";
 // Por cada día: unidades (u), plata vendida (v) y ganancia (g) de cada producto.
 function build() {
   const ahora = new Date(); HOY = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()); AYER = addD(HOY, -1);
-  Y1 = HOY.getFullYear(); Y0 = Y1 - 1; PCT = S.pct;
-  const ult = S.movs[S.movs.length - 1], k = `${S.movs.length}|${ult ? ult.t : 0}|${+HOY}|${S.products.length}|${S.pct}|${S.products.map(p => (p.precio || 0) + p.nombre).join()}`;
+  Y1 = HOY.getFullYear(); Y0 = Y1 - 1; PCT = D().pct;
+  const ult = D().movs[D().movs.length - 1], k = `${estSede}|${D().movs.length}|${ult ? ult.t : 0}|${+HOY}|${D().products.length}|${D().pct}|${D().products.map(p => (p.precio || 0) + p.nombre).join()}`;
   if (k === llave) return; llave = k;
-  PR = S.products.map((p, i) => { const cu = p.costoCaja / p.porCaja, pu = precio(p, "unidad"); return { i, id: p.id, n: p.nombre, caja: p.porCaja, cat: (look(p) || [])[6] || "Otros", cu, pu, gu: pu - cu }; });
+  PR = D().products.map((p, i) => { const cu = p.costoCaja / p.porCaja, pu = precio(p, "unidad"); return { i, id: p.id, n: p.nombre, caja: p.porCaja, cat: (look(p) || [])[6] || "Otros", cu, pu, gu: pu - cu }; });
   NP = PR.length; CATS = [...new Set(PR.map(p => p.cat))];
   const pos = new Map(PR.map(p => [p.id, p.i])), porDia = new Map();
-  S.movs.forEach(m => { if (m.k !== "venta" || m.t >= +HOY) return;
+  D().movs.forEach(m => { if (m.k !== "venta" || m.t >= +HOY) return;
     const d = new Date(m.t); d.setHours(0, 0, 0, 0); const dk = +d;
     let o = porDia.get(dk); if (!o) porDia.set(dk, o = { u: new Float64Array(NP), v: new Float64Array(NP), g: new Float64Array(NP) });
     m.lines.forEach(l => { const i = pos.get(l.pid); if (i == null) return; o.u[i] += l.und; o.v[i] += l.total; o.g[i] += l.total - PR[i].cu * l.und; }); });
@@ -2393,6 +2436,7 @@ let tab = "prod";
 try { tab = localStorage.getItem("pininos-est-tab") || "prod"; } catch (e) {}
 $("es-subtabs").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (!b) return; tab = b.dataset.t; try { localStorage.setItem("pininos-est-tab", tab); } catch (er) {} render(); });
 function render() {
+  renderSedesEst();
   build();
   if (!["prod", "anual", "temp", "pers"].includes(tab)) tab = "prod";
   document.querySelectorAll("#es-subtabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === tab));
@@ -2446,8 +2490,8 @@ function renderProd() {
   $("es-p-ins").innerHTML = [
     act("good", "★", `<b>${byG[0].p.n}</b>, <b>${byG[1].p.n}</b> y <b>${byG[2].p.n}</b> dejan el ${Math.round(top3 / (G || 1) * 100)}% de toda tu ganancia. Que nunca te falten.`),
     act("blue", "$", `Cada <b>${hi.n}</b> te deja ${money(hi.gu)}; cada <b>${lo.n}</b>, ${money(lo.gu)}. Vender uno de los primeros es como vender ${Math.round(hi.gu / lo.gu)} de los segundos.`),
-    !S.products.some(p => p.precio > 0) ? act("warn", "%", `Todos tus productos dejan el mismo margen (${(PCT / (100 + PCT) * 100).toFixed(1).replace(".", ",")}% de lo que cobras) porque vendes con ${PCT}% sobre el costo. En Inventario puedes ponerle a cada producto su propio precio.`)
-      : (() => { const o = [...PR].sort((a, b) => b.gu / b.cu - a.gu / a.cu), n = S.products.filter(p => p.precio > 0).length;
+    !D().products.some(p => p.precio > 0) ? act("warn", "%", `Todos tus productos dejan el mismo margen (${(PCT / (100 + PCT) * 100).toFixed(1).replace(".", ",")}% de lo que cobras) porque vendes con ${PCT}% sobre el costo. En Inventario puedes ponerle a cada producto su propio precio.`)
+      : (() => { const o = [...PR].sort((a, b) => b.gu / b.cu - a.gu / a.cu), n = D().products.filter(p => p.precio > 0).length;
         return act("blue", "%", `${n} producto${n > 1 ? "s tienen" : " tiene"} precio propio. El que más te deja sobre el costo es <b>${esc(o[0].n)}</b> (${pctTxt(o[0].gu / o[0].cu * 100)}%) y el que menos, <b>${esc(o[o.length - 1].n)}</b> (${pctTxt(o[o.length - 1].gu / o[o.length - 1].cu * 100)}%).`); })(),
     Up.u.some(Boolean) ? act(cg[0][1] >= 0 ? "good" : "bad", cg[0][1] >= 0 ? "▲" : "▼", `La categoría que más creció frente al periodo anterior es <b>${cg[0][0]}</b> (${pct(cg[0][1])}).`) : ""
   ].join("");
@@ -2467,25 +2511,27 @@ const nice = x => { const p = 10 ** Math.floor(Math.log10(x)); return [1, 2, 2.5
 const flecha = (d, txt) => `<span style="color:${d >= 0 ? "var(--good)" : "var(--bad)"}">${d >= 0 ? "▲" : "▼"} ${txt}</span>`;
 function renderAnual() {
   const mes = (y, m) => DAYS.filter(d => d.y === y && d.m === m), cm = HOY.getMonth();
-  const F = Object.values(S.gastos).reduce((a, b) => a + (+b || 0), 0);
+  const F = Object.values(D().gastos).reduce((a, b) => a + (+b || 0), 0);
   const G0 = MESES.map((_, m) => gan(sumU(mes(Y0, m)))), V0 = MESES.map((_, m) => ven(sumU(mes(Y0, m))));
   const G1 = MESES.map((_, m) => m <= cm ? gan(sumU(mes(Y1, m))) : null), V1 = MESES.map((_, m) => m <= cm ? ven(sumU(mes(Y1, m))) : null);
   const dim = new Date(Y1, cm + 1, 0).getDate(), corrido = (HOY.getDate() - 1) / dim, fal = 1 - corrido;
   // Gastos: meses cerrados completos; el mes en curso solo hasta ayer, para comparar parejo con lo vendido.
   // Los gastos solo se cuentan desde el mes en que hay ventas registradas.
-  const activo = (y, m) => +new Date(y, m + 1, 1) > +D0, F0 = MESES.map((_, m) => activo(Y0, m) ? F : 0);
-  const F1 = MESES.map((_, m) => !activo(Y1, m) ? 0 : m < cm ? F : m === cm ? F * corrido : null);
+  const activo = (y, m) => +new Date(y, m + 1, 1) > +D0;
+  const Fm = (y, m) => D().todas ? D().inicios.reduce((a, x) => a + (+new Date(y, m + 1, 1) > x.t0 ? x.F : 0), 0) : activo(y, m) ? F : 0;
+  const F0 = MESES.map((_, m) => Fm(Y0, m));
+  const F1 = MESES.map((_, m) => !activo(Y1, m) ? 0 : m < cm ? Fm(Y1, m) : m === cm ? Fm(Y1, m) * corrido : null);
   // Mismo tramo del año pasado (1 de enero hasta el mismo día) para comparar parejo.
   const lim = +new Date(Y0, cm, HOY.getDate());
   const b1 = G1.reduce((a, x) => a + (x || 0), 0), b0 = gan(sumU(DAYS.filter(d => d.y === Y0 && d.t < lim)));
   const f1 = F1.reduce((a, x) => a + (x || 0), 0), n1 = b1 - f1, n0 = b0 - (F0.slice(0, cm).reduce((x, y) => x + y, 0) + F0[cm] * corrido);
   const r = b0 ? b1 / b0 : 1;
   const PJ = MESES.map((_, m) => m < cm ? null : m === cm ? G1[m] + G0[m] * fal * r : G0[m] * r);
-  const brutaAnio = G1.reduce((a, x, m) => a + (m < cm ? x : PJ[m]), 0), netaAnio = brutaAnio - MESES.reduce((a, _, m) => a + (activo(Y1, m) ? F : 0), 0);
+  const brutaAnio = G1.reduce((a, x, m) => a + (m < cm ? x : PJ[m]), 0), netaAnio = brutaAnio - MESES.reduce((a, _, m) => a + Fm(Y1, m), 0);
   const TODO = sumU(DAYS), margen = gan(TODO) / (ven(TODO) || 1);
   const equilibrio = F / margen;
   const neta = aModo === "neta", val = (g, f) => g == null ? null : neta ? g - f : g;
-  const A0 = G0.map((g, m) => val(g, F0[m])), A1 = G1.map((g, m) => val(g, F1[m])), AP = PJ.map((g, m) => val(g, activo(Y1, m) ? F : 0));
+  const A0 = G0.map((g, m) => val(g, F0[m])), A1 = G1.map((g, m) => val(g, F1[m])), AP = PJ.map((g, m) => val(g, Fm(Y1, m)));
   const col = v => v < 0 ? "var(--bad)" : "var(--good)";
 
   $("es-a-kpis").innerHTML = `<div class="kpi"><small>Ganancia bruta ${Y1}</small><b class="num">${short(b1)}</b><em>${flecha(r - 1, `${Math.abs(Math.round((r - 1) * 100))}% vs. ${Y0}`)}</em></div>
@@ -2515,7 +2561,7 @@ function renderAnual() {
   // Tabla del año en curso: bruta, gastos y neta; la última columna compara la neta con el año pasado.
   let tv = 0, tb = 0, tf = 0, tn = 0, t0 = 0;
   $("es-a-tab").innerHTML = `<thead><tr><th>Mes</th><th>Vendido</th><th>Ganancia bruta</th><th>Gastos</th><th>Ganancia neta</th><th>Neta ${Y0}</th><th>Diferencia</th></tr></thead><tbody>` +
-    MESES.map((n, m) => { const pr = m >= cm, b = pr ? PJ[m] : G1[m], f = activo(Y1, m) ? F : 0, nn = b - f, n0m = G0[m] - F0[m], v = m < cm ? V1[m] : m === cm ? V1[m] + V0[m] * fal * r : V0[m] * r;
+    MESES.map((n, m) => { const pr = m >= cm, b = pr ? PJ[m] : G1[m], f = Fm(Y1, m), nn = b - f, n0m = G0[m] - F0[m], v = m < cm ? V1[m] : m === cm ? V1[m] + V0[m] * fal * r : V0[m] * r;
       tv += v; tb += b; tf += f; tn += nn; t0 += n0m;
       return `<tr${pr ? ' class="proy"' : ""}><td>${cap(n)}${m === cm ? " (va en curso)" : pr ? " (proyección)" : ""}</td><td class="num">${short(v)}</td><td class="num">${short(b)}</td><td class="num">−${short(f)}</td>
         <td class="num" style="color:${col(nn)};font-weight:700">${short(nn)}</td><td class="num">${short(n0m)}</td><td class="num">${flecha(nn - n0m, short(Math.abs(nn - n0m)))}</td></tr>`; }).join("") +
@@ -2524,14 +2570,14 @@ function renderAnual() {
   // Gastos editables para probar.
   if (!$("es-a-gastos").dataset.ok) {
     // Los campos se arman una sola vez por visita, para no perder el cursor mientras se escribe.
-    $("es-a-gastos").innerHTML = Object.entries(S.gastos).map(([k, v]) => `<label class="rf">${k}<input type="number" min="0" step="10000" inputmode="numeric" data-ag="${k}" value="${v}"></label>`).join("");
+    $("es-a-gastos").innerHTML = Object.entries(D().gastos).map(([k, v]) => `<label class="rf">${k}<input type="number" min="0" step="10000" inputmode="numeric" data-ag="${k}" value="${v}"${D().todas ? " disabled" : ""}></label>`).join("") + (D().todas ? `<p class="hint">Es la suma de los gastos de todas las sedes. Para cambiarlos, elige una sede arriba.</p>` : "");
     $("es-a-gastos").dataset.ok = 1;
   }
   $("es-a-gtot").innerHTML = `Total al mes: <b class="num">${money(F)}</b>`;
 
-  const buenos = MESES.filter((_, m) => m < cm && activo(Y1, m) && G1[m] - F >= 0).length, cerrados = MESES.filter((_, m) => m < cm && activo(Y1, m)).length;
+  const buenos = MESES.filter((_, m) => m < cm && activo(Y1, m) && G1[m] - Fm(Y1, m) >= 0).length, cerrados = MESES.filter((_, m) => m < cm && activo(Y1, m)).length;
   const mejor = MESES.map((_, m) => m).filter(m => m < cm && activo(Y1, m)).sort((a, b) => G1[b] - G1[a])[0];
-  const grande = Object.entries(S.gastos).sort((a, b) => b[1] - a[1])[0];
+  const grande = Object.entries(D().gastos).sort((a, b) => b[1] - a[1])[0];
   $("es-a-ins").innerHTML = [
     act(n1 >= 0 ? "good" : "bad", n1 >= 0 ? "▲" : "!", n1 >= 0 ? `En ${Y1} llevas <b>${short(n1)}</b> limpios después de pagar los gastos del local.` : `En ${Y1} los gastos del local se han llevado más de lo que dejaron las ventas: vas <b>${short(n1)}</b>.`),
     act("blue", "$", `Para no perder plata necesitas vender al menos <b>${short(equilibrio)}</b> al mes. En ${Y1}, ${buenos} de ${cerrados} meses cerrados lo lograron${buenos ? `; el mejor fue ${MESES[mejor]}` : ""}.`),
@@ -2540,7 +2586,7 @@ function renderAnual() {
   ].join("");
 }
 $("es-t-anual").addEventListener("click", e => { const b = e.target.closest("[data-am]"); if (b) { aModo = b.dataset.am; renderAnual(); } });
-$("es-t-anual").addEventListener("input", e => { const i = e.target.closest("[data-ag]"); if (i && +i.value >= 0) { S.gastos[i.dataset.ag] = +i.value; save(); renderAnual(); } });
+$("es-t-anual").addEventListener("input", e => { const i = e.target.closest("[data-ag]"); if (i && +i.value >= 0 && !D().todas) { D().gastos[i.dataset.ag] = +i.value; if (X) { try { localStorage.setItem(keyDe(estSede), JSON.stringify(X)); } catch (er) {} } else save(); renderAnual(); } });
 
 /* ---------- 3 · Meses y temporadas ---------- */
 // Rotación: unidades por día de cada mes, comparadas con el promedio de los 12 meses.
@@ -2604,13 +2650,14 @@ $("es-t-temp").addEventListener("click", e => { let b;
 /* ---------- 4 · Vendedores y pagos ---------- */
 function renderPers() {
   if (!MA) maIndex();
-  const ventas = maSueltas(S.movs.filter(m => m.k === "venta")), gu = {}, gm = {};
+  const ventas = maSueltas(D().movs.filter(m => m.k === "venta")), gu = {}, gm = {};
   ventas.forEach(v => { gu[U(v.user).nombre] = (gu[U(v.user).nombre] || 0) + v.total; gm[v.medio || "Efectivo"] = (gm[v.medio || "Efectivo"] || 0) + v.total; });
   const sort = o => Object.entries(o).sort((a, b) => b[1] - a[1]);
   $("st-user").innerHTML = bars(sort(gu), money);
   $("st-medio").innerHTML = bars(sort(gm), money);
 }
-const nuevo = () => { $("es-a-gastos").dataset.ok = ""; };
+const nuevo = () => { $("es-a-gastos").dataset.ok = ""; if (estSede) fijarSede(estSede); };
+$("es-sedes").addEventListener("click", e => { const b = e.target.closest("[data-es]"); if (!b) return; fijarSede(b.dataset.es); render(); });
 return { render, nuevo };
 })();
 function renderStats() { EST.nuevo(); EST.render(); }
