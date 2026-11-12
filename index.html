@@ -737,6 +737,12 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
 .cam-man{display:flex;gap:8px;align-items:flex-end}
 .cam-man .field{flex:1;min-width:0}
 .sheet[data-kind="cam"],.sheet[data-kind="cod"]{max-width:520px;margin:0 auto}
+/* ---------- Clientes y proveedores ---------- */
+.ctab td.prods{white-space:normal;max-width:260px;font-size:.84rem;color:var(--muted)}
+.ctab .concept .t small{display:block}
+.sheet[data-kind="contacto"]{max-width:520px;margin:0 auto}
+.cart .select{font-weight:600}
+@media (max-width:759px){ .ctab{min-width:0} .ctab th:nth-child(n+3):not(:last-child),.ctab td:nth-child(n+3):not(:last-child){display:none} .ctab td,.ctab th{padding:10px 8px} }
 </style>
 
 <!-- ENTRADA -->
@@ -1054,6 +1060,26 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
     <div class="card" id="es-vacio" hidden><h2>Todavía no hay ventas</h2><p class="hint">Cuando registres ventas, aquí vas a ver qué te deja más plata, cómo va el año y cuáles meses venden más.</p></div>
     </main>
 
+    <!-- CLIENTES -->
+    <main class="screen" id="s-clientes" hidden>
+      <div class="emp-top"><p class="hint">Elige el cliente al vender. Si le pones un descuento especial, la app lo aplica sola a toda su compra.</p>
+        <button class="btn" type="button" data-a="ct-nuevo" data-tipo="cli">+ Agregar cliente</button></div>
+      <div class="panel"><div class="tablebox"><table class="ctab">
+        <thead><tr><th>Cliente</th><th class="r">Descuento</th><th class="r">Compras</th><th class="r">Total comprado</th><th class="r">Le has descontado</th><th class="r">Última compra</th><th class="r"></th></tr></thead>
+        <tbody id="cli-rows"></tbody>
+      </table></div></div>
+    </main>
+
+    <!-- PROVEEDORES -->
+    <main class="screen" id="s-proveedores" hidden>
+      <div class="emp-top"><p class="hint">Elige el proveedor al registrar una compra. La app recuerda a quién le compraste cada producto la última vez.</p>
+        <button class="btn" type="button" data-a="ct-nuevo" data-tipo="prov">+ Agregar proveedor</button></div>
+      <div class="panel"><div class="tablebox"><table class="ctab">
+        <thead><tr><th>Proveedor</th><th>Le compras</th><th class="r">Compras</th><th class="r">Total comprado</th><th class="r">Última compra</th><th class="r"></th></tr></thead>
+        <tbody id="prov-rows"></tbody>
+      </table></div></div>
+    </main>
+
     <!-- EMPLEADOS -->
     <main class="screen" id="s-empleados" hidden>
       <div class="emp-top"><p class="hint">Estos son los nombres que salen al entrar a la app. Toca Editar para cambiar un nombre o una contraseña.</p>
@@ -1112,8 +1138,6 @@ const LABELS = { inicio: "Inicio", vender: "Vender", comprar: "Compras", movs: "
   clientes: "Clientes", proveedores: "Proveedores", gastos: "Gastos", empleados: "Empleados", ajustes: "Ajustes" };
 const TITLES = { ...LABELS, vender: "Nueva venta", comprar: "Registrar compra" };
 const SOON = {
-  clientes: ["Clientes y fiados", "Aquí vas a tener la lista de clientes, sobre todo los de por mayor, y lo que cada uno te debe.", ["Agregar clientes con nombre y teléfono", "Vender fiado y anotar abonos", "Ver quién te debe y desde cuándo"]],
-  proveedores: ["Proveedores", "Aquí vas a guardar a quién le compras cada producto y lo que le debes.", ["Lista de proveedores y sus productos", "Comparar precios entre proveedores", "Cuentas por pagar con fecha de vencimiento"]],
   gastos: ["Gastos del negocio", "Aquí vas a registrar arriendo, servicios, sueldos y otros gastos para ver tu ganancia real.", ["Registrar gastos fijos y del día", "Ganancia neta del mes: ventas menos costos menos gastos", "Cierre de caja al final del día"]],
 };
 const GROUPS = [["", ["inicio", "movs", "vender", "comprar"]], ["Análisis", ["inventario", "estadisticas"]], ["Gestiona tus contactos", ["clientes", "proveedores"]], ["Tu negocio", ["gastos", "empleados", "ajustes"]]];
@@ -1179,7 +1203,7 @@ const comboPrecio = (c, s = S) => { const su = comboSuelto(c, s);
   return c.modo === "pct" ? Math.round(su * (1 - (c.desc || 0) / 100) / 50) * 50 : c.modo === "pesos" ? Math.max(0, Math.round(su - (c.desc || 0))) : c.precio; };
 const avatar = (p, sm) => `<span class="av${sm ? " sm" : ""}${look(p)[1].includes("1 L") ? " l" : ""}" style="background:${look(p)[5]}">${look(p)[4]}</span>`;
 
-function sellItems(s, items, t, user, med, ejemplo) {
+function sellItems(s, items, t, user, med, ejemplo, extra) {
   let total = 0, costo = 0;
   // Un cubetazo se guarda como una línea por producto que lleva, con el precio del combo repartido según el costo.
   const lines = items.flatMap(it => {
@@ -1192,7 +1216,13 @@ function sellItems(s, items, t, user, med, ejemplo) {
     p.stock -= und; total += tot; costo += (p.costoCaja / p.porCaja) * und;
     return [{ ...it, und, total: tot }];
   });
+  // Descuento especial del cliente: se reparte entre las líneas para que las estadísticas cuadren con lo cobrado.
+  let desc = 0;
+  if (extra && extra.descPct > 0 && total > 0) { desc = Math.round(total * extra.descPct / 100); const f = (total - desc) / total; let rest = total - desc;
+    lines.forEach((l, i) => { const nt = i === lines.length - 1 ? rest : Math.round(l.total * f); rest -= nt; l.total = nt; }); total -= desc; }
   const v = { k: "venta", t, lines, total, ganancia: total - costo, user, medio: med, ejemplo: !!ejemplo };
+  if (extra && extra.cli) v.cli = extra.cli;
+  if (desc) { v.desc = desc; v.descPct = extra.descPct; }
   s.movs.push(v);
   return v;
 }
@@ -1272,6 +1302,10 @@ save();
 /* ---------- Panel gerencial (administrador) ---------- */
 const GASTOS_BASE = { "Arriendo": 1500000, "Sueldos (2 vendedores)": 2900000, "Servicios (luz, agua, internet)": 420000, "Hielo, bolsas y aseo": 260000 };
 if (!S.gastos) { S.gastos = { ...GASTOS_BASE }; save(); }
+// Clientes y proveedores de ejemplo (se pueden editar o eliminar).
+if (!S.clientes) { S.clientes = [{ id: "c1", nombre: "Tienda Don Pedro", tel: "", desc: 5, nota: "Compra por mayor", ejemplo: true }, { id: "c2", nombre: "Bar La Esquina", tel: "", desc: 3, nota: "Pide cerveza los viernes", ejemplo: true }]; save(); }
+if (!S.proveedores) { S.proveedores = [{ id: "pr1", nombre: "Distribuidora de cerveza", tel: "", nota: "Viene los lunes", ejemplo: true }, { id: "pr2", nombre: "Distribuidora de licores", tel: "", nota: "Aguardiente, ron, whisky y vodka", ejemplo: true }, { id: "pr3", nombre: "Distribuidora de bebidas", tel: "", nota: "Agua, gaseosas y cigarrillos", ejemplo: true }];
+  S.products.forEach(p => { if (!p.prov) { const c = (look(p) || [])[6]; p.prov = c === "Cerveza" ? "pr1" : c === "Licores" ? "pr2" : "pr3"; } }); save(); }
 const renderPanel = (() => {
   const short = n => { const a = Math.abs(n), s = n < 0 ? "−" : ""; return a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1).replace(".", ",")} M` : `${s}$${Math.round(a / 1e3)} mil`; };
   const pct = n => isFinite(n) ? (n * 100).toFixed(1).replace(".", ",") + "%" : "0%";
@@ -1593,7 +1627,8 @@ function cartTotals() {
   let total = 0, costo = 0;
   cart.forEach(c => { if (c.tipo === "combo") { const k = comboDe(c.cid); total += comboPrecio(k) * c.cant; costo += comboCosto(k) * c.cant; return; }
     const p = P(c.pid); total += precio(p, c.tipo) * c.cant; costo += costoUnd(p) * unidades(p, c); });
-  return { total, costo, gan: total - costo };
+  const sub = total, d = cartDesc(sub); total = sub - d.monto;
+  return { sub, desc: d.monto, pct: d.pct, cli: d.c, total, costo, gan: total - costo };
 }
 function cartHtml(inSheet) {
   const head = `<div class="cart-h"><h2>Venta actual</h2>${inSheet ? '<button class="x" data-a="close" aria-label="Cerrar">×</button>' : ""}</div>`;
@@ -1603,8 +1638,9 @@ function cartHtml(inSheet) {
     const sub = k ? `${k.items.map(x => `${x.und} ${P(x.pid).nombre}`).join(" + ")} · ${money(comboPrecio(k))}` : `${PRES[c.tipo].n}${c.tipo === "unidad" ? "" : ` x${PRES[c.tipo].u(p)}`} · ${money(precio(p, c.tipo))}`;
     return `<div class="item">${avatar(p, true)}<div class="t"><b>${k ? esc(k.nombre) : p.nombre}</b><small>${sub}</small></div>
     <div class="qty"><button data-a="minus" data-i="${i}" aria-label="Quitar uno">−</button><span class="num">${c.cant}</span><button data-a="plus" data-i="${i}" aria-label="Agregar uno">+</button></div></div>`; }).join("") +
+    clienteSelect() +
     `<div class="field">Medio de pago${segHtml("medio", MEDIOS, medio, "med")}</div>
-    <div class="sum num">${isAdmin() ? `<div><span>Te costó</span><span>${money(t.costo)}</span></div><div class="g"${t.gan < 0 ? ' style="color:var(--bad)"' : ""}><span>${t.gan < 0 ? "Pierdes" : "Ganancia"}</span><span>${money(Math.abs(t.gan))}</span></div>` : ""}<div class="tot"><span>Total</span><span>${money(t.total)}</span></div></div>
+    <div class="sum num">${t.desc ? `<div><span>Subtotal</span><span>${money(t.sub)}</span></div><div style="color:var(--good);font-weight:700"><span>Descuento ${esc(t.cli.nombre)} (${String(t.pct).replace(".", ",")}%)</span><span>−${money(t.desc)}</span></div>` : ""}${isAdmin() ? `<div><span>Te costó</span><span>${money(t.costo)}</span></div><div class="g"${t.gan < 0 ? ' style="color:var(--bad)"' : ""}><span>${t.gan < 0 ? "Pierdes" : "Ganancia"}</span><span>${money(Math.abs(t.gan))}</span></div>` : ""}<div class="tot"><span>Total</span><span>${money(t.total)}</span></div></div>
     <button class="btn wide" data-a="cobrar">Cobrar ${money(t.total)} <kbd>F12</kbd></button><button class="btn line wide" data-a="vaciar">Vaciar venta</button>`;
 }
 const matches = () => { const q = $("q").value.trim().toLowerCase(); return S.products.filter(p => (p.nombre.toLowerCase().includes(q) || (p.cod && q.length >= 4 && p.cod.includes(q))) && (q || cat === "Todos" || look(p)[6] === cat) && (modo === "combo" || PRES[modo].ok(p))); };
@@ -1637,8 +1673,9 @@ function renderVender() {
 }
 function cobrar() {
   if (!cart.length) return;
-  const v = sellItems(S, cart, Date.now(), me.id, medio);
-  cart = []; save(); closeSheet(); renderVender();
+  const d = cartDesc(cartTotals().sub), v = sellItems(S, cart, Date.now(), me.id, medio, false, { cli: cliente, descPct: d.pct });
+  cart = []; cliente = ""; save(); closeSheet(); renderVender();
+  if (v.desc) toast(`Venta guardada con ${money(v.desc)} de descuento para ${CLI(v.cli).nombre}.`); else
   toast(isAdmin() ? `Venta guardada (${v.medio}). Ganaste ${money(v.ganancia)}.` : `Venta guardada: ${money(v.total)} en ${v.medio.toLowerCase()}.`);
 }
 
@@ -1853,7 +1890,7 @@ function maHorasSvg(k, hrs) {
 const maFH = t => { const d = new Date(t); return `${CI_DIAS[d.getDay()].slice(0, 3)} ${d.getDate()} ${CI_MESES[d.getMonth()].slice(0, 3)} · ${d.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}`; };
 function maRow(m, ix) {
   const c = concepto(m), on = maSel === m, venta = m.k === "venta";
-  const sub = m.dia ? `Día completo · ${m.turnos ? m.turnos.reduce((a, x) => a + x[2], 0) + " clientes" : ""}` : `<span class="fh">${maFH(m.t)}</span> · ${venta ? "Venta" : "Compra"} · ${esc(U(m.user).nombre)} · ${medioDe(m)}`;
+  const sub = m.dia ? `Día completo · ${m.turnos ? m.turnos.reduce((a, x) => a + x[2], 0) + " clientes" : ""}` : `<span class="fh">${maFH(m.t)}</span> · ${venta ? "Venta" : "Compra"} · ${esc(U(m.user).nombre)} · ${medioDe(m)}${m.cli && CLI(m.cli) ? ` · Cliente: ${esc(CLI(m.cli).nombre)}${m.desc ? ` (−${money(m.desc)})` : ""}` : ""}${m.prov && PROV(m.prov) ? ` · Proveedor: ${esc(PROV(m.prov).nombre)}` : ""}`;
   let det = "";
   if (on) det = m.k === "compra"
     ? `<div class="ma-lines"><div><span>Unidades que entraron</span><b class="num">${m.und}</b></div><div><span>Costo por unidad</span><span class="num">${money(m.total / m.und)}</span></div><div><span>Pagado por ${medioDe(m).toLowerCase()} · ${U(m.user).nombre}</span></div></div>`
@@ -1873,7 +1910,7 @@ function renderMaList() {
   const enHora = m => { if (maHr == null) return true; if (m.k !== "venta") return false; const hr = new Date(m.t).getHours(); return (hr < 2 ? hr + 24 : hr) === maHr; };
   const deQuien = (m, w) => !w || (w === "rol:vendedor" ? U(m.user).rol !== "admin" : m.user === w);
   const sinQuien = base.filter(m => (!md || medioDe(m) === md) && enHora(m)
-    && (!q || `${concepto(m).txt} ${U(m.user).nombre} ${m.lines ? m.lines.map(l => P(l.pid).nombre).join(" ") : P(m.pid).nombre}`.toLowerCase().includes(q)));
+    && (!q || `${concepto(m).txt} ${U(m.user).nombre} ${m.cli && CLI(m.cli) ? CLI(m.cli).nombre : ""} ${m.prov && PROV(m.prov) ? PROV(m.prov).nombre : ""} ${m.lines ? m.lines.map(l => P(l.pid).nombre).join(" ") : P(m.pid).nombre}`.toLowerCase().includes(q)));
   const quien = [["", "Todos"], ...USERS.filter(u => u.rol === "admin").map(u => [u.id, u.nombre]), ["rol:vendedor", "Todos los vendedores"], ...USERS.filter(u => u.rol !== "admin").map(u => [u.id, u.nombre])];
   if (!quien.some(([v]) => v === maQuien)) maQuien = "";
   $("ma-quien").innerHTML = `<span class="ma-ql">Quién lo hizo</span>` + quien.map(([v, l]) => { const n = sinQuien.filter(m => deQuien(m, v)).length;
@@ -2634,6 +2671,96 @@ function recuperarCopia() {
   location.reload();
 }
 
+/* ---------- Clientes y proveedores ---------- */
+// Clientes: se eligen en la venta; si el administrador les puso un descuento especial, se aplica solo a toda la venta.
+// Proveedores: se eligen al registrar una compra; la app recuerda el último proveedor de cada producto.
+let cliente = "";
+const CLI = id => (S.clientes || []).find(c => c.id === id);
+const PROV = id => (S.proveedores || []).find(p => p.id === id);
+const margenPct = () => S.pct / (100 + S.pct) * 100;
+const nuevoId = (lista, pre) => { let i = 1; while (lista.some(x => x.id === pre + i)) i++; return pre + i; };
+// Descuento de la venta actual según el cliente elegido.
+function cartDesc(total) { const c = CLI(cliente), pct = c ? +c.desc || 0 : 0; return { c, pct, monto: Math.round(total * pct / 100) }; }
+function clienteSelect() {
+  const lista = [...(S.clientes || [])].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  return `<label class="field" for="v-cli">Cliente<select class="select" id="v-cli"><option value="">Cliente general (sin descuento)</option>${lista.map(c => `<option value="${c.id}"${c.id === cliente ? " selected" : ""}>${esc(c.nombre)}${+c.desc ? ` · ${String(c.desc).replace(".", ",")}% de descuento` : ""}</option>`).join("")}<option value="+">+ Agregar cliente nuevo…</option></select></label>`;
+}
+function provSelect(p) {
+  const lista = [...(S.proveedores || [])].sort((a, b) => a.nombre.localeCompare(b.nombre)), sel = p.prov && PROV(p.prov) ? p.prov : "";
+  return `<label class="field" for="b-prov">Proveedor<select class="select" id="b-prov"><option value="">Sin proveedor</option>${lista.map(x => `<option value="${x.id}"${x.id === sel ? " selected" : ""}>${esc(x.nombre)}</option>`).join("")}<option value="+">+ Agregar proveedor nuevo…</option></select></label>`;
+}
+document.addEventListener("change", e => {
+  if (e.target.id === "v-cli") { if (e.target.value === "+") { e.target.value = cliente; contactoSheet("cli", null, "venta"); return; } cliente = e.target.value; renderVender(); }
+  if (e.target.id === "b-prov" && e.target.value === "+") { const pid = +$("sheet").querySelector('[data-a="comprar"]').dataset.pid; contactoSheet("prov", null, "compra:" + pid); }
+});
+// Hoja para crear o editar un cliente o un proveedor. "volver" regresa a la venta o a la compra que se estaba haciendo.
+let contVolver = null;
+function contactoSheet(tipo, id, volver) {
+  const cli = tipo === "cli", x = id ? (cli ? CLI(id) : PROV(id)) : null, admin = isAdmin(); contVolver = volver || null;
+  openSheet(`<div class="cart-h"><h2>${x ? `Editar ${esc(x.nombre)}` : cli ? "Nuevo cliente" : "Nuevo proveedor"}</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <label class="field" for="ct-nombre">Nombre${cli ? "" : " de la empresa o del vendedor"}<input id="ct-nombre" maxlength="40" autocomplete="off" value="${x ? esc(x.nombre) : ""}" placeholder="${cli ? "Ejemplo: Tienda Don Pedro" : "Ejemplo: Distribuidora del Valle"}"></label>
+    <label class="field" for="ct-tel">Teléfono (opcional)<input id="ct-tel" inputmode="tel" maxlength="20" autocomplete="off" value="${x && x.tel ? esc(x.tel) : ""}"></label>
+    ${cli ? (admin ? `<label class="field" for="ct-desc">Descuento especial en cada compra (%)<input id="ct-desc" type="number" min="0" max="50" step="0.5" inputmode="decimal" value="${x ? +x.desc || 0 : 0}"></label><p class="hint" id="ct-aviso"></p>`
+      : `<p class="hint">Solo el administrador puede ponerle un descuento a un cliente.</p>`) : ""}
+    <label class="field" for="ct-nota">Nota (opcional)<input id="ct-nota" maxlength="80" autocomplete="off" value="${x && x.nota ? esc(x.nota) : ""}" placeholder="${cli ? "Ejemplo: compra por mayor los viernes" : "Ejemplo: viene los lunes, entrega cerveza"}"></label>
+    <p class="err" id="ct-err" hidden></p>
+    <button class="btn ink wide" type="button" data-a="ct-guardar" data-tipo="${tipo}" data-id="${id || ""}">${x ? "Guardar cambios" : cli ? "Agregar cliente" : "Agregar proveedor"}</button>
+    ${x && admin ? `<button class="btn line wide" type="button" data-a="ct-borrar" data-tipo="${tipo}" data-id="${id}" style="color:var(--bad)">Eliminar ${cli ? "cliente" : "proveedor"}</button>` : ""}`, "contacto");
+  if (cli && admin) { $("ct-desc").addEventListener("input", avisoDesc); avisoDesc(); }
+  $("ct-nombre").focus();
+}
+function avisoDesc() {
+  const d = +$("ct-desc").value || 0, m = margenPct(), a = $("ct-aviso");
+  a.style.color = d > m ? "var(--bad)" : "";
+  a.style.fontWeight = d > m ? "700" : "";
+  a.textContent = !d ? "Sin descuento: paga el precio normal." : d > m ? `Con ${d}% pierdes plata: hoy tu ganancia es solo ${m.toFixed(1).replace(".", ",")}% de lo que cobras.`
+    : `En una venta de $100.000 le descuentas ${money(100000 * d / 100)}. Te queda una ganancia de ${(m - d).toFixed(1).replace(".", ",")}% en vez de ${m.toFixed(1).replace(".", ",")}%.`;
+}
+function contactoGuardar(tipo, id) {
+  const cli = tipo === "cli", lista = cli ? (S.clientes = S.clientes || []) : (S.proveedores = S.proveedores || []);
+  const nombre = $("ct-nombre").value.replace(/[<>"&]/g, "").trim().replace(/\s+/g, " "), err = t => { $("ct-err").textContent = t; $("ct-err").hidden = false; };
+  if (nombre.length < 2) return err("Escribe un nombre de al menos 2 letras.");
+  if (lista.some(x => x.id !== id && x.nombre.toLowerCase() === nombre.toLowerCase())) return err(`Ya hay un ${cli ? "cliente" : "proveedor"} con ese nombre.`);
+  let x = lista.find(y => y.id === id);
+  if (!x) { x = { id: nuevoId(lista, cli ? "c" : "pr") }; lista.push(x); }
+  x.nombre = nombre; x.tel = $("ct-tel").value.replace(/[^\d +()-]/g, "").trim(); x.nota = $("ct-nota").value.replace(/[<>"&]/g, "").trim();
+  if (cli && $("ct-desc")) { const d = Math.max(0, Math.min(50, +$("ct-desc").value || 0)); x.desc = d; }
+  if (cli && x.desc == null) x.desc = 0;
+  delete x.ejemplo; save();
+  const v = contVolver; contVolver = null; closeSheet(); toast(`${cli ? "Cliente" : "Proveedor"} guardado: ${x.nombre}.`);
+  if (v === "venta") { cliente = x.id; renderVender(); if (!matchMedia("(min-width:900px)").matches) openSheet(cartHtml(true), "cart"); }
+  else if (v && v.startsWith("compra:")) { const p = P(+v.slice(7)); p.prov = x.id; buySheet(p); }
+  else if (view === "clientes") renderClientes(); else if (view === "proveedores") renderProveedores();
+}
+function contactoBorrar(tipo, id) {
+  const cli = tipo === "cli", k = cli ? "clientes" : "proveedores", x = cli ? CLI(id) : PROV(id);
+  S[k] = S[k].filter(y => y.id !== id);
+  if (cli && cliente === id) cliente = "";
+  if (!cli) S.products.forEach(p => { if (p.prov === id) delete p.prov; });
+  save(); closeSheet(); toast(`Se eliminó a ${x.nombre}. Sus ventas y compras pasadas se conservan.`);
+  cli ? renderClientes() : renderProveedores();
+}
+// Pantallas de Clientes y Proveedores (administrador).
+function renderClientes() {
+  const ventas = S.movs.filter(m => m.k === "venta" && m.cli), m = margenPct();
+  $("cli-rows").innerHTML = (S.clientes || []).map(c => { const mv = ventas.filter(v => v.cli === c.id), tot = mv.reduce((a, v) => a + v.total, 0), ah = mv.reduce((a, v) => a + (v.desc || 0), 0), ult = mv.length ? Math.max(...mv.map(v => v.t)) : null;
+    return `<tr><td><div class="concept"><span class="av-u">${esc(iniDe(c.nombre))}</span><span class="t"><b>${esc(c.nombre)}</b>${c.ejemplo ? ' <small class="ex">ejemplo</small>' : ""}<small>${esc(c.tel || "")}${c.tel && c.nota ? " · " : ""}${esc(c.nota || "")}</small></span></div></td>
+      <td class="r">${+c.desc ? `<span class="pill${+c.desc > m ? " bad" : ""}">${String(c.desc).replace(".", ",")}%</span>` : '<span class="hint">Sin descuento</span>'}</td>
+      <td class="r">${mv.length}</td><td class="r">${money(tot)}</td><td class="r">${ah ? money(ah) : "—"}</td><td class="r">${ult ? fechaCorta(ult) : "—"}</td>
+      <td class="r"><button class="btn line" type="button" data-a="ct-editar" data-tipo="cli" data-id="${c.id}" style="padding:7px 12px">Editar</button></td></tr>`; }).join("")
+    || `<tr><td colspan="7" class="hint">Todavía no tienes clientes. Agrega los que compran seguido o por mayor.</td></tr>`;
+}
+function renderProveedores() {
+  const comp = S.movs.filter(m => m.k === "compra" && m.prov);
+  $("prov-rows").innerHTML = (S.proveedores || []).map(x => { const mv = comp.filter(c => c.prov === x.id), tot = mv.reduce((a, c) => a + c.total, 0), ult = mv.length ? Math.max(...mv.map(c => c.t)) : null;
+    const prods = [...new Set([...mv.map(c => c.pid), ...S.products.filter(p => p.prov === x.id).map(p => p.id)])].map(id => P(id).nombre);
+    return `<tr><td><div class="concept"><span class="av-u" style="background:var(--blue-soft);color:var(--blue)">${esc(iniDe(x.nombre))}</span><span class="t"><b>${esc(x.nombre)}</b>${x.ejemplo ? ' <small class="ex">ejemplo</small>' : ""}<small>${esc(x.tel || "")}${x.tel && x.nota ? " · " : ""}${esc(x.nota || "")}</small></span></div></td>
+      <td class="prods">${prods.length ? esc(prods.slice(0, 4).join(", ")) + (prods.length > 4 ? ` y ${prods.length - 4} más` : "") : '<span class="hint">—</span>'}</td>
+      <td class="r">${mv.length}</td><td class="r">${money(tot)}</td><td class="r">${ult ? fechaCorta(ult) : "—"}</td>
+      <td class="r"><button class="btn line" type="button" data-a="ct-editar" data-tipo="prov" data-id="${x.id}" style="padding:7px 12px">Editar</button></td></tr>`; }).join("")
+    || `<tr><td colspan="6" class="hint">Todavía no tienes proveedores. Agrégalos aquí o al registrar una compra.</td></tr>`;
+}
+
 /* ---------- Empleados ---------- */
 function renderEmpleados() {
   const hv = hoyVentas();
@@ -2682,7 +2809,7 @@ function renderAll() {
   if (!me) return;
   if (SOON[view]) return renderPronto();
   if (view === "inicio" && isAdmin()) return renderPanel();
-  ({ inicio: renderInicio, vender: renderVender, comprar: renderComprar, movs: () => { renderMovs(); if (!$("cierres-box").hidden) renderCierres(); }, ajustes: renderAjustes, inventario: renderInventario, estadisticas: renderStats, empleados: renderEmpleados })[view]();
+  ({ inicio: renderInicio, vender: renderVender, comprar: renderComprar, movs: () => { renderMovs(); if (!$("cierres-box").hidden) renderCierres(); }, ajustes: renderAjustes, inventario: renderInventario, estadisticas: renderStats, empleados: renderEmpleados, clientes: renderClientes, proveedores: renderProveedores })[view]();
 }
 
 /* ---------- Hoja inferior ---------- */
@@ -2698,6 +2825,7 @@ function buySheet(p) {
     <label class="field" for="b-cant">¿Cuántas compraste?<input id="b-cant" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
     <label class="field" for="b-total">¿Cuánto pagaste en total?<input id="b-total" type="number" min="0" step="50" inputmode="numeric" value="${Math.round(p.costoCaja)}"></label>
     <div class="field">Medio de pago${segHtml("bmedio", MEDIOS, buyMedio, "bmed")}</div>
+    ${provSelect(p)}
     <div class="sum num" id="b-res"></div>
     <button class="btn ink wide" data-a="comprar" data-pid="${p.id}">Guardar compra</button>`, "buy");
   buyPreview(p);
@@ -2746,21 +2874,28 @@ document.addEventListener("click", e => {
   if (a === "more") openSheet(`<div class="cart-h"><h2>Más opciones</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div><div class="morelist">${navItems().slice(4).map(navBtn).join("")}</div>`, "more");
   if (a === "plus") { cart[i].cant++; renderVender(); }
   if (a === "minus") { cart[i].cant--; if (!cart[i].cant) cart.splice(i, 1); renderVender(); }
-  if (a === "vaciar") { cart = []; closeSheet(); renderVender(); }
+  if (a === "vaciar") { cart = []; cliente = ""; closeSheet(); renderVender(); }
   if (a === "cobrar") cobrar();
   if (a === "comprar") {
     const p = P(b.dataset.pid), tipo = document.querySelector('#b-tipo [aria-pressed="true"]').dataset.bt;
     const cant = Math.max(1, Math.floor(+$("b-cant").value || 1)), total = +$("b-total").value;
     if (!(total > 0)) { toast("Escribe cuánto pagaste."); return; }
     const und = tipo === "caja" ? cant * p.porCaja : cant;
+    const prov = $("b-prov") && $("b-prov").value !== "+" ? $("b-prov").value : "";
     p.costoCaja = total / und * p.porCaja; p.stock += und;
-    S.movs.push({ k: "compra", t: Date.now(), pid: p.id, und, total, user: me.id, medio: buyMedio });
+    const mv = { k: "compra", t: Date.now(), pid: p.id, und, total, user: me.id, medio: buyMedio };
+    if (prov) { mv.prov = prov; p.prov = prov; }
+    S.movs.push(mv);
     save(); closeSheet(); renderComprar();
-    toast(`Compra guardada: +${und} ${p.nombre}.`);
+    toast(`Compra guardada: +${und} ${p.nombre}${prov ? ` a ${PROV(prov).nombre}` : ""}.`);
   }
   if (a === "reset-ask") $("reset-box").innerHTML = `<h2>¿Seguro?</h2><p class="hint">Se borran todas las ventas y compras. Los 10 productos se quedan, con inventario en cero.</p><div class="row2"><button class="btn" type="button" data-a="reset-yes">Sí, borrar</button><button class="btn line" type="button" data-a="reset-no">Cancelar</button></div>`;
   if (a === "reset-no") $("reset-box").innerHTML = RESET_BASE;
   if (a === "emp-add") empSheet(null);
+  if (a === "ct-nuevo") contactoSheet(b.dataset.tipo, null, null);
+  if (a === "ct-editar") contactoSheet(b.dataset.tipo, b.dataset.id, null);
+  if (a === "ct-guardar") contactoGuardar(b.dataset.tipo, b.dataset.id);
+  if (a === "ct-borrar") contactoBorrar(b.dataset.tipo, b.dataset.id);
   if (a === "cb-new") cbSheet(null);
   if (a === "cb-edit") cbSheet(comboDe(b.dataset.cbid));
   if (a === "cb-add") { cbDraft.items.push({ pid: S.products.find(p => !cbDraft.items.some(x => x.pid === p.id)).id, und: 1 }); cbItems(); }
