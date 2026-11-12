@@ -738,6 +738,11 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
 /* ---------- Códigos de barras ---------- */
 .codbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:5px 9px;font-weight:600;font-size:.78rem;white-space:nowrap}
 .codbtn svg{width:15px;height:15px;color:var(--muted)}
+.pmeta{display:block;font-size:.72rem;color:var(--muted);font-weight:600;white-space:nowrap}
+.pmeta.neg{color:var(--bad)}
+.pr-calc{background:var(--soft);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:.85rem}
+.pr-calc div{display:flex;justify-content:space-between;gap:10px}
+.pr-calc .neg{color:var(--bad);font-weight:700}
 .codbtn.vacio{border-style:dashed;color:var(--muted)}
 .cod-list{display:flex;flex-direction:column;max-height:50vh;overflow:auto}
 .cod-it{display:flex;align-items:center;gap:10px;border:0;border-bottom:1px solid var(--line);background:none;padding:9px 2px;text-align:left;color:var(--fg)}
@@ -991,7 +996,7 @@ body.dark #s-estadisticas .b-buena{color:var(--yellow)}
     <main class="screen" id="s-inventario" hidden>
       <div class="kpis" id="inv-kpis"></div>
       <div class="panel"><div class="tablebox"><table>
-        <thead><tr><th>Producto</th><th class="r">Existencias</th><th class="r">Cajas</th><th class="r">Valor al costo</th><th class="r">Valor a la venta</th><th>Estado</th><th>Código de barras</th></tr></thead>
+        <thead><tr><th>Producto</th><th class="r">Existencias</th><th class="r">Cajas</th><th class="r">Valor al costo</th><th class="r">Valor a la venta</th><th class="r">Precio und.</th><th>Estado</th><th>Código de barras</th><th class="adm-col"></th></tr></thead>
         <tbody id="inv2"></tbody>
       </table></div></div>
     </main>
@@ -1202,7 +1207,11 @@ const PRES = {
   media: { n: "Media caja", u: p => p.porCaja / 2, ok: p => p.porCaja % 2 === 0 && p.porCaja >= 10 },
   caja: { n: "Caja", u: p => p.porCaja, ok: p => true },
 };
-const precio = (p, tipo, s = S) => p.costoCaja / p.porCaja * (PRES[tipo] || PRES.unidad).u(p) * (1 + s.pct / 100);
+// Si el administrador le puso un precio propio a la unidad (p.precio), se usa ese; si no, costo + % general de Ajustes.
+const precioUnd = (p, s = S) => p.precio > 0 ? p.precio : p.costoCaja / p.porCaja * (1 + s.pct / 100);
+const precio = (p, tipo, s = S) => precioUnd(p, s) * (PRES[tipo] || PRES.unidad).u(p);
+const pctDe = p => (precioUnd(p) / (p.costoCaja / p.porCaja) - 1) * 100;
+const pctTxt = n => (Math.round(n * 10) / 10).toString().replace(".", ",");
 const unidades = (p, it) => it.tipo === "combo" ? it.cant : it.cant * (PRES[it.tipo] || PRES.unidad).u(p);
 const presTxt = (tipo, n, p) => tipo === "caja" ? `${n} ${n === 1 ? "caja" : "cajas"}` : tipo === "sixpack" ? `${n} ${n === 1 ? "sixpack" : "sixpacks"}` : tipo === "media" ? `${n} ${n === 1 ? "media caja" : "medias cajas"}` : `${n} und.`;
 const lineaTxt = l => l.tipo === "combo" ? `${l.combo} · ${l.cant} und. ${P(l.pid).nombre}` : `${presTxt(l.tipo, l.cant)} · ${P(l.pid).nombre}`;
@@ -1212,7 +1221,7 @@ const comboCosto = c => c.items.reduce((a, it) => a + costoUnd(P(it.pid)) * it.u
 const comboSuelto = (c, s = S) => c.items.reduce((a, it) => a + precio(s.products.find(p => p.id === it.pid), "unidad", s) * it.und, 0);
 const comboPrecio = (c, s = S) => { const su = comboSuelto(c, s);
   return c.modo === "pct" ? Math.round(su * (1 - (c.desc || 0) / 100) / 50) * 50 : c.modo === "pesos" ? Math.max(0, Math.round(su - (c.desc || 0))) : c.precio; };
-const avatar = (p, sm) => `<span class="av${sm ? " sm" : ""}${look(p)[1].includes("1 L") ? " l" : ""}" style="background:${look(p)[5]}">${look(p)[4]}</span>`;
+const avatar = (p, sm) => `<span class="av${sm ? " sm" : ""}${String(p.tam || look(p)[1]).includes("1 L") ? " l" : ""}" style="background:${look(p)[5]}">${p.nombre === look(p)[0] ? look(p)[4] : esc(iniDe(p.nombre))}</span>`;
 
 function sellItems(s, items, t, user, med, ejemplo, extra) {
   let total = 0, costo = 0;
@@ -2326,15 +2335,17 @@ function cbGuardar() {
 function renderInventario() {
   const low = S.products.filter(p => p.stock < p.porCaja).length;
   $("inv-kpis").innerHTML = kpi("y", "box", "Inventario al costo", money(invValor())) +
-    kpi("g", "up", "Inventario a precio de venta", money(invValor() * (1 + S.pct / 100))) +
+    kpi("g", "up", "Inventario a precio de venta", money(S.products.reduce((a, p) => a + Math.max(p.stock, 0) * precioUnd(p), 0))) +
     kpi(low ? "r" : "n", "inventario", "Productos por acabarse", low);
   $("inv2").innerHTML = S.products.map(p => {
     const st = Math.max(p.stock, 0), l = p.stock < p.porCaja;
-    return `<tr><td><div class="concept">${avatar(p, true)}<span class="t"><b>${p.nombre}</b><small>${p.tam}</small></span></div></td>
+    return `<tr><td><div class="concept">${avatar(p, true)}<span class="t"><b>${esc(p.nombre)}</b><small>${esc(p.tam)}</small></span></div></td>
       <td class="r"><b>${st}</b> und.</td><td class="r">${Math.floor(st / p.porCaja)} cj + ${st % p.porCaja}</td>
       <td class="r">${money(st * costoUnd(p))}</td><td class="r">${money(st * precio(p, "unidad"))}</td>
+      <td class="r"><b class="num">${money(precioUnd(p))}</b><small class="pmeta${pctDe(p) < 0 ? " neg" : ""}">${p.precio > 0 ? "Propio" : "Automático"} · ${pctTxt(pctDe(p))}%</small></td>
       <td><span class="pill${l ? " low" : ""}">${l ? "Por acabarse" : "Bien"}</span></td>
-      <td><button class="codbtn${p.cod ? "" : " vacio"}" type="button" data-a="scan" data-donde="p:${p.id}">${SCAN_SVG}<span class="num">${p.cod || "Agregar"}</span></button></td></tr>`;
+      <td><button class="codbtn${p.cod ? "" : " vacio"}" type="button" data-a="scan" data-donde="p:${p.id}">${SCAN_SVG}<span class="num">${p.cod || "Agregar"}</span></button></td>
+      <td class="r adm-col">${isAdmin() ? `<button class="btn line" type="button" data-a="pr-editar" data-pid="${p.id}" style="padding:7px 12px">Editar</button>` : ""}</td></tr>`;
   }).join("");
 }
 
@@ -2357,7 +2368,7 @@ let PR = [], NP = 0, CATS = [], DAYS = [], ANIOS = [], PCT = 10, HOY, AYER, Y1, 
 function build() {
   const ahora = new Date(); HOY = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()); AYER = addD(HOY, -1);
   Y1 = HOY.getFullYear(); Y0 = Y1 - 1; PCT = S.pct;
-  const ult = S.movs[S.movs.length - 1], k = `${S.movs.length}|${ult ? ult.t : 0}|${+HOY}|${S.products.length}|${S.pct}`;
+  const ult = S.movs[S.movs.length - 1], k = `${S.movs.length}|${ult ? ult.t : 0}|${+HOY}|${S.products.length}|${S.pct}|${S.products.map(p => (p.precio || 0) + p.nombre).join()}`;
   if (k === llave) return; llave = k;
   PR = S.products.map((p, i) => { const cu = p.costoCaja / p.porCaja, pu = precio(p, "unidad"); return { i, id: p.id, n: p.nombre, caja: p.porCaja, cat: (look(p) || [])[6] || "Otros", cu, pu, gu: pu - cu }; });
   NP = PR.length; CATS = [...new Set(PR.map(p => p.cat))];
@@ -2435,7 +2446,9 @@ function renderProd() {
   $("es-p-ins").innerHTML = [
     act("good", "★", `<b>${byG[0].p.n}</b>, <b>${byG[1].p.n}</b> y <b>${byG[2].p.n}</b> dejan el ${Math.round(top3 / (G || 1) * 100)}% de toda tu ganancia. Que nunca te falten.`),
     act("blue", "$", `Cada <b>${hi.n}</b> te deja ${money(hi.gu)}; cada <b>${lo.n}</b>, ${money(lo.gu)}. Vender uno de los primeros es como vender ${Math.round(hi.gu / lo.gu)} de los segundos.`),
-    act("warn", "%", `Todos tus productos dejan el mismo margen (${(PCT / (100 + PCT) * 100).toFixed(1).replace(".", ",")}% de lo que cobras) porque vendes con ${PCT}% sobre el costo. Más adelante podemos ponerle a cada producto su propio porcentaje.`),
+    !S.products.some(p => p.precio > 0) ? act("warn", "%", `Todos tus productos dejan el mismo margen (${(PCT / (100 + PCT) * 100).toFixed(1).replace(".", ",")}% de lo que cobras) porque vendes con ${PCT}% sobre el costo. En Inventario puedes ponerle a cada producto su propio precio.`)
+      : (() => { const o = [...PR].sort((a, b) => b.gu / b.cu - a.gu / a.cu), n = S.products.filter(p => p.precio > 0).length;
+        return act("blue", "%", `${n} producto${n > 1 ? "s tienen" : " tiene"} precio propio. El que más te deja sobre el costo es <b>${esc(o[0].n)}</b> (${pctTxt(o[0].gu / o[0].cu * 100)}%) y el que menos, <b>${esc(o[o.length - 1].n)}</b> (${pctTxt(o[o.length - 1].gu / o[o.length - 1].cu * 100)}%).`); })(),
     Up.u.some(Boolean) ? act(cg[0][1] >= 0 ? "good" : "bad", cg[0][1] >= 0 ? "▲" : "▼", `La categoría que más creció frente al periodo anterior es <b>${cg[0][0]}</b> (${pct(cg[0][1])}).`) : ""
   ].join("");
 }
@@ -2723,6 +2736,51 @@ function recuperarCopia() {
   location.reload();
 }
 
+/* ---------- Editar producto (nombre y precio) ---------- */
+// El nombre se cambia en todas las sedes; el precio es de la sede donde estás.
+let prModo = "auto";
+function prodSheet(p) {
+  prModo = p.precio > 0 ? "propio" : "auto";
+  openSheet(`<div class="cart-h"><h2>Editar ${esc(p.nombre)}</h2><button class="x" data-a="close" aria-label="Cerrar">×</button></div>
+    <label class="field" for="pr-nombre">Nombre<input id="pr-nombre" maxlength="40" autocomplete="off" value="${esc(p.nombre)}"></label>
+    <label class="field" for="pr-tam">Tamaño o presentación<input id="pr-tam" maxlength="30" autocomplete="off" value="${esc(p.tam)}" placeholder="Ejemplo: Botella 750 ml"></label>
+    <div class="field">Precio de venta${segHtml("pr-modo", ["Automático", "Lo elijo yo"], prModo === "auto" ? "Automático" : "Lo elijo yo", "prm")}</div>
+    <label class="field" for="pr-precio" id="pr-precio-f">Precio por unidad<input id="pr-precio" type="number" min="0" step="50" inputmode="numeric" value="${Math.round(precioUnd(p))}"></label>
+    <div class="pr-calc" id="pr-calc"></div>
+    ${varias() ? `<p class="hint">El nombre cambia en todas las sedes. El precio es solo para ${esc(SD(SEDE).nombre)}.</p>` : ""}
+    <p class="err" id="pr-err" hidden></p>
+    <button class="btn ink wide" type="button" data-a="pr-guardar" data-pid="${p.id}">Guardar cambios</button>`, "prod");
+  $("pr-precio").addEventListener("input", () => prCalc(p));
+  prCalc(p); $("pr-nombre").focus();
+}
+function prCalc(p) {
+  const cu = costoUnd(p), auto = prModo === "auto";
+  $("pr-precio-f").hidden = auto;
+  const pu = auto ? cu * (1 + S.pct / 100) : +$("pr-precio").value || 0, g = pu - cu, pc = cu ? g / cu * 100 : 0;
+  const pres = ["sixpack", "media", "caja"].filter(t => PRES[t].ok(p)).map(t => `<div><span>${PRES[t].n} (${PRES[t].u(p)} und.)</span><span class="num">${money(pu * PRES[t].u(p))}</span></div>`).join("");
+  $("pr-calc").innerHTML = `<div><span>Te cuesta cada unidad</span><span class="num">${money(cu)}</span></div>
+    <div><b>Precio por unidad</b><b class="num">${money(pu)}</b></div>
+    <div class="${g < 0 ? "neg" : ""}"><span>Ganas por unidad</span><span class="num">${money(g)} · ${pctTxt(pc)}%</span></div>${pres}
+    <small class="hint" style="margin:0${g < 0 ? ";color:var(--bad);font-weight:700" : ""}">${g < 0 ? "Con este precio vendes por debajo de lo que te cuesta: pierdes plata en cada unidad."
+      : auto ? `Automático: el costo más ${pctTxt(S.pct)}% (el porcentaje de Ajustes). Si compras más caro, el precio sube solo.`
+      : "Este precio se queda fijo aunque cambie el costo. Revísalo cuando compres más caro."}</small>`;
+}
+function prodGuardar(pid) {
+  const p = P(pid), nombre = $("pr-nombre").value.replace(/[<>"&]/g, "").trim().replace(/\s+/g, " "), tam = $("pr-tam").value.replace(/[<>"&]/g, "").trim().replace(/\s+/g, " ");
+  const err = t => { $("pr-err").textContent = t; $("pr-err").hidden = false; };
+  if (nombre.length < 2) return err("Escribe un nombre de al menos 2 letras.");
+  if (S.products.some(x => x.id !== p.id && x.nombre.toLowerCase() === nombre.toLowerCase() && x.tam.toLowerCase() === tam.toLowerCase())) return err("Ya hay un producto con ese nombre y tamaño.");
+  const pu = Math.round(+$("pr-precio").value || 0);
+  if (prModo === "propio" && pu <= 0) return err("Escribe el precio por unidad.");
+  p.nombre = nombre; p.tam = tam;
+  if (prModo === "propio") p.precio = pu; else p.precio = 0;
+  // El nombre también se cambia en las otras sedes de este aparato.
+  G.sedes.forEach(x => { if (x.id === SEDE) return; try { const d = JSON.parse(localStorage.getItem(keyDe(x.id))); const q = d && d.products && d.products.find(y => y.id === p.id);
+    if (q) { q.nombre = nombre; q.tam = tam; localStorage.setItem(keyDe(x.id), JSON.stringify(d)); } } catch (e) {} });
+  save(); closeSheet(); renderInventario();
+  toast(prModo === "propio" ? `${nombre} queda a ${money(pu)} la unidad.` : `${nombre} vuelve al precio automático: ${money(precioUnd(p))} la unidad.`);
+}
+
 /* ---------- Sedes ---------- */
 // El administrador agrega, cambia el nombre o elimina sedes. Cada sede tiene su propio inventario y sus propias ventas.
 let sdBorrar = null;
@@ -2928,6 +2986,10 @@ function buyPreview(p) {
   const tipo = document.querySelector('#b-tipo [aria-pressed="true"]').dataset.bt;
   const cant = Math.max(1, +$("b-cant").value || 1), total = +$("b-total").value || 0;
   const und = tipo === "caja" ? cant * p.porCaja : cant, cu = total / und;
+  if (p.precio > 0) { const g = p.precio - cu, pc = cu ? g / cu * 100 : 0;
+    $("b-res").innerHTML = `<div><span>Entran</span><span>${und} unidades</span></div><div><span>Costo por unidad</span><span>${money(cu)}</span></div><div class="g"><span>Precio de venta (lo elegiste tú)</span><span>${money(p.precio)} und.</span></div>
+    <div class="g"${g < 0 ? ' style="color:var(--bad)"' : ""}><span>Porcentaje de ganancia</span><span>${pctTxt(pc)}% · ${money(g)} und.</span></div>
+    <div><small class="hint" style="margin:0${g < 0 ? ";color:var(--bad);font-weight:700" : ""}">${g < 0 ? "Con este costo pierdes plata en cada unidad. Sube el precio en Inventario." : `Es ${pctTxt(pc)}% sobre lo que te costó. Para cambiar el precio, ve a Inventario.`}</small></div>`; return; }
   $("b-res").innerHTML = `<div><span>Entran</span><span>${und} unidades</span></div><div><span>Costo por unidad</span><span>${money(cu)}</span></div><div class="g"><span>Nuevo precio de venta</span><span>${money(cu * (1 + S.pct / 100))} und.</span></div>
     <div class="g"><span>Porcentaje de ganancia</span><span>${String(S.pct).replace(".", ",")}% · ${money(cu * S.pct / 100)} und.</span></div>
     <div><small class="hint" style="margin:0">Es ${String(S.pct).replace(".", ",")}% sobre lo que te costó. De lo que cobras, te queda ${margenPct().toFixed(1).replace(".", ",")}%.</small></div>`;
@@ -2947,6 +3009,7 @@ document.addEventListener("click", e => {
   }
   const med = e.target.closest("[data-med]"); if (med) { medio = med.dataset.med; document.querySelectorAll("[data-med]").forEach(x => x.setAttribute("aria-pressed", x.dataset.med === medio)); return; }
   const cm = e.target.closest("[data-cbm]"); if (cm) { cbModo(cm.dataset.cbm); return; }
+  const prm = e.target.closest("[data-prm]"); if (prm) { prModo = prm.dataset.prm === "Automático" ? "auto" : "propio"; pressIn(prm); const pid = +$("sheet").querySelector('[data-a="pr-guardar"]').dataset.pid; prCalc(P(pid)); if (prModo === "propio") $("pr-precio").focus(); return; }
   const esd = e.target.closest("[data-esd]"); if (esd) { const id = esd.dataset.esd; empSedes = empSedes.includes(id) ? empSedes.filter(x => x !== id) : [...empSedes, id]; esd.setAttribute("aria-pressed", empSedes.includes(id)); return; }
   const ea = e.target.closest("[data-eact]"); if (ea) { empActivo = ea.dataset.eact === "Activo"; pressIn(ea); return; }
   const bmed = e.target.closest("[data-bmed]"); if (bmed) { buyMedio = bmed.dataset.bmed; pressIn(bmed); return; }
@@ -2961,6 +3024,8 @@ document.addEventListener("click", e => {
   if (a === "salir") logout();
   if (a === "close") closeSheet();
   if (a === "copia-bajar") bajarCopia();
+  if (a === "pr-editar") prodSheet(P(b.dataset.pid));
+  if (a === "pr-guardar") prodGuardar(+b.dataset.pid);
   if (a === "sd-agregar") sedeAgregar();
   if (a === "sd-guardar") sedeRenombrar(b.dataset.id);
   if (a === "sd-borrar") { sdBorrar = b.dataset.id; renderSedes(); }
